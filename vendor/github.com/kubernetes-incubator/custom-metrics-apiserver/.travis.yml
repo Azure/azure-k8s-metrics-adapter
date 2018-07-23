@@ -1,0 +1,20 @@
+language: go
+
+go:
+- '1.10'
+
+addons:
+  apt:
+    sources:
+    - sourceline: 'ppa:masterminds/glide'
+    packages:
+    - glide
+
+install:
+- make -B vendor
+
+script: make verify
+
+cache:
+  directories:
+  - ~/.glide
