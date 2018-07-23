@@ -4,7 +4,7 @@ metadata:
   name: v1beta1.custom.metrics.k8s.io
 spec:
   service:
-    name: custom-metrics-apiserver
+    name: custom-metrics-azure-apiserver
     namespace: custom-metrics
   group: custom.metrics.k8s.io
   version: v1beta1

@@ -8,5 +8,5 @@ roleRef:
   name: custom-metrics-resource-reader
 subjects:
 - kind: ServiceAccount
-  name: custom-metrics-apiserver
+  name: custom-metrics-azure-apiserver
   namespace: custom-metrics

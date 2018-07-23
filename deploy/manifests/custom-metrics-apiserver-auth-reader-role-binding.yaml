@@ -9,5 +9,5 @@ roleRef:
   name: extension-apiserver-authentication-reader
 subjects:
 - kind: ServiceAccount
-  name: custom-metrics-apiserver
+  name: custom-metrics-azure-apiserver
   namespace: custom-metrics

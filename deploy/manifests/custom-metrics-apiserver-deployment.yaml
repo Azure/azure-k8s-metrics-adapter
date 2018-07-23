@@ -2,23 +2,23 @@ apiVersion: apps/v1
 kind: Deployment
 metadata:
   labels:
-    app: custom-metrics-apiserver
-  name: custom-metrics-apiserver
+    app: custom-metrics-azure-apiserver
+  name: custom-metrics-azure-apiserver
   namespace: custom-metrics
 spec:
   replicas: 1
   selector:
     matchLabels:
-      app: custom-metrics-apiserver
+      app: custom-metrics-azure-apiserver
   template:
     metadata:
       labels:
-        app: custom-metrics-apiserver
-      name: custom-metrics-apiserver
+        app: custom-metrics-azure-apiserver
+      name: custom-metrics-azure-apiserver
     spec:
-      serviceAccountName: custom-metrics-apiserver
+      serviceAccountName: custom-metrics-azure-apiserver
       containers:
-      - name: custom-metrics-apiserver
+      - name: custom-metrics-azure-apiserver
         image: REGISTRY/k8s-custom-metric-adapter-sample-amd64:latest 
         args:
         - /adapter
