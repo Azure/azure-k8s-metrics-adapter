@@ -10,8 +10,14 @@ GOIMAGE=golang:1.10
 .PHONY: all build test verify build-container
 
 all: build
-build: vendor
+build-local: vendor
 	CGO_ENABLED=0 GOARCH=$(ARCH) go build -a -tags netgo -o $(OUT_DIR)/$(ARCH)/adapter github.com/jsturtevant/azure-k8-metrics-adapter
+
+build:
+	docker build -t $(REGISTRY)/$(IMAGE)-$(ARCH):$(VERSION) .
+
+push:
+	docker push $(REGISTRY)/$(IMAGE)-$(ARCH):$(VERSION)
 
 vendor: 
 	dep ensure
@@ -19,13 +25,12 @@ vendor:
 test: vendor
 	CGO_ENABLED=0 go test ./pkg/...
 
-container-build: build
-	cp deploy/Dockerfile $(TEMP_DIR)
-	cp $(OUT_DIR)/$(ARCH)/adapter $(TEMP_DIR)/adapter
-	cd $(TEMP_DIR) && sed -i "s|BASEIMAGE|scratch|g" Dockerfile
-	sed -i 's|REGISTRY|'${REGISTRY}'|g' deploy/manifests/custom-metrics-apiserver-deployment.yaml
-	docker build -t $(REGISTRY)/$(IMAGE)-$(ARCH):$(VERSION) $(TEMP_DIR)
-	rm -rf $(TEMP_DIR)
+dev:
+	skaffold dev
 
-container-push: 
-	docker push $(REGISTRY)/$(IMAGE)-$(ARCH):$(VERSION)
+deploy:
+	skaffold run
+
+
+
+
