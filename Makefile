@@ -19,7 +19,7 @@ vendor:
 test: vendor
 	CGO_ENABLED=0 go test ./pkg/...
 
-build-container: build
+container-build: build
 	cp deploy/Dockerfile $(TEMP_DIR)
 	cp $(OUT_DIR)/$(ARCH)/adapter $(TEMP_DIR)/adapter
 	cd $(TEMP_DIR) && sed -i "s|BASEIMAGE|scratch|g" Dockerfile
