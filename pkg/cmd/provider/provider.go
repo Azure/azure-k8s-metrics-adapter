@@ -17,6 +17,7 @@ limitations under the License.
 package provider
 
 import (
+	"context"
 	"fmt"
 	"time"
 
@@ -269,6 +270,8 @@ func (p *testingProvider) GetExternalMetric(namespace string, metricName string,
 }
 
 func (p *testingProvider) ListAllExternalMetrics() []provider.ExternalMetricInfo {
+	externalMetricsInfo := []provider.ExternalMetricInfo{}
+
 	namespaceClient := servicebus.NewNamespacesClient("<subscriptionID>")
 
 	// create an authorizer from env vars or Azure Managed Service Idenity
@@ -276,10 +279,16 @@ func (p *testingProvider) ListAllExternalMetrics() []provider.ExternalMetricInfo
 	if err == nil {
 		namespaceClient.Authorizer = authorizer
 	}
+	result, err := namespaceClient.List(context.Background())
+	if err != nil {
+		glog.Errorf("unable to get service bus namespaces: %v", err)
+		return externalMetricsInfo
+	}
 
-	//namespaceClient.List()
+	for _, namespace := range result.Values() {
+		glog.V(2).Infoln("found namespace", namespace)
+	}
 
-	externalMetricsInfo := []provider.ExternalMetricInfo{}
 	for _, metric := range p.externalMetrics {
 		externalMetricsInfo = append(externalMetricsInfo, metric.info)
 	}
