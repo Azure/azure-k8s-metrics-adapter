@@ -1,6 +1,6 @@
 # azure-k8-metrics-adapter
 
-An implementation of the Kubernetes Custom Metrics API and External Metrics API for Azure Services
+An implementation of the Kubernetes [Custom Metrics API and External Metrics API](https://kubernetes.io/docs/tasks/run-application/horizontal-pod-autoscale/#support-for-metrics-apis) for Azure Services.  
 
 # Build and deploy
 
