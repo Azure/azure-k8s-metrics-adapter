@@ -279,6 +279,8 @@ func (p *testingProvider) ListAllExternalMetrics() []provider.ExternalMetricInfo
 	if err == nil {
 		namespaceClient.Authorizer = authorizer
 	}
+
+	// TODO iterate over result set
 	result, err := namespaceClient.List(context.Background())
 	if err != nil {
 		glog.Errorf("unable to get service bus namespaces: %v", err)
@@ -286,7 +288,7 @@ func (p *testingProvider) ListAllExternalMetrics() []provider.ExternalMetricInfo
 	}
 
 	for _, namespace := range result.Values() {
-		glog.V(2).Infoln("found namespace", namespace)
+		glog.V(2).Infoln("found namespace", namespace.Name)
 	}
 
 	for _, metric := range p.externalMetrics {
