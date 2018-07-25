@@ -288,7 +288,7 @@ func (p *testingProvider) ListAllExternalMetrics() []provider.ExternalMetricInfo
 	}
 
 	for _, namespace := range result.Values() {
-		glog.V(2).Infoln("found namespace", namespace.Name)
+		glog.V(2).Infoln("found namespace", *namespace.Name)
 	}
 
 	for _, metric := range p.externalMetrics {
