@@ -91,24 +91,31 @@ var (
 	}
 )
 
-type testingProvider struct {
-	client dynamic.Interface
-	mapper apimeta.RESTMapper
+type AzureProvider struct {
+	client      dynamic.Interface
+	mapper      apimeta.RESTMapper
+	azureConfig *aim.AzureConfig
 
 	values          map[provider.CustomMetricInfo]int64
 	externalMetrics []externalMetric
 }
 
-func NewFakeProvider(client dynamic.Interface, mapper apimeta.RESTMapper) provider.MetricsProvider {
-	return &testingProvider{
+func NewAzureProvider(client dynamic.Interface, mapper apimeta.RESTMapper) provider.MetricsProvider {
+	azureConfig, err := aim.GetAzureConfig()
+	if err != nil {
+		glog.Errorf("unable to get azure config: %v", err)
+	}
+
+	return &AzureProvider{
 		client:          client,
 		mapper:          mapper,
+		azureConfig:     azureConfig,
 		values:          make(map[provider.CustomMetricInfo]int64),
 		externalMetrics: testingMetrics,
 	}
 }
 
-func (p *testingProvider) valueFor(groupResource schema.GroupResource, metricName string, namespaced bool) (int64, error) {
+func (p *AzureProvider) valueFor(groupResource schema.GroupResource, metricName string, namespaced bool) (int64, error) {
 	info := provider.CustomMetricInfo{
 		GroupResource: groupResource,
 		Metric:        metricName,
@@ -127,7 +134,7 @@ func (p *testingProvider) valueFor(groupResource schema.GroupResource, metricNam
 	return value, nil
 }
 
-func (p *testingProvider) metricFor(value int64, groupResource schema.GroupResource, namespace string, name string, metricName string) (*custom_metrics.MetricValue, error) {
+func (p *AzureProvider) metricFor(value int64, groupResource schema.GroupResource, namespace string, name string, metricName string) (*custom_metrics.MetricValue, error) {
 	kind, err := p.mapper.KindFor(groupResource.WithVersion(""))
 	if err != nil {
 		return nil, err
@@ -146,7 +153,7 @@ func (p *testingProvider) metricFor(value int64, groupResource schema.GroupResou
 	}, nil
 }
 
-func (p *testingProvider) metricsFor(totalValue int64, groupResource schema.GroupResource, metricName string, list runtime.Object) (*custom_metrics.MetricValueList, error) {
+func (p *AzureProvider) metricsFor(totalValue int64, groupResource schema.GroupResource, metricName string, list runtime.Object) (*custom_metrics.MetricValueList, error) {
 	if !apimeta.IsListType(list) {
 		return nil, fmt.Errorf("returned object was not a list")
 	}
@@ -177,7 +184,7 @@ func (p *testingProvider) metricsFor(totalValue int64, groupResource schema.Grou
 	}, nil
 }
 
-func (p *testingProvider) GetRootScopedMetricByName(groupResource schema.GroupResource, name string, metricName string) (*custom_metrics.MetricValue, error) {
+func (p *AzureProvider) GetRootScopedMetricByName(groupResource schema.GroupResource, name string, metricName string) (*custom_metrics.MetricValue, error) {
 	value, err := p.valueFor(groupResource, metricName, false)
 	if err != nil {
 		return nil, err
@@ -185,7 +192,7 @@ func (p *testingProvider) GetRootScopedMetricByName(groupResource schema.GroupRe
 	return p.metricFor(value, groupResource, "", name, metricName)
 }
 
-func (p *testingProvider) GetRootScopedMetricBySelector(groupResource schema.GroupResource, selector labels.Selector, metricName string) (*custom_metrics.MetricValueList, error) {
+func (p *AzureProvider) GetRootScopedMetricBySelector(groupResource schema.GroupResource, selector labels.Selector, metricName string) (*custom_metrics.MetricValueList, error) {
 	fullReses, err := p.mapper.ResourcesFor(groupResource.WithVersion(""))
 	if err != nil || len(fullReses) == 0 {
 		glog.Errorf("unable to get prefered GVRs for GR to list matching resource names: %v", err)
@@ -206,7 +213,7 @@ func (p *testingProvider) GetRootScopedMetricBySelector(groupResource schema.Gro
 	return p.metricsFor(totalValue, groupResource, metricName, matchingObjectsRaw)
 }
 
-func (p *testingProvider) GetNamespacedMetricByName(groupResource schema.GroupResource, namespace string, name string, metricName string) (*custom_metrics.MetricValue, error) {
+func (p *AzureProvider) GetNamespacedMetricByName(groupResource schema.GroupResource, namespace string, name string, metricName string) (*custom_metrics.MetricValue, error) {
 	value, err := p.valueFor(groupResource, metricName, true)
 	if err != nil {
 		return nil, err
@@ -214,7 +221,7 @@ func (p *testingProvider) GetNamespacedMetricByName(groupResource schema.GroupRe
 	return p.metricFor(value, groupResource, namespace, name, metricName)
 }
 
-func (p *testingProvider) GetNamespacedMetricBySelector(groupResource schema.GroupResource, namespace string, selector labels.Selector, metricName string) (*custom_metrics.MetricValueList, error) {
+func (p *AzureProvider) GetNamespacedMetricBySelector(groupResource schema.GroupResource, namespace string, selector labels.Selector, metricName string) (*custom_metrics.MetricValueList, error) {
 	fullReses, err := p.mapper.ResourcesFor(groupResource.WithVersion(""))
 	if err != nil || len(fullReses) == 0 {
 		glog.Errorf("unable to get prefered GVRs for GR to list matching resource names: %v", err)
@@ -235,7 +242,7 @@ func (p *testingProvider) GetNamespacedMetricBySelector(groupResource schema.Gro
 	return p.metricsFor(totalValue, groupResource, metricName, matchingObjectsRaw)
 }
 
-func (p *testingProvider) ListAllMetrics() []provider.CustomMetricInfo {
+func (p *AzureProvider) ListAllMetrics() []provider.CustomMetricInfo {
 	// TODO: maybe dynamically generate this?
 	return []provider.CustomMetricInfo{
 		{
@@ -255,7 +262,7 @@ func (p *testingProvider) ListAllMetrics() []provider.CustomMetricInfo {
 		},
 	}
 }
-func (p *testingProvider) GetExternalMetric(namespace string, metricName string, metricSelector labels.Selector) (*external_metrics.ExternalMetricValueList, error) {
+func (p *AzureProvider) GetExternalMetric(namespace string, metricName string, metricSelector labels.Selector) (*external_metrics.ExternalMetricValueList, error) {
 	matchingMetrics := []external_metrics.ExternalMetricValue{}
 	for _, metric := range p.externalMetrics {
 		if metric.info.Metric == metricName &&
@@ -270,16 +277,10 @@ func (p *testingProvider) GetExternalMetric(namespace string, metricName string,
 	}, nil
 }
 
-func (p *testingProvider) ListAllExternalMetrics() []provider.ExternalMetricInfo {
+func (p *AzureProvider) ListAllExternalMetrics() []provider.ExternalMetricInfo {
 	externalMetricsInfo := []provider.ExternalMetricInfo{}
 
-	subID, err := aim.GetAzureSubscription()
-	if err != nil {
-		glog.Errorf("unable to get azure config: %v", err)
-		return externalMetricsInfo
-	}
-
-	namespaceClient := servicebus.NewNamespacesClient(subID)
+	namespaceClient := servicebus.NewNamespacesClient(p.azureConfig.SubscriptionID)
 
 	// create an authorizer from env vars or Azure Managed Service Idenity
 	authorizer, err := auth.NewAuthorizerFromEnvironment()

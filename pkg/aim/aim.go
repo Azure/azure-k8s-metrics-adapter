@@ -12,7 +12,11 @@ import (
 	"github.com/golang/glog"
 )
 
-func GetAzureSubscription() (string, error) {
+type AzureConfig struct {
+	SubscriptionID string
+}
+
+func GetAzureConfig() (*AzureConfig, error) {
 	client := &http.Client{}
 
 	req, _ := http.NewRequest("GET", "http://169.254.169.254/metadata/instance/compute/subscriptionId", nil)
@@ -26,7 +30,7 @@ func GetAzureSubscription() (string, error) {
 	resp, err := client.Do(req)
 	if err != nil {
 		glog.Errorf("unable to get metadata for azure vm: %v", err)
-		return "", err
+		return nil, err
 	}
 
 	defer resp.Body.Close()
@@ -34,5 +38,9 @@ func GetAzureSubscription() (string, error) {
 	subID := string(respBody[:])
 
 	glog.V(2).Infoln("connected to sub:", subID)
-	return subID, nil
+
+	config := &AzureConfig{
+		SubscriptionID: subID,
+	}
+	return config, nil
 }

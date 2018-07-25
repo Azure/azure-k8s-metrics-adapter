@@ -115,7 +115,7 @@ func (o SampleAdapterServerOptions) RunCustomMetricsAdapterServer(stopCh <-chan 
 		return fmt.Errorf("unable to construct lister client to initialize provider: %v", err)
 	}
 
-	metricsProvider := provider.NewFakeProvider(dynClient, dynamicMapper)
+	metricsProvider := provider.NewAzureProvider(dynClient, dynamicMapper)
 	customMetricsProvider := metricsProvider
 	externalMetricsProvider := metricsProvider
 	if !o.EnableCustomMetricsAPI {
