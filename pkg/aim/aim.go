@@ -1,0 +1,38 @@
+/*
+	Modified from https://github.com/Microsoft/azureimds/blob/master/imdssample.go
+	under Apache License Version 2.0. See diff for changes.
+*/
+
+package aim
+
+import (
+	"io/ioutil"
+	"net/http"
+
+	"github.com/golang/glog"
+)
+
+func GetAzureSubscription() (string, error) {
+	client := &http.Client{}
+
+	req, _ := http.NewRequest("GET", "http://169.254.169.254/metadata/instance/compute/subscriptionId", nil)
+	req.Header.Add("Metadata", "True")
+
+	q := req.URL.Query()
+	q.Add("format", "text")
+	q.Add("api-version", "2017-12-01")
+	req.URL.RawQuery = q.Encode()
+
+	resp, err := client.Do(req)
+	if err != nil {
+		glog.Errorf("unable to get metadata for azure vm: %v", err)
+		return "", err
+	}
+
+	defer resp.Body.Close()
+	respBody, _ := ioutil.ReadAll(resp.Body)
+	subID := string(respBody[:])
+
+	glog.V(2).Infoln("connected to sub:", subID)
+	return subID, nil
+}

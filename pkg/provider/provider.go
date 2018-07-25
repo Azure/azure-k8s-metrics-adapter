@@ -22,6 +22,7 @@ import (
 	"time"
 
 	"github.com/golang/glog"
+	"github.com/jsturtevant/azure-k8-metrics-adapter/pkg/aim"
 	apierr "k8s.io/apimachinery/pkg/api/errors"
 	apimeta "k8s.io/apimachinery/pkg/api/meta"
 	"k8s.io/apimachinery/pkg/api/resource"
@@ -35,6 +36,7 @@ import (
 	"github.com/kubernetes-incubator/custom-metrics-apiserver/pkg/provider"
 	"k8s.io/metrics/pkg/apis/external_metrics"
 
+	"github.com/Azure/azure-sdk-for-go/services/servicebus/mgmt/2017-04-01/servicebus"
 	"github.com/Azure/go-autorest/autorest/azure/auth"
 )
 
@@ -270,6 +272,14 @@ func (p *testingProvider) GetExternalMetric(namespace string, metricName string,
 
 func (p *testingProvider) ListAllExternalMetrics() []provider.ExternalMetricInfo {
 	externalMetricsInfo := []provider.ExternalMetricInfo{}
+
+	subID, err := aim.GetAzureSubscription()
+	if err != nil {
+		glog.Errorf("unable to get azure config: %v", err)
+		return externalMetricsInfo
+	}
+
+	namespaceClient := servicebus.NewNamespacesClient(subID)
 
 	// create an authorizer from env vars or Azure Managed Service Idenity
 	authorizer, err := auth.NewAuthorizerFromEnvironment()
