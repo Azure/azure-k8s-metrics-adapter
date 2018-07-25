@@ -21,7 +21,7 @@ import (
 	"os"
 	"runtime"
 
-	"github.com/jsturtevant/azure-k8-metrics-adapter/pkg/cmd/server"
+	"github.com/jsturtevant/azure-k8-metrics-adapter/cmd/server"
 
 	"k8s.io/apimachinery/pkg/util/wait"
 	"k8s.io/apiserver/pkg/util/logs"

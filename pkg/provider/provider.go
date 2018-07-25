@@ -35,7 +35,6 @@ import (
 	"github.com/kubernetes-incubator/custom-metrics-apiserver/pkg/provider"
 	"k8s.io/metrics/pkg/apis/external_metrics"
 
-	"github.com/Azure/azure-sdk-for-go/services/servicebus/mgmt/2017-04-01/servicebus"
 	"github.com/Azure/go-autorest/autorest/azure/auth"
 )
 
@@ -271,8 +270,6 @@ func (p *testingProvider) GetExternalMetric(namespace string, metricName string,
 
 func (p *testingProvider) ListAllExternalMetrics() []provider.ExternalMetricInfo {
 	externalMetricsInfo := []provider.ExternalMetricInfo{}
-
-	namespaceClient := servicebus.NewNamespacesClient("<subscriptionID>")
 
 	// create an authorizer from env vars or Azure Managed Service Idenity
 	authorizer, err := auth.NewAuthorizerFromEnvironment()
