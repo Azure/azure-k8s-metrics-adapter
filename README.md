@@ -8,11 +8,23 @@ An implementation of the Kubernetes [Custom Metrics API and External Metrics API
 kubectl apply -f https://raw.githubusercontent.com/jsturtevant/azure-k8-metrics-adapter/master/deploy/adapter.yaml
 ```
 
-After deployment you can query the api:
+After deployment you can query the api to avaliable metrics:
 
 ```bash
 kubectl get --raw "/apis/custom.metrics.k8s.io/v1beta1" | jq .
 kubectl get --raw "/apis/external.metrics.k8s.io/v1beta1" | jq .
+```
+
+To Query for a specific custom metric:
+
+```
+kubectl get --raw "/apis/custom.metrics.k8s.io/v1beta1/namespaces/test/pods/*/custom-metric" | jq .
+```
+
+To query for a specific external metric:
+
+```bash
+kubectl  get --raw "/apis/external.metrics.k8s.io/v1beta1/namespaces/test/my-external-metric" | jq .
 ```
 
 ## Azure Setup

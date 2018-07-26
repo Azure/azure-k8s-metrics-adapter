@@ -264,8 +264,8 @@ func (p *AzureProvider) ListAllMetrics() []provider.CustomMetricInfo {
 	}
 }
 
-func metricResourceUri(subId string, resourceGroup string, sbNameSpace string, queuename string) string {
-	return fmt.Sprintf("/subscriptions/%s/resourceGroups/%s/providers/Microsoft.ServiceBus/namespaces/%s/queues/%s", subId, resourceGroup, sbNameSpace, queuename)
+func metricResourceUri(subId string, resourceGroup string, sbNameSpace string) string {
+	return fmt.Sprintf("/subscriptions/%s/resourceGroups/%s/providers/Microsoft.ServiceBus/namespaces/%s", subId, resourceGroup, sbNameSpace)
 }
 
 func (p *AzureProvider) GetExternalMetric(namespace string, metricName string, metricSelector labels.Selector) (*external_metrics.ExternalMetricValueList, error) {
@@ -279,26 +279,29 @@ func (p *AzureProvider) GetExternalMetric(namespace string, metricName string, m
 		metricsClient.Authorizer = authorizer
 	}
 
-	metricName = "MessageCount"
-	metricResourceUri := metricResourceUri(p.azureConfig.SubscriptionID, "k8metrics", "k8custom", "externalq")
+	metricName = "Messages"
+	metricResourceUri := metricResourceUri(p.azureConfig.SubscriptionID, "k8metrics", "k8custom")
 
 	endtime := time.Now().UTC().Format(time.RFC3339)
-	starttime := time.Now().Add(5 * time.Minute).UTC().Format(time.RFC3339)
-
+	starttime := time.Now().Add(-(5 * time.Minute)).UTC().Format(time.RFC3339)
 	timespan := fmt.Sprintf("%s/%s", starttime, endtime)
 
-	metric, err := metricsClient.List(context.Background(), metricResourceUri, timespan, nil, metricName, "Total", nil, "", "", "", "")
+	metricResult, err := metricsClient.List(context.Background(), metricResourceUri, timespan, nil, metricName, "Total", nil, "", "", "", "")
 	if err != nil {
 		return nil, err
 	}
 
-	fmt.Print(metric)
-	// metricValue := external_metrics.ExternalMetricValue{
-	// 	Value:     metric.Value,
-	// 	Timestamp: metav1.Now(),
-	// }
-	// metricValue.Timestamp = metav1.Now()
-	// matchingMetrics = append(matchingMetrics, metricValue)
+	metricVals := *metricResult.Value
+	Timeseries := *metricVals[0].Timeseries
+	data := *Timeseries[0].Data
+	total := *data[len(data)-1].Total
+
+	metricValue := external_metrics.ExternalMetricValue{
+		MetricName: metricName,
+		Value:      *resource.NewQuantity(int64(total), resource.DecimalSI),
+		Timestamp:  metav1.Now(),
+	}
+	matchingMetrics = append(matchingMetrics, metricValue)
 
 	return &external_metrics.ExternalMetricValueList{
 		Items: matchingMetrics,
