@@ -18,4 +18,4 @@ apiserver.local.config
 azure-k8-metrics-adapter
 debug
 _output/
-*/bin/*
+**/bin/
