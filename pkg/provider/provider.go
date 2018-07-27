@@ -20,7 +20,6 @@ import (
 	"k8s.io/metrics/pkg/apis/external_metrics"
 
 	"github.com/Azure/azure-sdk-for-go/services/preview/monitor/mgmt/2018-03-01/insights"
-	"github.com/Azure/azure-sdk-for-go/services/servicebus/mgmt/2017-04-01/servicebus"
 	"github.com/Azure/go-autorest/autorest/azure/auth"
 )
 
@@ -93,10 +92,8 @@ func (p *AzureProvider) GetExternalMetric(namespace string, metricName string, m
 		glog.V(2).Infof("requirement: %s: %s", req.Key(), req.Values())
 	}
 
-	matchingMetrics := []external_metrics.ExternalMetricValue{}
-	metricsClient := insights.NewMetricsClient(p.azureConfig.SubscriptionID)
-
 	// create an authorizer from env vars or Azure Managed Service Idenity
+	metricsClient := insights.NewMetricsClient(p.azureConfig.SubscriptionID)
 	authorizer, err := auth.NewAuthorizerFromEnvironment()
 	if err == nil {
 		metricsClient.Authorizer = authorizer
@@ -124,6 +121,8 @@ func (p *AzureProvider) GetExternalMetric(namespace string, metricName string, m
 		Value:      *resource.NewQuantity(int64(total), resource.DecimalSI),
 		Timestamp:  metav1.Now(),
 	}
+
+	matchingMetrics := []external_metrics.ExternalMetricValue{}
 	matchingMetrics = append(matchingMetrics, metricValue)
 
 	return &external_metrics.ExternalMetricValueList{
@@ -138,24 +137,11 @@ func metricResourceUri(subId string, resourceGroup string, sbNameSpace string) s
 func (p *AzureProvider) ListAllExternalMetrics() []provider.ExternalMetricInfo {
 	externalMetricsInfo := []provider.ExternalMetricInfo{}
 
-	namespaceClient := servicebus.NewNamespacesClient(p.azureConfig.SubscriptionID)
-
-	// create an authorizer from env vars or Azure Managed Service Idenity
-	authorizer, err := auth.NewAuthorizerFromEnvironment()
-	if err == nil {
-		namespaceClient.Authorizer = authorizer
-	}
-
-	// TODO iterate over result set
-	result, err := namespaceClient.List(context.Background())
-	if err != nil {
-		glog.Errorf("unable to get service bus namespaces: %v", err)
-		return externalMetricsInfo
-	}
-
-	for _, namespace := range result.Values() {
-		glog.V(2).Infoln("found namespace", *namespace.Name)
-	}
+	// not implemented yet
+	// TODO
+	// iterate over all of the resources we have access to
+	// build metric info from that
+	// important to remember to cache this and only get it at given interval
 
 	for _, metric := range p.externalMetrics {
 		externalMetricsInfo = append(externalMetricsInfo, metric.info)

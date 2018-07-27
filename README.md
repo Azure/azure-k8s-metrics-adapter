@@ -2,9 +2,17 @@
 
 An implementation of the Kubernetes [Custom Metrics API and External Metrics API](https://kubernetes.io/docs/tasks/run-application/horizontal-pod-autoscale/#support-for-metrics-apis) for Azure Services. 
 
-See a [list of available external metrics](https://docs.microsoft.com/en-us/azure/monitoring-and-diagnostics/monitoring-supported-metrics#microsofteventhubnamespaces) that can be used. 
+## External Metrics
 
+Requires k8 1.10+
+
+See a [list of available azure external metrics](https://docs.microsoft.com/en-us/azure/monitoring-and-diagnostics/monitoring-supported-metrics#microsofteventhubnamespaces) that can be used.  See section on [autoscaling with custom metrics](https://kubernetes.io/docs/tasks/run-application/horizontal-pod-autoscale-walkthrough/#autoscaling-on-metrics-not-related-to-kubernetes-objects) to learn how to create an HPA to use external metrics.  A schema for external metrics can be found [here](https://raw.githubusercontent.com/kubernetes/kubernetes/master/api/openapi-spec/swagger.json).  
+
+## Custom Metrics
 Custom Metrics are not currently implemented.
+
+## Walkthrough
+Check out this [walkthrough](samples/servicebus-queue) to try it out.
 
 ## Deploy
 

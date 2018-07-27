@@ -1,0 +1,23 @@
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: consumer
+spec:
+  selector:
+    matchLabels:
+      app: consumer
+  template:
+    metadata:
+      labels:
+        app: consumer
+    spec:
+      containers:
+      - name: consumer
+        image: jsturtevant/queue-consumer-external-metric
+        env:
+          - name: SERVICEBUS_CONNECTION_STRING
+            valueFrom:
+              secretKeyRef:
+                name: servicebuskey
+                key: sb-connection-string
+    

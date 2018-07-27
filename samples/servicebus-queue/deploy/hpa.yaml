@@ -1,0 +1,19 @@
+apiVersion: autoscaling/v2beta1
+kind: HorizontalPodAutoscaler
+metadata:
+ name: pod-scaler
+spec:
+ scaleTargetRef:
+   apiVersion: extensions/v1beta1
+   kind: Deployment
+   name: consumer
+ minReplicas: 2
+ maxReplicas: 10
+ metrics:
+  - type: External
+    metricName: Microsoft.ServiceBus.k8metrics.k8custom.Messages
+    metricSelector:
+      matchLabels:
+        filter: EntityName.eq.externalq
+        aggregation: Total
+    targetValue: 1000
