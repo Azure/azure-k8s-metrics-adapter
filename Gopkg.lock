@@ -8,6 +8,23 @@
   revision = "75cd24fc2f2c2a2088577d12123ddee5f54e0675"
 
 [[projects]]
+  name = "github.com/Azure/azure-amqp-common-go"
+  packages = [
+    ".",
+    "auth",
+    "cbs",
+    "conn",
+    "internal",
+    "internal/tracing",
+    "log",
+    "rpc",
+    "sas",
+    "uuid"
+  ]
+  revision = "e05d7e9b03e1fd3a074d0f0b819bad445e3a0a69"
+  version = "v0.6.0"
+
+[[projects]]
   name = "github.com/Azure/azure-sdk-for-go"
   packages = [
     "services/preview/monitor/mgmt/2018-03-01/insights",
@@ -16,6 +33,16 @@
   ]
   revision = "520918e6c8e8e1064154f51d13e02fad92b287b8"
   version = "v19.0.0"
+
+[[projects]]
+  branch = "dependancy-update"
+  name = "github.com/Azure/azure-service-bus-go"
+  packages = [
+    ".",
+    "atom"
+  ]
+  revision = "2d219dfefaef693f6b790827240c9c103b522504"
+  source = "https://github.com/jsturtevant/azure-service-bus-go.git"
 
 [[projects]]
   name = "github.com/Azure/go-autorest"
@@ -280,6 +307,12 @@
   version = "v1.0.1"
 
 [[projects]]
+  branch = "master"
+  name = "github.com/mitchellh/mapstructure"
+  packages = ["."]
+  revision = "f15292f7a699fcc1a38a80977f80a046874ba8ac"
+
+[[projects]]
   name = "github.com/modern-go/concurrent"
   packages = ["."]
   revision = "bacd9c7ef1dd9b15be4a9909b8ac7a4e313eec94"
@@ -290,6 +323,16 @@
   packages = ["."]
   revision = "4b7aa43c6742a2c18fdef89dd197aaae7dac7ccd"
   version = "1.0.1"
+
+[[projects]]
+  name = "github.com/opentracing/opentracing-go"
+  packages = [
+    ".",
+    "ext",
+    "log"
+  ]
+  revision = "1949ddbfd147afd4d964a9f00b24eb291e0e7c38"
+  version = "v1.0.2"
 
 [[projects]]
   name = "github.com/pborman/uuid"
@@ -308,6 +351,12 @@
   packages = ["."]
   revision = "5f041e8faa004a95c88a202771f4cc3e991971e6"
   version = "v2.0.1"
+
+[[projects]]
+  name = "github.com/pkg/errors"
+  packages = ["."]
+  revision = "645ef00459ed84a119197bfb8d8205042c6df63d"
+  version = "v0.8.0"
 
 [[projects]]
   name = "github.com/prometheus/client_golang"
@@ -824,9 +873,18 @@
   revision = "89f8a18a5efb0c0162a32c75db752bc53ed7f8ee"
   version = "kubernetes-1.11.0-rc.1"
 
+[[projects]]
+  name = "pack.ag/amqp"
+  packages = [
+    ".",
+    "internal/testconn"
+  ]
+  revision = "5dba116cc9e06d56dbd69570b1c4048b06e71b6f"
+  version = "v0.6.3"
+
 [solve-meta]
   analyzer-name = "dep"
   analyzer-version = 1
-  inputs-digest = "c24c435e7ff58662870ee602ec7743156a3928947d0605521f4bf0ccdfe84764"
+  inputs-digest = "cc2d42fbe4f67a6da84ed1cb5cd53b3f9827fb227da19958fb33871463dd1f6d"
   solver-name = "gps-cdcl"
   solver-version = 1

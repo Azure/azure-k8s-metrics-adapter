@@ -60,6 +60,11 @@
   name = "github.com/Azure/azure-sdk-for-go"
   version = "19.0.0"
 
+[[constraint]]
+  branch = "dependancy-update"
+  name = "github.com/Azure/azure-service-bus-go"
+  source = "https://github.com/jsturtevant/azure-service-bus-go.git"
+
 [prune]
   go-tests = true
   unused-packages = true
