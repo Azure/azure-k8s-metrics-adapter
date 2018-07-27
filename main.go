@@ -21,7 +21,7 @@ import (
 	"os"
 	"runtime"
 
-	"github.com/jsturtevant/azure-k8-metrics-adapter/cmd/server"
+	"github.com/jsturtevant/azure-k8-metrics-adapter/cmd"
 
 	"k8s.io/apimachinery/pkg/util/wait"
 	"k8s.io/apiserver/pkg/util/logs"
@@ -35,7 +35,7 @@ func main() {
 		runtime.GOMAXPROCS(runtime.NumCPU())
 	}
 
-	cmd := server.NewCommandStartSampleAdapterServer(os.Stdout, os.Stderr, wait.NeverStop)
+	cmd := cmd.NewCommandStartSampleAdapterServer(os.Stdout, os.Stderr, wait.NeverStop)
 	cmd.Flags().AddGoFlagSet(flag.CommandLine)
 	if err := cmd.Execute(); err != nil {
 		panic(err)
