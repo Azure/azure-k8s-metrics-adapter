@@ -1,55 +1,51 @@
 package main
 
 import (
-	"bufio"
 	"context"
 	"fmt"
 	"os"
-	"time"
+	"os/signal"
 
 	"github.com/Azure/azure-service-bus-go"
 )
 
 func main() {
-	// Connect
-	connStr := mustGetenv("SERVICEBUS_CONNECTION_STRING")
+	connStr := os.Getenv("SERVICEBUS_CONNECTION_STRING")
 	ns, err := servicebus.NewNamespace(servicebus.NamespaceWithConnectionString(connStr))
 	if err != nil {
-		fmt.Println(err)
-		os.Exit(1)
+		fmt.Println("namespace: ", err)
 	}
 
+	// Initialize and create a Service Bus Queue named helloworld if it doesn't exist
 	queueName := "helloworld"
-	q, err := getQueue(ns, queueName)
-	if err != nil {
-		fmt.Printf("failed to build a new queue named %q\n", queueName)
-		os.Exit(1)
-	}
-
-	reader := bufio.NewReader(os.Stdin)
-	for {
-		fmt.Print("Enter text: ")
-		text, _ := reader.ReadString('\n')
-		ctx, cancel := context.WithTimeout(context.Background(), 10*time.Second)
-		q.Send(ctx, servicebus.NewMessageFromString(text))
-		if text == "exit\n" {
-			break
-		}
-		cancel()
-	}
-}
-
-func getQueue(ns *servicebus.Namespace, queueName string) (*servicebus.Queue, error) {
-	ctx, cancel := context.WithTimeout(context.Background(), 10*time.Second)
-	defer cancel()
 	q, err := ns.NewQueue(queueName)
-	return q, err
-}
-
-func mustGetenv(key string) string {
-	v := os.Getenv(key)
-	if v == "" {
-		panic("Environment variable '" + key + "' required for integration tests.")
+	if err != nil {
+		// handle queue creation error
+		fmt.Println("create queue: ", err)
 	}
-	return v
+
+	// Send message to the Queue named helloworld
+	err = q.Send(context.Background(), servicebus.NewMessageFromString("Hello World!"))
+	if err != nil {
+		// handle message send error
+		fmt.Println("send message: ", err)
+	}
+
+	// Receive message from queue named helloworld
+	listenHandle, err := q.Receive(context.Background(),
+		func(ctx context.Context, msg *servicebus.Message) servicebus.DispositionAction {
+			fmt.Println(string(msg.Data))
+			return msg.Complete()
+		})
+	if err != nil {
+		// handle queue listener creation err
+		fmt.Println("listener: ", err)
+	}
+	// Close the listener handle for the Service Bus Queue
+	defer listenHandle.Close(context.Background())
+
+	// Wait for a signal to quit:
+	signalChan := make(chan os.Signal, 1)
+	signal.Notify(signalChan, os.Interrupt, os.Kill)
+	<-signalChan
 }
