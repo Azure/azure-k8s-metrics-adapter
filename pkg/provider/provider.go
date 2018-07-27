@@ -1,16 +1,11 @@
 package provider
 
 import (
-	"context"
-	"fmt"
-	"time"
-
 	"github.com/golang/glog"
 	"github.com/jsturtevant/azure-k8-metrics-adapter/pkg/aim"
+	"github.com/jsturtevant/azure-k8-metrics-adapter/pkg/az-metric-client"
 	"k8s.io/apimachinery/pkg/api/errors"
 	apimeta "k8s.io/apimachinery/pkg/api/meta"
-	"k8s.io/apimachinery/pkg/api/resource"
-	metav1 "k8s.io/apimachinery/pkg/apis/meta/v1"
 	"k8s.io/apimachinery/pkg/labels"
 	"k8s.io/apimachinery/pkg/runtime/schema"
 	"k8s.io/client-go/dynamic"
@@ -18,9 +13,6 @@ import (
 
 	"github.com/kubernetes-incubator/custom-metrics-apiserver/pkg/provider"
 	"k8s.io/metrics/pkg/apis/external_metrics"
-
-	"github.com/Azure/azure-sdk-for-go/services/preview/monitor/mgmt/2018-03-01/insights"
-	"github.com/Azure/go-autorest/autorest/azure/auth"
 )
 
 type externalMetric struct {
@@ -29,25 +21,17 @@ type externalMetric struct {
 }
 
 type AzureProvider struct {
-	client      dynamic.Interface
-	mapper      apimeta.RESTMapper
-	azureConfig *aim.AzureConfig
-
-	values          map[provider.CustomMetricInfo]int64
-	externalMetrics []externalMetric
+	client         dynamic.Interface
+	mapper         apimeta.RESTMapper
+	azureConfig    aim.AzureConfig
+	azMetricClient azureMetricClient.AzureMetricClient
 }
 
-func NewAzureProvider(client dynamic.Interface, mapper apimeta.RESTMapper) provider.MetricsProvider {
-	azureConfig, err := aim.GetAzureConfig()
-	if err != nil {
-		glog.Errorf("unable to get azure config: %v", err)
-	}
-
+func NewAzureProvider(client dynamic.Interface, mapper apimeta.RESTMapper, azMetricClient azureMetricClient.AzureMetricClient) provider.MetricsProvider {
 	return &AzureProvider{
-		client:      client,
-		mapper:      mapper,
-		azureConfig: azureConfig,
-		values:      make(map[provider.CustomMetricInfo]int64),
+		client:         client,
+		mapper:         mapper,
+		azMetricClient: azMetricClient,
 	}
 }
 
@@ -92,34 +76,9 @@ func (p *AzureProvider) GetExternalMetric(namespace string, metricName string, m
 		glog.V(2).Infof("requirement: %s: %s", req.Key(), req.Values())
 	}
 
-	// create an authorizer from env vars or Azure Managed Service Idenity
-	metricsClient := insights.NewMetricsClient(p.azureConfig.SubscriptionID)
-	authorizer, err := auth.NewAuthorizerFromEnvironment()
-	if err == nil {
-		metricsClient.Authorizer = authorizer
-	}
-
-	metricName = "Messages"
-	metricResourceUri := metricResourceUri(p.azureConfig.SubscriptionID, "k8metrics", "k8custom")
-
-	endtime := time.Now().UTC().Format(time.RFC3339)
-	starttime := time.Now().Add(-(5 * time.Minute)).UTC().Format(time.RFC3339)
-	timespan := fmt.Sprintf("%s/%s", starttime, endtime)
-
-	metricResult, err := metricsClient.List(context.Background(), metricResourceUri, timespan, nil, metricName, "Total", nil, "", "", "", "")
+	metricValue, err := p.azMetricClient.Do(namespace, metricName, metricSelector)
 	if err != nil {
-		return nil, err
-	}
-
-	metricVals := *metricResult.Value
-	Timeseries := *metricVals[0].Timeseries
-	data := *Timeseries[0].Data
-	total := *data[len(data)-1].Total
-
-	metricValue := external_metrics.ExternalMetricValue{
-		MetricName: metricName,
-		Value:      *resource.NewQuantity(int64(total), resource.DecimalSI),
-		Timestamp:  metav1.Now(),
+		return nil, errors.NewBadRequest(err.Error())
 	}
 
 	matchingMetrics := []external_metrics.ExternalMetricValue{}
@@ -128,10 +87,6 @@ func (p *AzureProvider) GetExternalMetric(namespace string, metricName string, m
 	return &external_metrics.ExternalMetricValueList{
 		Items: matchingMetrics,
 	}, nil
-}
-
-func metricResourceUri(subId string, resourceGroup string, sbNameSpace string) string {
-	return fmt.Sprintf("/subscriptions/%s/resourceGroups/%s/providers/Microsoft.ServiceBus/namespaces/%s", subId, resourceGroup, sbNameSpace)
 }
 
 func (p *AzureProvider) ListAllExternalMetrics() []provider.ExternalMetricInfo {
@@ -144,8 +99,5 @@ func (p *AzureProvider) ListAllExternalMetrics() []provider.ExternalMetricInfo {
 	// build metric info from https://docs.microsoft.com/en-us/azure/monitoring-and-diagnostics/monitoring-rest-api-walkthrough#retrieve-metric-definitions-multi-dimensional-api
 	// important to remember to cache this and only get it at given interval
 
-	for _, metric := range p.externalMetrics {
-		externalMetricsInfo = append(externalMetricsInfo, metric.info)
-	}
 	return externalMetricsInfo
 }

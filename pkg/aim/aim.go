@@ -16,7 +16,7 @@ type AzureConfig struct {
 	SubscriptionID string
 }
 
-func GetAzureConfig() (*AzureConfig, error) {
+func GetAzureConfig() (AzureConfig, error) {
 	client := &http.Client{}
 
 	req, _ := http.NewRequest("GET", "http://169.254.169.254/metadata/instance/compute/subscriptionId", nil)
@@ -30,7 +30,7 @@ func GetAzureConfig() (*AzureConfig, error) {
 	resp, err := client.Do(req)
 	if err != nil {
 		glog.Errorf("unable to get metadata for azure vm: %v", err)
-		return nil, err
+		return AzureConfig{}, err
 	}
 
 	defer resp.Body.Close()
@@ -39,7 +39,7 @@ func GetAzureConfig() (*AzureConfig, error) {
 
 	glog.V(2).Infoln("connected to sub:", subID)
 
-	config := &AzureConfig{
+	config := AzureConfig{
 		SubscriptionID: subID,
 	}
 	return config, nil
