@@ -2,6 +2,10 @@
 
 An implementation of the Kubernetes [Custom Metrics API and External Metrics API](https://kubernetes.io/docs/tasks/run-application/horizontal-pod-autoscale/#support-for-metrics-apis) for Azure Services. 
 
+See a [list of available external metrics](https://docs.microsoft.com/en-us/azure/monitoring-and-diagnostics/monitoring-supported-metrics#microsofteventhubnamespaces) that can be used. 
+
+Custom Metrics are not currently implemented.
+
 ## Deploy
 
 ```
@@ -24,7 +28,7 @@ kubectl get --raw "/apis/custom.metrics.k8s.io/v1beta1/namespaces/test/pods/*/cu
 To query for a specific external metric:
 
 ```bash
-kubectl  get --raw "/apis/external.metrics.k8s.io/v1beta1/namespaces/test/my-external-metric" | jq .
+kubectl  get --raw "/apis/external.metrics.k8s.io/v1beta1/namespaces/test/my-external-metric?labelSelector=environment=production,tier=frontend" | jq .
 ```
 
 ## Azure Setup

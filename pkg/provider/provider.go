@@ -7,6 +7,7 @@ import (
 
 	"github.com/golang/glog"
 	"github.com/jsturtevant/azure-k8-metrics-adapter/pkg/aim"
+	"k8s.io/apimachinery/pkg/api/errors"
 	apimeta "k8s.io/apimachinery/pkg/api/meta"
 	"k8s.io/apimachinery/pkg/api/resource"
 	metav1 "k8s.io/apimachinery/pkg/apis/meta/v1"
@@ -55,25 +56,25 @@ func NewAzureProvider(client dynamic.Interface, mapper apimeta.RESTMapper) provi
 // not implemented
 func (p *AzureProvider) GetRootScopedMetricByName(groupResource schema.GroupResource, name string, metricName string) (*custom_metrics.MetricValue, error) {
 	//not implemented yet
-	return nil, nil
+	return nil, errors.NewServiceUnavailable("not implemented yet")
 }
 
 // not implemented
 func (p *AzureProvider) GetRootScopedMetricBySelector(groupResource schema.GroupResource, selector labels.Selector, metricName string) (*custom_metrics.MetricValueList, error) {
 	// not implemented yet
-	return nil, nil
+	return nil, errors.NewServiceUnavailable("not implemented yet")
 }
 
 // not implemented
 func (p *AzureProvider) GetNamespacedMetricByName(groupResource schema.GroupResource, namespace string, name string, metricName string) (*custom_metrics.MetricValue, error) {
 	// not implemented yet
-	return nil, nil
+	return nil, errors.NewServiceUnavailable("not implemented yet")
 }
 
 // not implemented
 func (p *AzureProvider) GetNamespacedMetricBySelector(groupResource schema.GroupResource, namespace string, selector labels.Selector, metricName string) (*custom_metrics.MetricValueList, error) {
 	// not implemented yet
-	return nil, nil
+	return nil, errors.NewServiceUnavailable("not implemented yet")
 }
 
 func (p *AzureProvider) ListAllMetrics() []provider.CustomMetricInfo {
@@ -82,8 +83,17 @@ func (p *AzureProvider) ListAllMetrics() []provider.CustomMetricInfo {
 }
 
 func (p *AzureProvider) GetExternalMetric(namespace string, metricName string, metricSelector labels.Selector) (*external_metrics.ExternalMetricValueList, error) {
-	matchingMetrics := []external_metrics.ExternalMetricValue{}
+	glog.V(2).Infof("Recieved request for namespace: %s, metric name: %s, metric selectors: %s", namespace, metricName, metricSelector.String())
 
+	requirements, selectable := metricSelector.Requirements()
+	if !selectable {
+		return nil, errors.NewBadRequest("label is set to not selectable. this should not happen")
+	}
+	for _, req := range requirements {
+		glog.V(2).Infof("requirement: %s: %s", req.Key(), req.Values())
+	}
+
+	matchingMetrics := []external_metrics.ExternalMetricValue{}
 	metricsClient := insights.NewMetricsClient(p.azureConfig.SubscriptionID)
 
 	// create an authorizer from env vars or Azure Managed Service Idenity
