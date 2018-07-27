@@ -5,12 +5,20 @@ import (
 	"fmt"
 	"os"
 	"os/signal"
+	"strconv"
 	"time"
 
 	servicebus "github.com/Azure/azure-service-bus-go"
 )
 
 func main() {
+	speedArg := os.Args[1]
+	speed, err := strconv.Atoi(speedArg)
+	if err != nil {
+		fmt.Println("Please provide speed in milliseconds")
+		return
+	}
+
 	connStr := os.Getenv("SERVICEBUS_CONNECTION_STRING")
 	ns, err := servicebus.NewNamespace(servicebus.NamespaceWithConnectionString(connStr))
 	if err != nil {
@@ -43,7 +51,7 @@ func main() {
 			fmt.Println("error sending message: ", err)
 		}
 
-		time.Sleep(500 * time.Millisecond)
+		time.Sleep(time.Duration(speed) * time.Millisecond)
 	}
 
 }
