@@ -138,9 +138,10 @@ func (p *AzureProvider) ListAllExternalMetrics() []provider.ExternalMetricInfo {
 	externalMetricsInfo := []provider.ExternalMetricInfo{}
 
 	// not implemented yet
+
 	// TODO
-	// iterate over all of the resources we have access to
-	// build metric info from that
+	// iterate over all of the resources we have access
+	// build metric info from https://docs.microsoft.com/en-us/azure/monitoring-and-diagnostics/monitoring-rest-api-walkthrough#retrieve-metric-definitions-multi-dimensional-api
 	// important to remember to cache this and only get it at given interval
 
 	for _, metric := range p.externalMetrics {
