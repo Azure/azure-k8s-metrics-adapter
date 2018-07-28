@@ -41,7 +41,7 @@ export SERVICEBUS_CONNECTION_STRING='your-connstring'
 Check the queue has values:
 
 ```
-az servicebus queue show --resource-group myresourcegroup --namespace-name mynamespace --name myqueue
+az servicebus queue show -n <queuename> --namespace-name <namespace> -g <namespace> | jq .messageCount
 ```
 
 ### Deploy Consumer 
