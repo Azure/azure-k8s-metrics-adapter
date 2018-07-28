@@ -27,6 +27,7 @@ import (
 	"k8s.io/client-go/rest"
 	"k8s.io/client-go/tools/clientcmd"
 
+	"github.com/jsturtevant/azure-k8-metrics-adapter/pkg/az-metric-client"
 	"github.com/jsturtevant/azure-k8-metrics-adapter/pkg/provider"
 
 	"github.com/kubernetes-incubator/custom-metrics-apiserver/pkg/cmd/server"
@@ -115,7 +116,7 @@ func (o SampleAdapterServerOptions) RunCustomMetricsAdapterServer(stopCh <-chan 
 		return fmt.Errorf("unable to construct lister client to initialize provider: %v", err)
 	}
 
-	metricsProvider := provider.NewAzureProvider(dynClient, dynamicMapper)
+	metricsProvider := provider.NewAzureProvider(dynClient, dynamicMapper, azureMetricClient.NewAzureMetricClient())
 	customMetricsProvider := metricsProvider
 	externalMetricsProvider := metricsProvider
 	if !o.EnableCustomMetricsAPI {
