@@ -11,9 +11,9 @@ spec:
  maxReplicas: 10
  metrics:
   - type: External
-    metricName: Microsoft.ServiceBus.k8metrics.k8custom.Messages
-    metricSelector:
-      matchLabels:
-        filter: EntityName.eq.externalq
-        aggregation: Total
-    targetValue: 1000
+    external:
+      metricName: queue_messages_ready
+      metricSelector:
+        matchLabels:
+          queue: worker_tasks
+      targetValue: 30
