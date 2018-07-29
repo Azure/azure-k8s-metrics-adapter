@@ -15,11 +15,6 @@ import (
 	"k8s.io/metrics/pkg/apis/external_metrics"
 )
 
-type externalMetric struct {
-	info  provider.ExternalMetricInfo
-	value external_metrics.ExternalMetricValue
-}
-
 type AzureProvider struct {
 	client         dynamic.Interface
 	mapper         apimeta.RESTMapper
@@ -66,17 +61,20 @@ func (p *AzureProvider) ListAllMetrics() []provider.CustomMetricInfo {
 }
 
 func (p *AzureProvider) GetExternalMetric(namespace string, metricName string, metricSelector labels.Selector) (*external_metrics.ExternalMetricValueList, error) {
-	glog.V(2).Infof("Recieved request for namespace: %s, metric name: %s, metric selectors: %s", namespace, metricName, metricSelector.String())
+	// Note:
+	//		namespace is Kubernetes namespace when using hpa.
+	// 		This doesn't have affect on azure resources so is ignored.
+	//
+	//		metric name is also ignored as azure metric name is case sensitve
+	//		and this metric name is passed via url which removes case
+	glog.V(0).Infof("Received request for namespace: %s, metric name: %s, metric selectors: %s", namespace, metricName, metricSelector.String())
 
-	requirements, selectable := metricSelector.Requirements()
+	_, selectable := metricSelector.Requirements()
 	if !selectable {
 		return nil, errors.NewBadRequest("label is set to not selectable. this should not happen")
 	}
-	for _, req := range requirements {
-		glog.V(2).Infof("requirement: %s: %s", req.Key(), req.Values())
-	}
 
-	metricValue, err := p.azMetricClient.Do(namespace, metricName, metricSelector)
+	metricValue, err := p.azMetricClient.GetAzureMetric(metricSelector)
 	if err != nil {
 		return nil, errors.NewBadRequest(err.Error())
 	}

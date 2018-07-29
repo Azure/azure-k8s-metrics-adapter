@@ -7,13 +7,19 @@ spec:
    apiVersion: extensions/v1beta1
    kind: Deployment
    name: consumer
- minReplicas: 2
+ minReplicas: 1
  maxReplicas: 10
  metrics:
   - type: External
     external:
-      metricName: queue_messages_ready
+      metricName: queuemessages
       metricSelector:
         matchLabels:
-          queue: worker_tasks
+          metricName: Messages
+          resourceGroup: k8metrics
+          resourceName: k8custom
+          resourceProviderNamespace: Microsoft.Servicebus
+          resourceType: namespaces
+          aggregation: Total
+          filter: EntityName_eq_helloworld
       targetValue: 30

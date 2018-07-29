@@ -27,7 +27,7 @@ kubectl get --raw "/apis/custom.metrics.k8s.io/v1beta1" | jq .
 kubectl get --raw "/apis/external.metrics.k8s.io/v1beta1" | jq .
 ```
 
-To Query for a specific custom metric:
+To Query for a specific custom metric (*not currently supported*):
 
 ```
 kubectl get --raw "/apis/custom.metrics.k8s.io/v1beta1/namespaces/test/pods/*/custom-metric" | jq .
@@ -36,7 +36,7 @@ kubectl get --raw "/apis/custom.metrics.k8s.io/v1beta1/namespaces/test/pods/*/cu
 To query for a specific external metric:
 
 ```bash
-kubectl  get --raw "/apis/external.metrics.k8s.io/v1beta1/namespaces/test/my-external-metric?labelSelector=environment=production,tier=frontend" | jq .
+kubectl  get --raw "/apis/external.metrics.k8s.io/v1beta1/namespaces/test/queuemessages?labelSelector=resourceProviderNamespace=Microsoft.Servicebus,resourceType=namespaces,aggregation=Total,filter=EntityName_eq_helloworld,resourceName=k8custom,resourceGroup=k8metrics,resourceName=k8custom,metricName=Messages" | jq .
 ```
 
 ## Azure Setup

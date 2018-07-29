@@ -5,6 +5,7 @@ import (
 	"fmt"
 	"os"
 	"os/signal"
+	"time"
 
 	"github.com/Azure/azure-service-bus-go"
 )
@@ -18,6 +19,8 @@ func main() {
 	}
 
 	queueName := "helloworld"
+	qm := ns.NewQueueManager()
+
 	fmt.Println("connecting to queue: ", queueName)
 	q, err := ns.NewQueue(queueName)
 	if err != nil {
@@ -28,7 +31,16 @@ func main() {
 	fmt.Println("setting up listener")
 	listenHandle, err := q.Receive(context.Background(),
 		func(ctx context.Context, msg *servicebus.Message) servicebus.DispositionAction {
-			fmt.Println(string(msg.Data))
+			fmt.Println("received message: ", string(msg.Data))
+
+			ctx, cancel := context.WithTimeout(context.Background(), 20*time.Second)
+			defer cancel()
+
+			qe, err := qm.Get(ctx, queueName)
+			if err != nil {
+				fmt.Println("create manager created error: ", err)
+			}
+			fmt.Println("number message left: ", *qe.MessageCount)
 			return msg.Complete()
 		})
 	if err != nil {
