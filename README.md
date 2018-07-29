@@ -1,12 +1,17 @@
 # azure-k8-metrics-adapter
 
-An implementation of the Kubernetes [Custom Metrics API and External Metrics API](https://kubernetes.io/docs/tasks/run-application/horizontal-pod-autoscale/#support-for-metrics-apis) for Azure Services. 
+An implementation of the Kubernetes [Custom Metrics API and External Metrics API](https://kubernetes.io/docs/tasks/run-application/horizontal-pod-autoscale/#support-for-metrics-apis) for Azure Services. The adapter enables you to be able to scale your AKS deployments using the [Horizontal Pod Autoscaler](https://kubernetes.io/docs/tasks/run-application/horizontal-pod-autoscale/) (HPA) with metrics from Azure Resources (such as [Service Bus Queues](https://docs.microsoft.com/en-us/azure/service-bus-messaging/service-bus-dotnet-get-started-with-queues)) and custom metrics stored in Application Insights. 
 
 ## External Metrics
 
 Requires k8 1.10+
 
 See a [list of available azure external metrics](https://docs.microsoft.com/en-us/azure/monitoring-and-diagnostics/monitoring-supported-metrics#microsofteventhubnamespaces) that can be used.  See section on [autoscaling with custom metrics](https://kubernetes.io/docs/tasks/run-application/horizontal-pod-autoscale-walkthrough/#autoscaling-on-metrics-not-related-to-kubernetes-objects) to learn how to create an HPA to use external metrics.  A schema for external metrics can be found [here](https://raw.githubusercontent.com/kubernetes/kubernetes/master/api/openapi-spec/swagger.json).  
+
+Common external metrics are:
+
+- Azure ServiceBus Queue Message Count - [example](samples/servicebus-queue)
+- Azure Storage Queue Message Count 
 
 ## Custom Metrics
 Custom Metrics are not currently implemented.
@@ -15,6 +20,7 @@ Custom Metrics are not currently implemented.
 Check out this [walkthrough](samples/servicebus-queue) to try it out.
 
 ## Deploy
+Requires some [set up on your AKS Cluster](#azure-setup)
 
 ```
 kubectl apply -f https://raw.githubusercontent.com/jsturtevant/azure-k8-metrics-adapter/master/deploy/adapter.yaml
