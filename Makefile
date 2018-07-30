@@ -17,7 +17,7 @@ build:
 	docker build -t $(REGISTRY)/$(IMAGE)-$(ARCH):$(VERSION) .
 
 push:
-	docker login -u $(DOCKER_USER) -p $(DOCKER_PASS)    
+	@docker login -u $(DOCKER_USER) -p '$(DOCKER_PASS)'    
 	docker push $(REGISTRY)/$(IMAGE)-$(ARCH):$(VERSION)
 
 vendor: 
