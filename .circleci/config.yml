@@ -21,5 +21,6 @@ jobs:
     steps:
       - checkout
       - setup_remote_docker
+      - run: VERSION=0.1.$CIRCLE_BUILD_NUM
       - run: make build
       - run: make push
