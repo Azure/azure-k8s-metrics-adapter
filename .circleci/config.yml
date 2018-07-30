@@ -22,8 +22,8 @@ jobs:
       - checkout
       - setup_remote_docker
       - run: |
-          VERSION: 0.1.$CIRCLE_BUILD_NUM
+          VERSION=0.1.$CIRCLE_BUILD_NUM
           make build
       - run: |
-          VERSION: 0.1.$CIRCLE_BUILD_NUM
+          VERSION=0.1.$CIRCLE_BUILD_NUM
           make push
