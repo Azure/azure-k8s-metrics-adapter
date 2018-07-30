@@ -7,6 +7,8 @@ jobs:
     docker:
       # specify the version
       - image: circleci/golang:1.10.3
+    environment:
+      VERSION: 0.1.$CIRCLE_BUILD_NUM
       
       # Specify service dependencies here if necessary
       # CircleCI maintains a library of pre-built images
@@ -21,6 +23,5 @@ jobs:
     steps:
       - checkout
       - setup_remote_docker
-      - run: VERSION=0.1.$CIRCLE_BUILD_NUM
       - run: make build
       - run: make push
