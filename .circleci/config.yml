@@ -21,9 +21,9 @@ jobs:
     steps:
       - checkout
       - setup_remote_docker
+      - run: |  
+          echo 'export VERSION="0.1.$CIRCLE_BUILD_NUM"' >> $BASH_ENV
       - run: |
-          VERSION=0.1.$CIRCLE_BUILD_NUM
           make build
       - run: |
-          VERSION=0.1.$CIRCLE_BUILD_NUM
           make push
