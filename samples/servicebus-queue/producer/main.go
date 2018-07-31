@@ -42,7 +42,7 @@ func main() {
 		os.Exit(1)
 	}()
 
-	for i := 1; i < 10000; i++ {
+	for i := 1; i < 20000; i++ {
 		fmt.Println("sending message ", i)
 		err = q.Send(context.Background(), servicebus.NewMessageFromString("the answer is 42"))
 		if err != nil {
