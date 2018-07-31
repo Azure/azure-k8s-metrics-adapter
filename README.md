@@ -1,6 +1,6 @@
 [![CircleCI](https://circleci.com/gh/jsturtevant/azure-k8-metrics-adapter.svg?style=svg)](https://circleci.com/gh/jsturtevant/azure-k8-metrics-adapter)
 
-# Azure Kuberenetes Metrics Adapter
+# Azure Kubernetes Metrics Adapter
 
 An implementation of the Kubernetes [Custom Metrics API and External Metrics API](https://kubernetes.io/docs/tasks/run-application/horizontal-pod-autoscale/#support-for-metrics-apis) for Azure Services. 
 
