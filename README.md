@@ -29,7 +29,7 @@ Custom Metrics are not currently implemented.
 Check out this [walkthrough](samples/servicebus-queue) to try it out.
 
 ## Deploy
-Requires some [set up on your AKS Cluster](#azure-setup)
+Requires some [set up on your AKS Cluster](#azure-setup) and [Metric Server deployed](https://github.com/kubernetes-incubator/metrics-server#deployment) to your cluster.
 
 ```
 kubectl apply -f https://raw.githubusercontent.com/jsturtevant/azure-k8-metrics-adapter/master/deploy/adapter.yaml
