@@ -20,18 +20,18 @@ This is an example of how to scale using Service Bus Queue as an external metric
 
 Assumes you already provisioned an [AKS Cluster](https://docs.microsoft.com/en-us/azure/aks/kubernetes-walkthrough) and your `kubeconfig` points to your cluster.
 
-Clone this repository and cd to this folder (preferably on your GOPATH):
+Get this repository and cd to this folder (on your GOPATH):
 
 ```
-git clone https://github.com/jsturtevant/azure-k8-metrics-adapter.git
-cd samples/servicebus-queue/
+go get -u github.com/jsturtevant/azure-k8-metrics-adapter
+cd $GOPATH/src/github.com/jsturtevant/azure-k8-metrics-adapter/samples/servicebus-queue/
 ```
 
 ## Setup Service Bus
 Create a service bus in azure:
 
 ``` 
-az group create -n sb-external-example -l westus
+az group create -n sb-external-example -l eastus
 az servicebus namespace create -n sb-external-ns -g sb-external-example
 az servicebus queue create -n externalq --namespace-name sb-external-ns -g sb-external-example
 ```
@@ -39,9 +39,9 @@ az servicebus queue create -n externalq --namespace-name sb-external-ns -g sb-ex
 Create an auth rules for queue:
 
 ```
-az servicebus namespace authorization-rule create --resource-group sb-external-example --namespace-name sb-external-ns --name demorule --rights Listen Manage Send
+az servicebus queue authorization-rule create --resource-group sb-external-example --namespace-name sb-external-ns --queue-name externalq  --name demorule --rights Listen Manage Send
 
-#save for later
+#save for connection string for later
 export SERVICEBUS_CONNECTION_STRING="$(az servicebus queue authorization-rule keys list --resource-group sb-external-example --namespace-name sb-external-ns --name demorule  --queue-name externalq | jq -r .primaryConnectionString)"
 ```
 
@@ -159,7 +159,7 @@ kubectl  get --raw "/apis/external.metrics.k8s.io/v1beta1/namespaces/test/queuem
 
 ## Scale!
 
-Put some load on the queue. Note this will add 20,000 message then exit.
+Put some load on the queue. Note this will add 10,000 message then exit.
 
 ```
 ./bin/producer 0
