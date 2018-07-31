@@ -4,9 +4,9 @@
 
 An implementation of the Kubernetes [Custom Metrics API and External Metrics API](https://kubernetes.io/docs/tasks/run-application/horizontal-pod-autoscale/#support-for-metrics-apis) for Azure Services. 
 
-This adapter enables you to scale your [application deployment pods](https://kubernetes.io/docs/concepts/workloads/controllers/deployment/) running on [AKS](https://docs.microsoft.com/en-us/azure/aks/) using the [Horizontal Pod Autoscaler](https://kubernetes.io/docs/tasks/run-application/horizontal-pod-autoscale/) (HPA) with metrics from Azure Resources (such as [Service Bus Queues](https://docs.microsoft.com/en-us/azure/service-bus-messaging/service-bus-dotnet-get-started-with-queues)) and custom metrics stored in Application Insights. 
+This adapter enables you to scale your [application deployment pods](https://kubernetes.io/docs/concepts/workloads/controllers/deployment/) running on [AKS](https://docs.microsoft.com/en-us/azure/aks/) using the [Horizontal Pod Autoscaler](https://kubernetes.io/docs/tasks/run-application/horizontal-pod-autoscale/) (HPA) with metrics from Azure Resources (such as [Service Bus Queues](https://docs.microsoft.com/en-us/azure/service-bus-messaging/service-bus-dotnet-get-started-with-queues)) and custom metrics stored in Application Insights. Learn more about [using an HPA to autoscale with with external and custom metrics](https://kubernetes.io/docs/tasks/run-application/horizontal-pod-autoscale-walkthrough/#autoscaling-on-metrics-not-related-to-kubernetes-objects).
 
-Learn more about [using an HPA to autoscale with with external and custom metrics ](https://kubernetes.io/docs/tasks/run-application/horizontal-pod-autoscale-walkthrough/#autoscaling-on-metrics-not-related-to-kubernetes-objects).
+Checkout a [video showing how scaling works with the adapter](https://www.youtube.com/watch?v=5pNpzwLLzW4&feature=youtu.be), [deploy the adapter](#deploy) or [learn by going through the walkthrough](samples/servicebus-queue/readme.md).
 
 ## External Metrics
 
@@ -21,12 +21,11 @@ Common external metrics to use for autoscaling are:
 - [Azure Eventhubs](https://docs.microsoft.com/en-us/azure/monitoring-and-diagnostics/monitoring-supported-metrics#microsofteventhubnamespaces)
 
 
-
 ## Custom Metrics
 Custom Metrics are not currently implemented.
 
 ## Walkthrough
-Check out this [walkthrough](samples/servicebus-queue) to try it out.
+Check out this [walkthrough](samples/servicebus-queue/readme.md) to try it out.
 
 ## Deploy
 Requires some [set up on your AKS Cluster](#azure-setup) and [Metric Server deployed](https://github.com/kubernetes-incubator/metrics-server#deployment) to your cluster.
