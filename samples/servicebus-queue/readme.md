@@ -2,17 +2,6 @@
 
 This is an example of how to scale using Service Bus Queue as an external metric.  
 
-## Walkthrough
-
-Assumes you already provisioned an [AKS Cluster](https://docs.microsoft.com/en-us/azure/aks/kubernetes-walkthrough) and your `kubeconfig` points to your cluster.
-
-Clone this repository and cd to this folder (preferably on your GOPATH):
-
-```
-git clone https://github.com/jsturtevant/azure-k8-metrics-adapter.git
-cd samples/servicebus-queue/
-```
-
 - [Service Bus Queue External Metric Scaling](#service-bus-queue-external-metric-scaling)
     - [Walkthrough](#walkthrough)
     - [Setup Service Bus](#setup-service-bus)
@@ -25,6 +14,18 @@ cd samples/servicebus-queue/
         - [Deploy the adapter](#deploy-the-adapter)
         - [Deploy the HPA](#deploy-the-hpa)
     - [Scale!](#scale)
+    - [Clean up](#clean-up)
+
+## Walkthrough
+
+Assumes you already provisioned an [AKS Cluster](https://docs.microsoft.com/en-us/azure/aks/kubernetes-walkthrough) and your `kubeconfig` points to your cluster.
+
+Clone this repository and cd to this folder (preferably on your GOPATH):
+
+```
+git clone https://github.com/jsturtevant/azure-k8-metrics-adapter.git
+cd samples/servicebus-queue/
+```
 
 ## Setup Service Bus
 Create a service bus in azure:
@@ -158,7 +159,7 @@ kubectl  get --raw "/apis/external.metrics.k8s.io/v1beta1/namespaces/test/queuem
 
 ## Scale!
 
-Put some load on the queue. Note this will add message *very* quickly so only run for 20 seconds or so.
+Put some load on the queue. Note this will add 20,000 message then exit.
 
 ```
 ./bin/producer 0
@@ -169,15 +170,53 @@ Now check your queue is loaded:
 ```
 az servicebus queue show --resource-group sb-external-example --namespace-name sb-external-ns --name externalq | jq .messageCount
 
-// should have a good 10,000 or more 
+// should have a good 19,000 or more
 ```
 
-Now watch your HPA pick up the queue count and scal the replicas.  This will take 2 or 3 minutes due to the fact that the check happens every 30 seconds and must have a value over target value.
+Now watch your HPA pick up the queue count and scal the replicas.  This will take 2 or 3 minutes due to the fact that the check happens every 30 seconds and must have a value over target value.  It will then scale back down after a few minutes as well.
 
 ```
 kubectl get hpa consumer-scaler -w
 
 #output similiar to
-NAME              REFERENCE             TARGETS          MINPODS   MAXPODS   REPLICAS   AGE
-consumer-scaler   Deployment/consumer   0/30   1         10        1          5m
+NAME              REFERENCE             TARGETS   MINPODS   MAXPODS   REPLICAS   AGE  
+consumer-scaler   Deployment/consumer   0/30      1         10        1          1h   
+consumer-scaler   Deployment/consumer   27278/30   1         10        1         1h   
+consumer-scaler   Deployment/consumer   26988/30   1         10        4         1h   
+consumer-scaler   Deployment/consumer   26988/30   1         10        4         1h           consumer-scaler   Deployment/consumer   26702/30   1         10        4         1h           
+consumer-scaler   Deployment/consumer   26702/30   1         10        4         1h           
+consumer-scaler   Deployment/consumer   25808/30   1         10        4         1h           
+consumer-scaler   Deployment/consumer   25808/30   1         10        4         1h           consumer-scaler   Deployment/consumer   24784/30   1         10        8         1h           consumer-scaler   Deployment/consumer   24784/30   1         10        8         1h          
+consumer-scaler   Deployment/consumer   23775/30   1         10        8         1h           
+consumer-scaler   Deployment/consumer   22065/30   1         10        8         1h           
+consumer-scaler   Deployment/consumer   22065/30   1         10        8         1h           
+consumer-scaler   Deployment/consumer   20059/30   1         10        8         1h           
+consumer-scaler   Deployment/consumer   20059/30   1         10        10        1h
+```
+
+Once it is scaled up you can check the deployment:
+
+```
+kubectl get deployment consumer
+
+NAME       DESIRED   CURRENT   UP-TO-DATE   AVAILABLE   AGE                                           consumer   10         10         10            10           23m
+```
+
+And check out the logs for the consumers:
+
+```
+k logs -l app=consumer -t 100
+```
+
+## Clean up
+Once the queue is empty (will happen pretty quickly after scaled up to 10) you should see your deployment scale back down.
+
+Once you are done with this experiment you can delete kubernetes deployments and  the resource group:
+
+```
+kubectl delete -f deploy/hpa.yaml
+kubectl delete -f deploy/consumer-deployment.yaml
+kubectl detele -f https://raw.githubusercontent.com/jsturtevant/azure-k8-metrics-adapter/master/deploy/adapter.yaml
+
+az group delete -n sb-external-example
 ```

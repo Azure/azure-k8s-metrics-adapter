@@ -42,13 +42,17 @@ func main() {
 		os.Exit(1)
 	}()
 
+	i := 0
 	for {
-		// Send message to the Queue named helloworld
-		fmt.Println("sending message")
+		fmt.Println("sending message ", i)
 		err = q.Send(context.Background(), servicebus.NewMessageFromString("the answer is 42"))
 		if err != nil {
 			// handle message send error
 			fmt.Println("error sending message: ", err)
+		}
+
+		if i > 1000 {
+			break
 		}
 
 		time.Sleep(time.Duration(speed) * time.Millisecond)
