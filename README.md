@@ -8,6 +8,8 @@ This adapter enables you to scale your [application deployment pods](https://kub
 
 Checkout a [video showing how scaling works with the adapter](https://www.youtube.com/watch?v=5pNpzwLLzW4&feature=youtu.be), [deploy the adapter](#deploy) or [learn by going through the walkthrough](samples/servicebus-queue/readme.md).
 
+This was build using the [Custom Metric Adapter Server Boilerplate project.](https://github.com/kubernetes-incubator/custom-metrics-apiserver) 
+
 ## External Metrics
 
 Requires k8 1.10+
