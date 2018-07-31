@@ -18,9 +18,9 @@ This is an example of how to scale using Service Bus Queue as an external metric
 
 ## Walkthrough
 
-Prequisites:
+Prerequisites:
 
-- provisioned an [AKS Cluster](https://docs.microsoft.com/en-us/azure/aks/kubernetes-walkthrough
+- provisioned an [AKS Cluster](https://docs.microsoft.com/en-us/azure/aks/kubernetes-walkthrough)
 - your `kubeconfig` points to your cluster.  
 - [Metric Server deployed](https://github.com/kubernetes-incubator/metrics-server#deployment) to your cluster ([aks does not come with it deployed](https://github.com/Azure/AKS/issues/318)). Validate by running `kubectl get --raw "/apis/metrics.k8s.io/v1beta1/nodes" | jq .`
 
