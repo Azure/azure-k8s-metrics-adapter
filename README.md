@@ -51,17 +51,18 @@ kubectl get --raw "/apis/custom.metrics.k8s.io/v1beta1/namespaces/test/pods/*/cu
 To query for a specific external metric:
 
 ```bash
-kubectl  get --raw "/apis/external.metrics.k8s.io/v1beta1/namespaces/test/queuemessages?labelSelector=resourceProviderNamespace=Microsoft.Servicebus,resourceType=namespaces,aggregation=Total,filter=EntityName_eq_helloworld,resourceName=k8custom,resourceGroup=k8metrics,resourceName=k8custom,metricName=Messages" | jq .
+kubectl  get --raw "/apis/external.metrics.k8s.io/v1beta1/namespaces/test/queuemessages?labelSelector=resourceProviderNamespace=Microsoft.Servicebus,resourceType=namespaces,aggregation=Total,filter=EntityName_eq_externalq,resourceGroup=sb-external-example,resourceName=sb-external-ns,metricName=Messages" | jq .
 ```
 
 ## Azure Setup
 
-Enable [Managed Service Identity](https://docs.microsoft.com/en-us/azure/active-directory/managed-service-identity/tutorial-linux-vm-access-arm) on each of your AKS vms and give access to the resource the MSI access for each vm:
+Enable [Managed Service Identity](https://docs.microsoft.com/en-us/azure/active-directory/managed-service-identity/tutorial-linux-vm-access-arm) on each of your AKS vms: 
+
+> There is a known issue when upgrading a AKS cluster with MSI enabled.  After the AKS upgrade you will lose your MSI setting and need to re-enable it.  
 
 ```bash
 export RG=<aks resource group> 
 export CLUSTER=<aks cluster name> 
-export ACCESS_RG=<rg to give read access to>
 
 NODE_RG="$(az aks show -n $CLUSTER -g $RG | jq -r .nodeResourceGroup)"
 az vm list -g $NODE_RG
@@ -70,8 +71,25 @@ VMS="$(az vm list -g $NODE_RG | jq -r '.[] | select(.tags.creationSource | . and
 while read -r vm; do
     echo "updating vm $vm..."
     msi="$(az vm identity assign -g $NODE_RG -n $vm | jq -r .systemAssignedIdentity)"
+done <<< "$VMS"
+```
 
-    echo "adding access with $msi..."
+Give access to the resource the MSI needs to access for each vm: 
+
+```bash
+export RG=<aks resource group> 
+export CLUSTER=<aks cluster name> 
+export ACCESS_RG=<resource group with metrics>
+
+NODE_RG="$(az aks show -n $CLUSTER -g $RG | jq -r .nodeResourceGroup)"
+az vm list -g $NODE_RG
+VMS="$(az vm list -g $NODE_RG | jq -r '.[] | select(.tags.creationSource | . and contains("aks")) | .name')"
+
+while read -r vm; do
+    echo "getting vm identity $vm..."
+    msi="$(az vm identity show -g $NODE_RG -n $vm | jq -r .principalId)"
+
+    echo "adding access with msi $msi..."
     az role assignment create --role Reader --assignee-object-id $msi --resource-group $ACCESS_RG
 done <<< "$VMS"
 ```

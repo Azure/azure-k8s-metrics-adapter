@@ -26,7 +26,7 @@ func main() {
 	}
 
 	// Initialize and create a Service Bus Queue named helloworld if it doesn't exist
-	queueName := "helloworld"
+	queueName := "externalq"
 	fmt.Println("connecting to queue: ", queueName)
 	q, err := ns.NewQueue(queueName)
 	if err != nil {
@@ -45,7 +45,7 @@ func main() {
 	for {
 		// Send message to the Queue named helloworld
 		fmt.Println("sending message")
-		err = q.Send(context.Background(), servicebus.NewMessageFromString("Hello World!"))
+		err = q.Send(context.Background(), servicebus.NewMessageFromString("the answer is 42"))
 		if err != nil {
 			// handle message send error
 			fmt.Println("error sending message: ", err)

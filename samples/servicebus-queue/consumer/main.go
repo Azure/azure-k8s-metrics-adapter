@@ -18,7 +18,7 @@ func main() {
 		panic(err)
 	}
 
-	queueName := "helloworld"
+	queueName := "externalq"
 	qm := ns.NewQueueManager()
 
 	fmt.Println("connecting to queue: ", queueName)

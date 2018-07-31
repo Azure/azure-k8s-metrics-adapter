@@ -7,4 +7,4 @@ clean:
 dev:
 	skaffold dev
 consumer-container:
-	docker build -t consumer .
+	docker build -t jsturtevant/queue-consumer-external-metric .
