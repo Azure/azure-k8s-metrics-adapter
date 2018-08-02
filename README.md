@@ -107,6 +107,19 @@ while read -r vm; do
 done <<< "$VMS"
 ```
 
+#### Using Azure AD Application ID and Secret
+Required environment variables:
+- `AZURE_TENANT_ID`: Specifies the Tenant to which to authenticate.
+- `AZURE_CLIENT_ID`: Specifies the app client ID to use.
+- `AZURE_CLIENT_SECRET`: Specifies the app secret to use.
+    
+#### Azure AD Application ID and X.509 Certificate
+Required environment variables:
+- `AZURE_TENANT_ID`: Specifies the Tenant to which to authenticate.
+- `AZURE_CLIENT_ID`: Specifies the app client ID to use.
+- `AZURE_CERTIFICATE_PATH`: Specifies the certificate Path to use.
+- `AZURE_CERTIFICATE_PASSWORD`: Specifies the certificate password to use.
+
 ## Development
 
 ### Get the source
