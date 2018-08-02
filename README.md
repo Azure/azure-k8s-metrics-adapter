@@ -1,4 +1,5 @@
 [![CircleCI](https://circleci.com/gh/jsturtevant/azure-k8-metrics-adapter.svg?style=svg)](https://circleci.com/gh/jsturtevant/azure-k8-metrics-adapter)
+[![GitHub (pre-)release](https://img.shields.io/github/release/jsturtevant/azure-k8-metrics-adapter/all.svg)](https://github.com/jsturtevant/azure-k8-metrics-adapter/releases)
 
 # Azure Kubernetes Metrics Adapter
 
