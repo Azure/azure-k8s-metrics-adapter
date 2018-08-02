@@ -58,6 +58,10 @@ kubectl  get --raw "/apis/external.metrics.k8s.io/v1beta1/namespaces/test/queuem
 
 ## Azure Setup
 
+### Security
+To list options here.
+
+#### Enabling Managed Service Identity
 Enable [Managed Service Identity](https://docs.microsoft.com/en-us/azure/active-directory/managed-service-identity/tutorial-linux-vm-access-arm) on each of your AKS vms: 
 
 > There is a known issue when upgrading a AKS cluster with MSI enabled.  After the AKS upgrade you will lose your MSI setting and need to re-enable it.  
