@@ -59,9 +59,16 @@ kubectl  get --raw "/apis/external.metrics.k8s.io/v1beta1/namespaces/test/queuem
 ## Azure Setup
 
 ### Security
-To list options here.
+Authenticating with Azure Monitor can be achieved via a variety of authentication mechanisms. ([full list](https://github.com/Azure/azure-sdk-for-go#more-authentication-details))
 
-#### Enabling Managed Service Identity
+We recommend to use one of the following options:
+- **Azure Managed Service Identity (MSI)**
+- **Azure AD Application ID and Secret**
+- **Azure AD Application ID and X.509 Certificate**
+
+The Azure AD entity needs to have `Monitoring Reader` permission on the resource group that will be queried. More information can be found [here](https://docs.microsoft.com/en-us/azure/monitoring-and-diagnostics/monitoring-roles-permissions-security).
+
+#### Using Azure Managed Service Identity (MSI)
 Enable [Managed Service Identity](https://docs.microsoft.com/en-us/azure/active-directory/managed-service-identity/tutorial-linux-vm-access-arm) on each of your AKS vms: 
 
 > There is a known issue when upgrading a AKS cluster with MSI enabled.  After the AKS upgrade you will lose your MSI setting and need to re-enable it.  
