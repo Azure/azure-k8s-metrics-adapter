@@ -1,0 +1,53 @@
+# deployment
+---
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  labels:
+    app: custom-metrics-azure-apiserver
+  name: custom-metrics-azure-apiserver
+  namespace: custom-metrics
+spec:
+  replicas: 1
+  selector:
+    matchLabels:
+      app: custom-metrics-azure-apiserver
+  template:
+    metadata:
+      labels:
+        app: custom-metrics-azure-apiserver
+      name: custom-metrics-azure-apiserver
+    spec:
+      serviceAccountName: custom-metrics-azure-apiserver
+      containers:
+      - name: custom-metrics-azure-apiserver
+        image: jsturtevant/azure-k8-metrics-adapter-amd64
+        args:
+        - /adapter
+        - --secure-port=6443
+        - --logtostderr=true
+        - --v=2
+        ports:
+        - containerPort: 6443
+        volumeMounts:
+        - mountPath: /tmp
+          name: temp-vol
+        env:
+          - name: AZURE_TENANT_ID
+            valueFrom:
+              secretKeyRef:
+                name: adapater-service-principal
+                key: azure-tenant-id
+          - name: AZURE_CLIENT_ID
+            valueFrom:
+              secretKeyRef:
+                name: adapater-service-principal
+                key: azure-client-id
+          - name: AZURE_CLIENT_SECRET
+            valueFrom:
+              secretKeyRef:
+                name: adapater-service-principal
+                key: azure-client-secret
+      volumes:
+      - name: temp-vol
+        emptyDir: {}
