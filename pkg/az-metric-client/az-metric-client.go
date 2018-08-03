@@ -4,6 +4,7 @@ import (
 	"context"
 	"errors"
 	"fmt"
+	"os"
 	"strings"
 	"time"
 
@@ -20,42 +21,43 @@ import (
 	"github.com/Azure/go-autorest/autorest/azure/auth"
 )
 
+// AzureMetricClient is used to make requests to Azure Monitor
 type AzureMetricClient struct {
-	client         insights.MetricsClient
-	subscriptionID string
+	client                insights.MetricsClient
+	defaultSubscriptionID string
 }
 
+// NewAzureMetricClient creates a client for making requests to Azure Monitor
 func NewAzureMetricClient() AzureMetricClient {
-	azureConfig, err := aim.GetAzureConfig()
-	if err != nil {
-		glog.Errorf("unable to get azure config: %v", err)
-	}
+	defaultSubscriptionID := getDefaultSubscriptionID()
 
-	metricsClient := insights.NewMetricsClient(azureConfig.SubscriptionID)
+	// looks for ENV variables then falls back to AIM issue #10
+	metricsClient := insights.NewMetricsClient(defaultSubscriptionID)
 	authorizer, err := auth.NewAuthorizerFromEnvironment()
 	if err == nil {
 		metricsClient.Authorizer = authorizer
 	}
 
 	return AzureMetricClient{
-		client:         metricsClient,
-		subscriptionID: azureConfig.SubscriptionID,
+		client:                metricsClient,
+		defaultSubscriptionID: defaultSubscriptionID,
 	}
 }
 
-// GetAzureMetric calls arm rest endpoint
+// GetAzureMetric calls Azure Monitor endpoint and returns a metric based on label selectors
 func (c AzureMetricClient) GetAzureMetric(metricSelector labels.Selector) (external_metrics.ExternalMetricValue, error) {
-	azMetricRequest, err := parseAzureMetric(metricSelector)
+	azMetricRequest, err := parseAzureMetric(metricSelector, c.defaultSubscriptionID)
 	if err != nil {
 		return external_metrics.ExternalMetricValue{}, err
 	}
-	metricResourceURI := azMetricRequest.metricResourceUri(c.subscriptionID)
+	metricResourceURI := azMetricRequest.metricResourceURI()
 
 	glog.V(2).Infof("resource uri: %s", metricResourceURI)
 	glog.V(2).Infof("filter: %s", azMetricRequest.filter)
 	glog.V(2).Infof("metric name : %s", azMetricRequest.metricName)
 
-	// make call to azure resource provider
+	// make call to azure resource provider with subscription id provided issue #9
+	c.client.SubscriptionID = azMetricRequest.subscriptionID
 	metricResult, err := c.client.List(context.Background(), metricResourceURI,
 		azMetricRequest.timespan, nil,
 		azMetricRequest.metricName, azMetricRequest.aggregation, nil,
@@ -64,11 +66,7 @@ func (c AzureMetricClient) GetAzureMetric(metricSelector labels.Selector) (exter
 		return external_metrics.ExternalMetricValue{}, err
 	}
 
-	//TODO check for nils
-	metricVals := *metricResult.Value
-	Timeseries := *metricVals[0].Timeseries
-	data := *Timeseries[0].Data
-	total := *data[len(data)-1].Total
+	total := extractValue(metricResult)
 
 	// TODO set Value based on aggregations type
 	return external_metrics.ExternalMetricValue{
@@ -76,6 +74,37 @@ func (c AzureMetricClient) GetAzureMetric(metricSelector labels.Selector) (exter
 		Value:      *resource.NewQuantity(int64(total), resource.DecimalSI),
 		Timestamp:  metav1.Now(),
 	}, nil
+}
+
+func extractValue(metricResult insights.Response) float64 {
+	//TODO extract value based on aggregation type
+	//TODO check for nils
+	metricVals := *metricResult.Value
+	Timeseries := *metricVals[0].Timeseries
+	data := *Timeseries[0].Data
+	total := *data[len(data)-1].Total
+
+	return total
+}
+
+func getDefaultSubscriptionID() string {
+	// if the user explicitly sets we should use that
+	subscriptionID := os.Getenv("SUBSCRIPTION_ID")
+	if subscriptionID == "" {
+		//fallback to trying azure instance meta data
+		azureConfig, err := aim.GetAzureConfig()
+		if err != nil {
+			glog.Errorf("Unable to get azure config from MSI: %v", err)
+		}
+
+		subscriptionID = azureConfig.SubscriptionID
+	}
+
+	if subscriptionID == "" {
+		glog.V(0).Info("Default Azure Subscription is not set.  You must provide subscription id via HPA lables, set an environment variable, or enable MSI.  See docs for more details")
+	}
+
+	return subscriptionID
 }
 
 type azureMetricRequest struct {
@@ -87,51 +116,60 @@ type azureMetricRequest struct {
 	aggregation               string
 	timespan                  string
 	filter                    string
+	subscriptionID            string
 }
 
-func parseAzureMetric(metricSelector labels.Selector) (azureMetricRequest, error) {
+func parseAzureMetric(metricSelector labels.Selector, defaultSubscriptionID string) (azureMetricRequest, error) {
 	glog.V(2).Infof("begin parsing metric")
 
-	// using selectors to pass required values thorugh
-	// to retain case
-	// there is are restrictions so using some conversion
+	// Using selectors to pass required values thorugh
+	// to retain camel case as azure provider is case sensitive.
+	//
+	// There is are restrictions so using some conversion
 	// restrictions here
 	// note: requirement values are already validated by apiserver
 	merticReq := azureMetricRequest{
-		timespan: timeSpan(),
+		timespan:       timeSpan(),
+		subscriptionID: defaultSubscriptionID,
 	}
 	requirements, _ := metricSelector.Requirements()
 	for _, request := range requirements {
 		if request.Operator() != selection.Equals {
-			return azureMetricRequest{}, errors.New("selector type not supported. only eqauls is supported at this time")
+			return azureMetricRequest{}, errors.New("selector type not supported. only equals is supported at this time")
 		}
+
+		value := request.Values().List()[0]
 
 		switch request.Key() {
 		case "metricName":
-			glog.V(2).Infof("metricName: %s", request.Values().List()[0])
-			merticReq.metricName = request.Values().List()[0]
+			glog.V(2).Infof("metricName: %s", value)
+			merticReq.metricName = value
 		case "resourceGroup":
-			glog.V(2).Infof("resourceGroup: %s", request.Values().List()[0])
-			merticReq.resourceGroup = request.Values().List()[0]
+			glog.V(2).Infof("resourceGroup: %s", value)
+			merticReq.resourceGroup = value
 		case "resourceName":
-			glog.V(2).Infof("resourceName: %s", request.Values().List()[0])
-			merticReq.resourceName = request.Values().List()[0]
+			glog.V(2).Infof("resourceName: %s", value)
+			merticReq.resourceName = value
 		case "resourceProviderNamespace":
-			glog.V(2).Infof("resourceProviderNamespace: %s", request.Values().List()[0])
-			merticReq.resourceProviderNamespace = request.Values().List()[0]
+			glog.V(2).Infof("resourceProviderNamespace: %s", value)
+			merticReq.resourceProviderNamespace = value
 		case "resourceType":
-			glog.V(2).Infof("resourceType: %s", request.Values().List()[0])
-			merticReq.resourceType = request.Values().List()[0]
+			glog.V(2).Infof("resourceType: %s", value)
+			merticReq.resourceType = value
 		case "aggregation":
-			glog.V(2).Infof("aggregation: %s", request.Values().List()[0])
-			merticReq.aggregation = request.Values().List()[0]
+			glog.V(2).Infof("aggregation: %s", value)
+			merticReq.aggregation = value
 		case "filter":
 			// TODO: Should handle filters by converting equality and setbased label selectors
 			// to  oData syntax: https://kubernetes.io/docs/concepts/overview/working-with-objects/labels/#label-selectors
-			glog.V(2).Infof("filter: %s", request.Values().List()[0])
-			filterStrings := strings.Split(request.Values().List()[0], "_")
+			glog.V(2).Infof("filter: %s", value)
+			filterStrings := strings.Split(value, "_")
 			merticReq.filter = fmt.Sprintf("%s %s '%s'", filterStrings[0], filterStrings[1], filterStrings[2])
 			glog.V(2).Infof("filter formatted: %s", merticReq.filter)
+		case "subscriptionID":
+			// if sub id is passed via label selectors then it takes precedence
+			glog.V(2).Infof("override azure subscription id with : %s", value)
+			merticReq.subscriptionID = value
 		default:
 			return azureMetricRequest{}, fmt.Errorf("selector label '%s' not supported", request.Key())
 		}
@@ -170,17 +208,21 @@ func (amr azureMetricRequest) Validate() error {
 		return fmt.Errorf("filter is required")
 	}
 
+	if amr.subscriptionID == "" {
+		return fmt.Errorf("subscriptionID is required. set a default or pass via label selectors")
+	}
+
 	// if here then valid!
 	return nil
 }
 
-func (azr azureMetricRequest) metricResourceUri(subId string) string {
+func (amr azureMetricRequest) metricResourceURI() string {
 	return fmt.Sprintf("/subscriptions/%s/resourceGroups/%s/providers/%s/%s/%s",
-		subId,
-		azr.resourceGroup,
-		azr.resourceProviderNamespace,
-		azr.resourceType,
-		azr.resourceName)
+		amr.subscriptionID,
+		amr.resourceGroup,
+		amr.resourceProviderNamespace,
+		amr.resourceType,
+		amr.resourceName)
 }
 
 func timeSpan() string {
