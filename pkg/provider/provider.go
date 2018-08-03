@@ -76,6 +76,7 @@ func (p *AzureProvider) GetExternalMetric(namespace string, metricName string, m
 
 	metricValue, err := p.azMetricClient.GetAzureMetric(metricSelector)
 	if err != nil {
+		glog.Errorf("bad request: %v", err)
 		return nil, errors.NewBadRequest(err.Error())
 	}
 
