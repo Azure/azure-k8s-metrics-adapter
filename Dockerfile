@@ -11,5 +11,5 @@ RUN apk update \
     && rm -rf /var/cache/apk/* \
     && update-ca-certificates
     
-ENTRYPOINT ["/adapter --logtostderr"]
+ENTRYPOINT ["/adapter", "--logtostderr=true"]
 COPY --from=builder /adapter /
