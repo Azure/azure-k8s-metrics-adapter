@@ -1,0 +1,26 @@
+apiVersion: autoscaling/v2beta1
+kind: HorizontalPodAutoscaler
+metadata:
+ name: consumer-scaler
+spec:
+ scaleTargetRef:
+   apiVersion: extensions/v1beta1
+   kind: Deployment
+   name: consumer
+ minReplicas: 1
+ maxReplicas: 10
+ metrics:
+  - type: External
+    external:
+      metricName: queuemessages
+      metricSelector:
+        matchLabels:
+          metricName: Messages
+          resourceGroup: sb-external-example
+          resourceName: sb-external-ns
+          resourceProviderNamespace: Microsoft.Servicebus
+          resourceType: namespaces
+          aggregation: Total
+          filter: EntityName_eq_externalq
+          subscriptionID: 12345678-1234-1234-1234-12345678901234
+      targetValue: 30
