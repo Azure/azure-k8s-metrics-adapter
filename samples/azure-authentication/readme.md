@@ -2,7 +2,7 @@
 There are several was to authenticate the adapter with Azure.  
 
 ## Using Azure AD Application ID and Secret
-To create secrets for use with [AD Service Principal]:
+To create secrets for use with [AD Service Principal](adapter-with-ad-sp.yaml):
 
 ```
 az ad sp create-for-rbac -n azure-metric-adapter 

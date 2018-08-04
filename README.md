@@ -154,6 +154,14 @@ Required environment variables:
 - `AZURE_CERTIFICATE_PATH`: Specifies the certificate Path to use.
 - `AZURE_CERTIFICATE_PASSWORD`: Specifies the certificate password to use.
 
+## Subscription Information
+
+The use the adapter your Azure Subscription must be provided.  There are a few ways to provide this information:
+
+- [Azure Instance Metadata](https://docs.microsoft.com/en-us/azure/virtual-machines/windows/instance-metadata-service) - If you are running the adapter on a VM in Azure (for instance in an AKS cluster) there is nothing you need to do.  The Subscription Id will be automatically picked up from the Azure Instance Metadata endpoint
+- Environment Variable - If you are outside of Azure or want full control of the subscription that is used you can set the Environment variable `SUBSCRIPTION_ID`  on the adapter deployment.  This takes precedence over the Azure Instance Metadata.
+- [On each HPA](samples/hpa-examples) - you can work with multiple subscriptions by supplying the metric selector `subscriptionID` on each HPA.  This overrides Environment variables and Azure Instance Metadata settings.
+  
 ## Development
 
 ### Get the source
