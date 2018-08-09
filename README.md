@@ -161,24 +161,10 @@ The use the adapter your Azure Subscription must be provided.  There are a few w
 - [Azure Instance Metadata](https://docs.microsoft.com/en-us/azure/virtual-machines/windows/instance-metadata-service) - If you are running the adapter on a VM in Azure (for instance in an AKS cluster) there is nothing you need to do.  The Subscription Id will be automatically picked up from the Azure Instance Metadata endpoint
 - Environment Variable - If you are outside of Azure or want full control of the subscription that is used you can set the Environment variable `SUBSCRIPTION_ID`  on the adapter deployment.  This takes precedence over the Azure Instance Metadata.
 - [On each HPA](samples/hpa-examples) - you can work with multiple subscriptions by supplying the metric selector `subscriptionID` on each HPA.  This overrides Environment variables and Azure Instance Metadata settings.
-  
-## Development
 
-### Get the source
+## Contributing
 
-```bash
-go get github.com/jsturtevant/azure-k8-metrics-adapter
-cd $GOPATH/github.com/jsturtevant/azure-k8-metrics-adapter
-```
+See [Contributing](CONTRIBUTING.md) for more information.
 
-### Use Skaffold
-Before you run the command below be sure to:
 
-- Download [skaffold](https://github.com/GoogleContainerTools/skaffold#installation) 
-- Log in to your container registry: `docker login`
-- Have your K8 context set to the cluster you want to deploy to: `kubectl config use-context`
-
-```bash
-make dev
-```
 
