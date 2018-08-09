@@ -168,5 +168,17 @@ The use the adapter your Azure Subscription must be provided.  There are a few w
 
 See [Contributing](CONTRIBUTING.md) for more information.
 
+## Issues
+Report any issues in the [Github issues](https://github.com/jsturtevant/azure-k8-metrics-adapter/issues).  
 
+## Roadmap
+See the Projects tab for [current roadmap](https://github.com/jsturtevant/azure-k8-metrics-adapter/projects).
 
+## Reporting Security Issues
+
+Security issues and bugs should be reported privately, via email, to the Microsoft Security
+Response Center (MSRC) at [secure@microsoft.com](mailto:secure@microsoft.com). You should
+receive a response within 24 hours. If for some reason you do not, please follow up via
+email to ensure we received your original message. Further information, including the
+[MSRC PGP](https://technet.microsoft.com/en-us/security/dn606155) key, can be found in
+the [Security TechCenter](https://technet.microsoft.com/en-us/security/default).
