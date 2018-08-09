@@ -11,6 +11,8 @@ Checkout a [video showing how scaling works with the adapter](https://www.youtub
 
 This was build using the [Custom Metric Adapter Server Boilerplate project.](https://github.com/kubernetes-incubator/custom-metrics-apiserver) 
 
+## Project Status: Alpha
+
 ## Walkthrough
 Check out this [walkthrough](samples/servicebus-queue/readme.md) to try it out.
 
