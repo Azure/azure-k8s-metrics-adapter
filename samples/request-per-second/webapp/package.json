@@ -1,0 +1,13 @@
+{
+  "name": "rps-example",
+  "version": "0.1.0",
+  "description": "application insights with azure k8 metrics adapter",
+  "author": "James Sturtevant <jstur@microsoft.com>",
+  "main": "server.js",
+  "scripts": {
+    "start": "node server.js"
+  },
+  "dependencies": {
+    "applicationinsights": "^1.0.3"
+  }
+}
