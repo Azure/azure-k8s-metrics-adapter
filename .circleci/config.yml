@@ -16,7 +16,7 @@ jobs:
           make build
       - run: |
           make push
-  build-pr:
+  build_pr:
     docker:
       - image: circleci/golang:1.10.3
     working_directory: /go/src/github.com/jsturtevant/azure-k8-metrics-adapter
@@ -35,7 +35,7 @@ workflows:
               only: master
   build_pr:
     jobs:
-      - build-pr:
+      - build_pr:
           filters:
             branches:
               ignore: master
