@@ -1,0 +1,112 @@
+apiVersion: apps/v1beta2
+kind: Deployment
+metadata:
+  name: {{ template "azure-k8s-metrics-adapter.fullname" . }}
+  labels:
+    app: {{ template "azure-k8s-metrics-adapter.name" . }}
+    chart: {{ template "azure-k8s-metrics-adapter.chart" . }}
+    release: {{ .Release.Name }}
+    heritage: {{ .Release.Service }}
+spec:
+  replicas: {{ .Values.replicaCount }}
+  selector:
+    matchLabels:
+      app: {{ template "azure-k8s-metrics-adapter.name" . }}
+      release: {{ .Release.Name }}
+  template:
+    metadata:
+      labels:
+        app: {{ template "azure-k8s-metrics-adapter.name" . }}
+        release: {{ .Release.Name }}
+    spec:
+      serviceAccountName: {{ template "azure-k8s-metrics-adapter.serviceAccountName" . }}
+      containers:
+        - name: {{ .Chart.Name }}
+          image: "{{ .Values.image.repository }}:{{ .Values.image.tag }}"
+          imagePullPolicy: {{ .Values.image.pullPolicy }}
+          args:
+            - /adapter
+            - --secure-port={{ .Values.adapterSecurePort }}
+            - --logtostderr=true
+            - --v=2
+            {{- range $key, $value := .Values.extraArgs }}
+            - --{{ $key }}{{ if $value }}={{ $value }}{{ end }}
+            {{- end }}
+          ports:
+            - name: http
+              containerPort: {{ .Values.adapterSecurePort }}
+              protocol: TCP
+          env:
+          {{- if .Values.azureTenantId }}
+            - name: AZURE_TENANT_ID
+              valueFrom:
+                secretKeyRef:
+                  name: {{ template "azure-k8s-metrics-adapter.fullname" . }}
+                  key: azure-tenant-id
+          {{- end }}
+           {{- if .Values.azureClientId }}
+            - name: AZURE_CLIENT_ID
+              valueFrom:
+                secretKeyRef:
+                  name: {{ template "azure-k8s-metrics-adapter.fullname" . }}
+                  key: azure-client-id
+          {{- end }}
+          {{- if .Values.azureClientSecret }}
+            - name: AZURE_CLIENT_SECRET
+              valueFrom:
+                secretKeyRef:
+                  name: {{ template "azure-k8s-metrics-adapter.fullname" . }}
+                  key: azure-client-secret
+          {{- end }}
+          {{- if .Values.azureClientCertificate }}
+            - name: AZURE_CERTIFICATE_PATH
+              value: {{ .Values.azureClientCertificatePath }}
+            - name: AZURE_CERTIFICATE_PASSWORD
+              valueFrom:
+                secretKeyRef:
+                  name: {{ template "azure-k8s-metrics-adapter.fullname" . }}
+                  key: azure-client-certificate-password
+          {{- end }}
+          {{- if .Values.defaultSubscriptionId }}
+            - name: SUBSCRIPTION_ID
+              valueFrom:
+                secretKeyRef:
+                  name: {{ template "azure-k8s-metrics-adapter.fullname" . }}
+                  key: azure-subscription-id
+          {{- end }}
+          {{- range $key, $value := .Values.extraEnv }}
+            - name: {{ $key }}
+              value: "{{ $value }}"
+          {{- end }}
+          volumeMounts:
+            - mountPath: /tmp
+              name: temp-vol
+            {{- if .Values.azureClientCertificate }}
+            - mountPath: {{ .Values.azureClientCertificatePath }}
+              name: azure-client-certificate  
+            {{- end }}
+          resources:
+{{ toYaml .Values.resources | indent 12 }}
+    {{- with .Values.nodeSelector }}
+      nodeSelector:
+{{ toYaml . | indent 8 }}
+    {{- end }}
+    {{- with .Values.affinity }}
+      affinity:
+{{ toYaml . | indent 8 }}
+    {{- end }}
+    {{- with .Values.tolerations }}
+      tolerations:
+{{ toYaml . | indent 8 }}
+    {{- end }}
+      volumes:
+        - name: temp-vol
+          emptyDir: {}
+        {{- if .Values.azureClientCertificate }}
+        - name: azure-client-certificate
+          secret:
+            secretName: {{ template "azure-k8s-metrics-adapter.fullname" . }}
+            items:
+              - key: azure-client-certificate
+                path: {{ .Values.azureClientCertificatePath }}
+        {{- end }}

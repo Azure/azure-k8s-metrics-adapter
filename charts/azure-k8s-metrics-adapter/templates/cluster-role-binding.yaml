@@ -1,0 +1,38 @@
+{{- if .Values.rbac.create }}
+apiVersion: rbac.authorization.k8s.io/v1
+kind: ClusterRoleBinding
+metadata:
+  name: {{ template "azure-k8s-metrics-adapter.fullname" . }}:system:auth-delegator
+  namespace: kube-system
+  labels:
+    app: {{ template "azure-k8s-metrics-adapter.name" . }}
+    chart: {{ template "azure-k8s-metrics-adapter.chart" . }}
+    release: {{ .Release.Name }}
+    heritage: {{ .Release.Service }}
+roleRef:
+  apiGroup: rbac.authorization.k8s.io
+  kind: ClusterRole
+  name: system:auth-delegator
+subjects:
+  - name: {{ template "azure-k8s-metrics-adapter.serviceAccountName" . }}
+    namespace: {{ .Release.Namespace | quote }}
+    kind: ServiceAccount
+---
+apiVersion: rbac.authorization.k8s.io/v1beta1
+kind: ClusterRoleBinding
+metadata:
+  name: {{ template "azure-k8s-metrics-adapter.fullname" . }}
+  labels:
+    app: {{ template "azure-k8s-metrics-adapter.name" . }}
+    chart: {{ template "azure-k8s-metrics-adapter.chart" . }}
+    release: {{ .Release.Name }}
+    heritage: {{ .Release.Service }}
+roleRef:
+  apiGroup: rbac.authorization.k8s.io
+  kind: ClusterRole
+  name: {{ template "azure-k8s-metrics-adapter.fullname" . }}
+subjects:
+  - name: {{ template "azure-k8s-metrics-adapter.serviceAccountName" . }}
+    namespace: {{ .Release.Namespace | quote }}
+    kind: ServiceAccount
+{{- end }}

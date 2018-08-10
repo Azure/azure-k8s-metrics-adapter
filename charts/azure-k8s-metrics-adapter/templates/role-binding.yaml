@@ -1,0 +1,20 @@
+{{- if .Values.rbac.create }}
+apiVersion: rbac.authorization.k8s.io/v1
+kind: RoleBinding
+metadata:
+  name: {{ template "azure-k8s-metrics-adapter.fullname" . }}:extension-apiserver-authentication-reader
+  labels:
+    app: {{ template "azure-k8s-metrics-adapter.name" . }}
+    chart: {{ template "azure-k8s-metrics-adapter.chart" . }}
+    release: {{ .Release.Name }}
+    heritage: {{ .Release.Service }}
+  namespace: kube-system
+roleRef:
+  apiGroup: rbac.authorization.k8s.io
+  kind: Role
+  name: extension-apiserver-authentication-reader
+subjects:
+- kind: ServiceAccount
+  name: {{ template "azure-k8s-metrics-adapter.serviceAccountName" . }}
+  namespace: {{ .Release.Namespace | quote }}
+{{- end }}

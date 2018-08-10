@@ -1,0 +1,70 @@
+# Default values for azure-k8s-metrics-adapter.
+# This is a YAML-formatted file.
+# Declare variables to be passed into your templates.
+
+replicaCount: 1
+
+image:
+  repository: jsturtevant/azure-k8-metrics-adapter-amd64
+  tag: latest
+  pullPolicy: Always
+
+rbac:
+  # Specifies whether RBAC resources should be created
+  create: true
+
+serviceAccount:
+  # Specifies whether a ServiceAccount should be created
+  create: true
+  # The name of the ServiceAccount to use.
+  # If not set and create is true, a name is generated using the fullname template
+  name:
+
+adapterSecurePort: 6443
+
+service:
+  type: ClusterIP
+  port: 443
+
+# Azure Configuration
+## Common authentication configuration values
+azureTenantId: ""
+azureClientId: ""
+
+## Azure Active Directory Application with Password
+azureClientSecret: ""
+
+## Azure Active Directory Application with Certificate
+azureClientCertificate: ""
+azureClientCertificatePath: ""
+azureClientCertificatePassword: ""
+
+# Override the subscription if outside of Azure or for full control with `SUBSCRIPTION_ID`
+# See https://github.com/jsturtevant/azure-k8-metrics-adapter#subscription-information
+defaultSubscriptionId: ""
+
+extraEnv: {}
+extraArgs: {}
+
+# This is used by the static manifest generator in order to create a static
+# namespace manifest for the namespace that cert-manager is being installed
+# within. It should **not** be used if you are using Helm for deployment.
+createNamespaceResource: false
+
+resources: {}
+  # We usually recommend not to specify default resources and to leave this as a conscious
+  # choice for the user. This also increases chances charts run on environments with little
+  # resources, such as Minikube. If you do want to specify resources, uncomment the following
+  # lines, adjust them as necessary, and remove the curly braces after 'resources:'.
+  # limits:
+  #  cpu: 100m
+  #  memory: 128Mi
+  # requests:
+  #  cpu: 100m
+  #  memory: 128Mi
+
+nodeSelector: {}
+
+tolerations: []
+
+affinity: {}
