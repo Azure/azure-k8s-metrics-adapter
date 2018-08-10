@@ -22,8 +22,8 @@ To do development you will need:
 ### Get the source
 
 ```bash
-go get github.com/jsturtevant/azure-k8-metrics-adapter
-cd $GOPATH/github.com/jsturtevant/azure-k8-metrics-adapter
+go get github.com/Azure/azure-k8s-metrics-adapter
+cd $GOPATH/github.com/Azure/azure-k8s-metrics-adapter
 ```
 
 ### Building the project

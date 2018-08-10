@@ -2,8 +2,8 @@ package provider
 
 import (
 	"github.com/golang/glog"
-	"github.com/jsturtevant/azure-k8-metrics-adapter/pkg/aim"
-	"github.com/jsturtevant/azure-k8-metrics-adapter/pkg/az-metric-client"
+	"github.com/Azure/azure-k8s-metrics-adapter/pkg/aim"
+	"github.com/Azure/azure-k8s-metrics-adapter/pkg/az-metric-client"
 	"k8s.io/apimachinery/pkg/api/errors"
 	apimeta "k8s.io/apimachinery/pkg/api/meta"
 	"k8s.io/apimachinery/pkg/labels"

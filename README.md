@@ -1,5 +1,5 @@
 [![CircleCI](https://circleci.com/gh/Azure/azure-k8s-metrics-adapter/tree/master.svg?style=svg)](https://circleci.com/gh/Azure/azure-k8s-metrics-adapter/tree/master)
-[![GitHub (pre-)release](https://img.shields.io/github/release/jsturtevant/azure-k8-metrics-adapter/all.svg)](https://github.com/jsturtevant/azure-k8-metrics-adapter/releases)
+[![GitHub (pre-)release](https://img.shields.io/github/release/Azure/azure-k8s-metrics-adapter/all.svg)](https://github.com/Azure/azure-k8s-metrics-adapter/releases)
 
 # Azure Kubernetes Metrics Adapter
 
@@ -20,7 +20,7 @@ Check out this [walkthrough](samples/servicebus-queue/readme.md) to try it out.
 Requires some [set up on your AKS Cluster](#azure-setup) and [Metric Server deployed](https://github.com/kubernetes-incubator/metrics-server#deployment) to your cluster.
 
 ```
-kubectl apply -f https://raw.githubusercontent.com/jsturtevant/azure-k8-metrics-adapter/master/deploy/adapter.yaml
+kubectl apply -f https://raw.githubusercontent.com/Azure/azure-k8s-metrics-adapter/master/deploy/adapter.yaml
 ```
 
 After deployment you can create an Horizontal Pod Auto Scaler (HPA) to scale of your [external metric](#external-metrics) of choice:
@@ -169,10 +169,10 @@ The use the adapter your Azure Subscription must be provided.  There are a few w
 See [Contributing](CONTRIBUTING.md) for more information.
 
 ## Issues
-Report any issues in the [Github issues](https://github.com/jsturtevant/azure-k8-metrics-adapter/issues).  
+Report any issues in the [Github issues](https://github.com/Azure/azure-k8s-metrics-adapter/issues).  
 
 ## Roadmap
-See the Projects tab for [current roadmap](https://github.com/jsturtevant/azure-k8-metrics-adapter/projects).
+See the Projects tab for [current roadmap](https://github.com/Azure/azure-k8s-metrics-adapter/projects).
 
 ## Reporting Security Issues
 

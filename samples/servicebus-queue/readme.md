@@ -27,8 +27,8 @@ Prerequisites:
 Get this repository and cd to this folder (on your GOPATH):
 
 ```
-go get -u github.com/jsturtevant/azure-k8-metrics-adapter
-cd $GOPATH/src/github.com/jsturtevant/azure-k8-metrics-adapter/samples/servicebus-queue/
+go get -u github.com/Azure/azure-k8s-metrics-adapter
+cd $GOPATH/src/github.com/Azure/azure-k8s-metrics-adapter/samples/servicebus-queue/
 ```
 
 ## Setup Service Bus
@@ -54,7 +54,7 @@ export SERVICEBUS_CONNECTION_STRING="$(az servicebus queue authorization-rule ke
 ## Setup AKS Cluster
 
 ### Enable Managed Service Identity (MSI)
-Run the scripts provided to [enable MSI](https://github.com/jsturtevant/azure-k8-metrics-adapter#azure-setup) with the following environment variables for giving the MSI access to the Service Bus Namespace Insights provider.
+Run the scripts provided to [enable MSI](https://github.com/Azure/azure-k8s-metrics-adapter#azure-setup) with the following environment variables for giving the MSI access to the Service Bus Namespace Insights provider.
 
 ```
 export ACCESS_RG=sb-external-example
@@ -125,10 +125,10 @@ received message:  the answer is 42
 Deploy the adapter:
 
 ```
-kubectl apply -f https://raw.githubusercontent.com/jsturtevant/azure-k8-metrics-adapter/master/deploy/adapter.yaml
+kubectl apply -f https://raw.githubusercontent.com/Azure/azure-k8s-metrics-adapter/master/deploy/adapter.yaml
 ```
 
-Check you can hit the external metric endpoint.  The resources will be empty as it [is not implemented yet](https://github.com/jsturtevant/azure-k8-metrics-adapter/issues/3) but you should receive a result.
+Check you can hit the external metric endpoint.  The resources will be empty as it [is not implemented yet](https://github.com/Azure/azure-k8s-metrics-adapter/issues/3) but you should receive a result.
 
 ```
 kubectl get --raw "/apis/external.metrics.k8s.io/v1beta1" | jq .
@@ -222,7 +222,7 @@ Once you are done with this experiment you can delete kubernetes deployments and
 ```
 kubectl delete -f deploy/hpa.yaml
 kubectl delete -f deploy/consumer-deployment.yaml
-kubectl detele -f https://raw.githubusercontent.com/jsturtevant/azure-k8-metrics-adapter/master/deploy/adapter.yaml
+kubectl detele -f https://raw.githubusercontent.com/Azure/azure-k8s-metrics-adapter/master/deploy/adapter.yaml
 
 az group delete -n sb-external-example
 ```

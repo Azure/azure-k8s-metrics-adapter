@@ -27,8 +27,8 @@ import (
 	"k8s.io/client-go/rest"
 	"k8s.io/client-go/tools/clientcmd"
 
-	"github.com/jsturtevant/azure-k8-metrics-adapter/pkg/az-metric-client"
-	"github.com/jsturtevant/azure-k8-metrics-adapter/pkg/provider"
+	"github.com/Azure/azure-k8s-metrics-adapter/pkg/az-metric-client"
+	"github.com/Azure/azure-k8s-metrics-adapter/pkg/provider"
 
 	"github.com/kubernetes-incubator/custom-metrics-apiserver/pkg/cmd/server"
 	"github.com/kubernetes-incubator/custom-metrics-apiserver/pkg/dynamicmapper"

@@ -11,7 +11,7 @@ GOIMAGE=golang:1.10
 
 all: build
 build-local: vendor
-	CGO_ENABLED=0 GOARCH=$(ARCH) go build -a -tags netgo -o $(OUT_DIR)/$(ARCH)/adapter github.com/jsturtevant/azure-k8-metrics-adapter
+	CGO_ENABLED=0 GOARCH=$(ARCH) go build -a -tags netgo -o $(OUT_DIR)/$(ARCH)/adapter github.com/Azure/azure-k8s-metrics-adapter
 
 build:
 	docker build -t $(REGISTRY)/$(IMAGE)-$(ARCH):$(VERSION) .
