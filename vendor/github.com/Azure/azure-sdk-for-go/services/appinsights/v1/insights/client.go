@@ -1,7 +1,7 @@
-// Package servicebus implements the Azure ARM Servicebus service API version 2017-04-01.
+// Package insights implements the Azure ARM Insights service API version v1.
 //
-// Azure Service Bus client
-package servicebus
+// Composite Swagger for Application Insights Data Client
+package insights
 
 // Copyright (c) Microsoft and contributors.  All rights reserved.
 //
@@ -25,27 +25,25 @@ import (
 )
 
 const (
-	// DefaultBaseURI is the default URI used for the service Servicebus
-	DefaultBaseURI = "https://management.azure.com"
+	// DefaultBaseURI is the default URI used for the service Insights
+	DefaultBaseURI = "https://api.applicationinsights.io/v1"
 )
 
-// BaseClient is the base client for Servicebus.
+// BaseClient is the base client for Insights.
 type BaseClient struct {
 	autorest.Client
-	BaseURI        string
-	SubscriptionID string
+	BaseURI string
 }
 
 // New creates an instance of the BaseClient client.
-func New(subscriptionID string) BaseClient {
-	return NewWithBaseURI(DefaultBaseURI, subscriptionID)
+func New() BaseClient {
+	return NewWithBaseURI(DefaultBaseURI)
 }
 
 // NewWithBaseURI creates an instance of the BaseClient client.
-func NewWithBaseURI(baseURI string, subscriptionID string) BaseClient {
+func NewWithBaseURI(baseURI string) BaseClient {
 	return BaseClient{
-		Client:         autorest.NewClientWithUserAgent(UserAgent()),
-		BaseURI:        baseURI,
-		SubscriptionID: subscriptionID,
+		Client:  autorest.NewClientWithUserAgent(UserAgent()),
+		BaseURI: baseURI,
 	}
 }
