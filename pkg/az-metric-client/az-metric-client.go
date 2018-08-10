@@ -10,20 +10,23 @@ import (
 
 	"k8s.io/apimachinery/pkg/selection"
 
-	"github.com/golang/glog"
 	"github.com/Azure/azure-k8s-metrics-adapter/pkg/aim"
+	"github.com/golang/glog"
 	"k8s.io/apimachinery/pkg/api/resource"
 	metav1 "k8s.io/apimachinery/pkg/apis/meta/v1"
 	"k8s.io/apimachinery/pkg/labels"
+	"k8s.io/apimachinery/pkg/runtime/schema"
 	"k8s.io/metrics/pkg/apis/external_metrics"
 
+	appinsights "github.com/Azure/azure-sdk-for-go/services/appinsights/v1/insights"
 	"github.com/Azure/azure-sdk-for-go/services/preview/monitor/mgmt/2018-03-01/insights"
 	"github.com/Azure/go-autorest/autorest/azure/auth"
 )
 
 // AzureMetricClient is used to make requests to Azure Monitor
 type AzureMetricClient struct {
-	client                insights.MetricsClient
+	monitorClient         insights.MetricsClient
+	appinsightsclient     appinsights.MetricsClient
 	defaultSubscriptionID string
 }
 
@@ -32,14 +35,17 @@ func NewAzureMetricClient() AzureMetricClient {
 	defaultSubscriptionID := getDefaultSubscriptionID()
 
 	// looks for ENV variables then falls back to AIM issue #10
-	metricsClient := insights.NewMetricsClient(defaultSubscriptionID)
+	monitorClient := insights.NewMetricsClient(defaultSubscriptionID)
+	appInsightsClient := appinsights.NewMetricsClient()
 	authorizer, err := auth.NewAuthorizerFromEnvironment()
 	if err == nil {
-		metricsClient.Authorizer = authorizer
+		monitorClient.Authorizer = authorizer
+		//appInsightsClient.Authorizer = authorizer
 	}
 
 	return AzureMetricClient{
-		client:                metricsClient,
+		monitorClient:         monitorClient,
+		appinsightsclient:     appInsightsClient,
 		defaultSubscriptionID: defaultSubscriptionID,
 	}
 }
@@ -57,8 +63,8 @@ func (c AzureMetricClient) GetAzureMetric(metricSelector labels.Selector) (exter
 	glog.V(2).Infof("metric name : %s", azMetricRequest.metricName)
 
 	// make call to azure resource provider with subscription id provided issue #9
-	c.client.SubscriptionID = azMetricRequest.subscriptionID
-	metricResult, err := c.client.List(context.Background(), metricResourceURI,
+	c.monitorClient.SubscriptionID = azMetricRequest.subscriptionID
+	metricResult, err := c.monitorClient.List(context.Background(), metricResourceURI,
 		azMetricRequest.timespan, nil,
 		azMetricRequest.metricName, azMetricRequest.aggregation, nil,
 		"", azMetricRequest.filter, "", "")
@@ -74,6 +80,11 @@ func (c AzureMetricClient) GetAzureMetric(metricSelector labels.Selector) (exter
 		Value:      *resource.NewQuantity(int64(total), resource.DecimalSI),
 		Timestamp:  metav1.Now(),
 	}, nil
+}
+
+func (c AzureMetricClient) GetCustomMetric(groupResource schema.GroupResource, namespace string, selector labels.Selector, metricName string) (int64, error) {
+
+	return 100, nil
 }
 
 func extractValue(metricResult insights.Response) float64 {

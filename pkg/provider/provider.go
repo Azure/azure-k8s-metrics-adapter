@@ -1,12 +1,17 @@
 package provider
 
 import (
-	"github.com/golang/glog"
+	"time"
+
 	"github.com/Azure/azure-k8s-metrics-adapter/pkg/aim"
 	"github.com/Azure/azure-k8s-metrics-adapter/pkg/az-metric-client"
+	"github.com/golang/glog"
 	"k8s.io/apimachinery/pkg/api/errors"
 	apimeta "k8s.io/apimachinery/pkg/api/meta"
+	"k8s.io/apimachinery/pkg/api/resource"
+	metav1 "k8s.io/apimachinery/pkg/apis/meta/v1"
 	"k8s.io/apimachinery/pkg/labels"
+	"k8s.io/apimachinery/pkg/runtime"
 	"k8s.io/apimachinery/pkg/runtime/schema"
 	"k8s.io/client-go/dynamic"
 	"k8s.io/metrics/pkg/apis/custom_metrics"
@@ -49,7 +54,7 @@ func (p *AzureProvider) GetRootScopedMetricBySelector(groupResource schema.Group
 
 // GetNamespacedMetricByName fetches a particular metric for a particular namespaced object (such as pod, deployment)
 func (p *AzureProvider) GetNamespacedMetricByName(groupResource schema.GroupResource, namespace string, name string, metricName string) (*custom_metrics.MetricValue, error) {
-	glog.V(0).Infof("Received request for custom metric: groupresource: %s, namespace: %s, resource name: %s, metric name: %s", groupResource.String(), namespace, name, metricName)
+	glog.V(0).Infof("Received request for custom metric: groupresource: %s, namespace: %s, name: %s, metric name: %s", groupResource.String(), namespace, name, metricName)
 
 	return nil, errors.NewServiceUnavailable("not implemented yet")
 }
@@ -57,9 +62,43 @@ func (p *AzureProvider) GetNamespacedMetricByName(groupResource schema.GroupReso
 // GetNamespacedMetricBySelector fetches a particular metric for a set of namespaced objects (such as pod, deployment)
 // matching the given label selector.
 func (p *AzureProvider) GetNamespacedMetricBySelector(groupResource schema.GroupResource, namespace string, selector labels.Selector, metricName string) (*custom_metrics.MetricValueList, error) {
-	glog.V(0).Infof("Received request for custom metric: groupresource: %s, namespace: %s, resource name: %s, metric name: %s, selectors: %s", groupResource.String(), namespace, metricName, selector.String())
+	glog.V(0).Infof("Received request for custom metric: groupresource: %s, namespace: %s, metric name: %s, selectors: %s", groupResource.String(), namespace, metricName, selector.String())
 
-	return nil, errors.NewServiceUnavailable("not implemented yet")
+	_, selectable := selector.Requirements()
+	if !selectable {
+		return nil, errors.NewBadRequest("label is set to not selectable. this should not happen")
+	}
+
+	val, err := p.azMetricClient.GetCustomMetric(groupResource, namespace, selector, metricName)
+	if err != nil {
+		glog.Errorf("bad request: %v", err)
+		return nil, errors.NewBadRequest(err.Error())
+	}
+
+	// TODO what does version do?
+	kind, err := p.mapper.KindFor(groupResource.WithVersion(""))
+	if err != nil {
+		return nil, errors.NewBadRequest(err.Error())
+	}
+
+	metricValue := custom_metrics.MetricValue{
+		DescribedObject: custom_metrics.ObjectReference{
+			APIVersion: groupResource.Group + "/" + runtime.APIVersionInternal,
+			Kind:       kind.Kind,
+			Name:       metricName,
+			Namespace:  namespace,
+		},
+		MetricName: metricName,
+		Timestamp:  metav1.Time{time.Now()},
+		Value:      *resource.NewQuantity(val, resource.DecimalSI), //TODO what's the difference between quantity and milliqauntity?
+	}
+
+	metricList := make([]custom_metrics.MetricValue, 0)
+	metricList = append(metricList, metricValue)
+
+	return &custom_metrics.MetricValueList{
+		Items: metricList,
+	}, nil
 }
 
 // ListAllMetrics provides a list of all available metrics at

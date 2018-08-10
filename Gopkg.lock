@@ -10,8 +10,8 @@
 [[projects]]
   name = "github.com/Azure/azure-sdk-for-go"
   packages = [
+    "services/appinsights/v1/insights",
     "services/preview/monitor/mgmt/2018-03-01/insights",
-    "services/servicebus/mgmt/2017-04-01/servicebus",
     "version"
   ]
   revision = "520918e6c8e8e1064154f51d13e02fad92b287b8"
@@ -827,6 +827,6 @@
 [solve-meta]
   analyzer-name = "dep"
   analyzer-version = 1
-  inputs-digest = "b7d8b176fb7742c939c7c85aa54718987ae6e7691c22a61be11ec2de9adf158e"
+  inputs-digest = "a9121bc8255f4ae0a2c8ea8732dc14d7fa670b403b6db9cc7ac3e831356b7db3"
   solver-name = "gps-cdcl"
   solver-version = 1
