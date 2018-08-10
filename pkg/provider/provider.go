@@ -30,31 +30,42 @@ func NewAzureProvider(client dynamic.Interface, mapper apimeta.RESTMapper, azMet
 	}
 }
 
-/* Custom metric interface methods */
-// not implemented
+/* Custom metric interface methods
+see https://github.com/kubernetes/community/blob/master/contributors/design-proposals/instrumentation/custom-metrics-api.md#api-paths
+*/
+
+// GetRootScopedMetricByName fetches a particular metric for a particular root-scoped object (such as Node, PersistentVolume)
 func (p *AzureProvider) GetRootScopedMetricByName(groupResource schema.GroupResource, name string, metricName string) (*custom_metrics.MetricValue, error) {
 	//not implemented yet
 	return nil, errors.NewServiceUnavailable("not implemented yet")
 }
 
-// not implemented
+// GetRootScopedMetricBySelector fetches a particular metric for a set of root-scoped objects (such as Node, PersistentVolume)
+// matching the given label selector.
 func (p *AzureProvider) GetRootScopedMetricBySelector(groupResource schema.GroupResource, selector labels.Selector, metricName string) (*custom_metrics.MetricValueList, error) {
 	// not implemented yet
 	return nil, errors.NewServiceUnavailable("not implemented yet")
 }
 
-// not implemented
+// GetNamespacedMetricByName fetches a particular metric for a particular namespaced object (such as pod, deployment)
 func (p *AzureProvider) GetNamespacedMetricByName(groupResource schema.GroupResource, namespace string, name string, metricName string) (*custom_metrics.MetricValue, error) {
-	// not implemented yet
+	glog.V(0).Infof("Received request for custom metric: groupresource: %s, namespace: %s, resource name: %s, metric name: %s", groupResource.String(), namespace, name, metricName)
+
 	return nil, errors.NewServiceUnavailable("not implemented yet")
 }
 
-// not implemented
+// GetNamespacedMetricBySelector fetches a particular metric for a set of namespaced objects (such as pod, deployment)
+// matching the given label selector.
 func (p *AzureProvider) GetNamespacedMetricBySelector(groupResource schema.GroupResource, namespace string, selector labels.Selector, metricName string) (*custom_metrics.MetricValueList, error) {
-	// not implemented yet
+	glog.V(0).Infof("Received request for custom metric: groupresource: %s, namespace: %s, resource name: %s, metric name: %s, selectors: %s", groupResource.String(), namespace, metricName, selector.String())
+
 	return nil, errors.NewServiceUnavailable("not implemented yet")
 }
 
+// ListAllMetrics provides a list of all available metrics at
+// the current time.  Note that this is not allowed to return
+// an error, so it is reccomended that implementors cache and
+// periodically update this list, instead of querying every time.
 func (p *AzureProvider) ListAllMetrics() []provider.CustomMetricInfo {
 	// not implemented yet
 	return []provider.CustomMetricInfo{}
@@ -88,6 +99,7 @@ func (p *AzureProvider) GetExternalMetric(namespace string, metricName string, m
 	}, nil
 }
 
+// ListAllExternalMetrics calls out to azure and builds a list of metrics that can be queried against
 func (p *AzureProvider) ListAllExternalMetrics() []provider.ExternalMetricInfo {
 	externalMetricsInfo := []provider.ExternalMetricInfo{}
 

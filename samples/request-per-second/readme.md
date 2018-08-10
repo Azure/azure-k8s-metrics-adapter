@@ -49,6 +49,11 @@ curl http://$RPS_ENDPOINT
 
 ## Deploy the HPA
 
+Deploy the HPA:
+
+```bash
+kubectl apply -f deploy/hpa.yaml
+```
 
 
 ## Put it under load
@@ -61,4 +66,6 @@ hey -n 10000 -q 5 -c 5
 ```
 
 ##  The Raw query
+Can use for debugging: https://dev.applicationinsights.io/apiexplorer/metrics
+
 GET /v1/apps/<yourkey>/metrics/performanceCounters/requestsPerSecond?timespan=PT5M&interval=PT1M HTTP/1.1
