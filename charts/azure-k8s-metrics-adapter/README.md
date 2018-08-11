@@ -25,6 +25,7 @@ helm delete my-release
 | `image.repository` | Image repository | `jsturtevant/azure-k8-metrics-adapter-amd64` |
 | `image.tag` | Image tag | `latest` |
 | `image.pullPolicy` | Image pull policy | `Always` |
+| `logLevel` | Log level for V logs | `2` |
 | `replicaCount`  | Number of azure-k8s-metrics-adapter replicas  | `1` |
 | `adapterSecurePort` | Port on which the adapter is listening | `6443` |
 | `apiServiceInsecureSkipTLSVerify` | Disables TLS certificate verification when communicating with the apiService | `true` |

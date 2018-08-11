@@ -9,6 +9,8 @@ image:
   tag: latest
   pullPolicy: Always
 
+logLevel: 2
+
 rbac:
   # Specifies whether RBAC resources should be created
   create: true
