@@ -5,7 +5,8 @@ This is an example on using custom metric from Application insights to scale a d
 
 - [Requests per Second Custom Metric Scaling](#requests-per-second-custom-metric-scaling)
     - [Create Application Insights](#create-application-insights)
-    - [Get your key](#get-your-key)
+    - [Get your instrumentation key](#get-your-instrumentation-key)
+    - [Get your appid and api key](#get-your-appid-and-api-key)
     - [Build the nodejs application](#build-the-nodejs-application)
     - [Deploy your app](#deploy-your-app)
     - [Deploy the HPA](#deploy-the-hpa)
@@ -16,9 +17,35 @@ This is an example on using custom metric from Application insights to scale a d
 
 https://docs.microsoft.com/en-us/azure/application-insights/app-insights-nodejs-quick-start#enable-application-insights
 
-## Get your key
+## Get your instrumentation key
 
 https://docs.microsoft.com/en-us/azure/application-insights/app-insights-nodejs-quick-start#configure-app-insights-sdk
+
+## Get your appid and api key
+Get your key:
+
+https://dev.applicationinsights.io/documentation/Authorization/API-key-and-App-ID
+
+Add the following to your adapter deployment manifest:
+
+```
+- name: APP_INSIGHTS_APP_ID
+valueFrom:
+    secretKeyRef:
+    name: app-insights-api
+    key: app-insights-app-id
+- name: APP_INSIGHTS_KEY
+valueFrom:
+    secretKeyRef:
+    name: app-insights-api
+    key: app-insights-key
+```
+
+Create a secret for the adapter to use:
+
+```
+kubectl create secret generic app-insights-api -n custom-metrics --from-literal=app-insights-app-id=<appid> --from-literal=app-insights-key=<key> 
+```
 
 ## Build the nodejs application
 
