@@ -4,14 +4,13 @@ import (
 	"context"
 	"errors"
 	"fmt"
-	"net/http"
-	"net/http/httputil"
 	"os"
 	"strings"
 	"time"
 
 	"k8s.io/apimachinery/pkg/selection"
 
+	"github.com/Azure/azure-k8s-metrics-adapter/pkg/aiapiclient"
 	"github.com/Azure/azure-k8s-metrics-adapter/pkg/aim"
 	"github.com/golang/glog"
 	"k8s.io/apimachinery/pkg/api/resource"
@@ -20,16 +19,14 @@ import (
 	"k8s.io/apimachinery/pkg/runtime/schema"
 	"k8s.io/metrics/pkg/apis/external_metrics"
 
-	appinsights "github.com/Azure/azure-sdk-for-go/services/appinsights/v1/insights"
 	"github.com/Azure/azure-sdk-for-go/services/preview/monitor/mgmt/2018-03-01/insights"
-	"github.com/Azure/go-autorest/autorest"
 	"github.com/Azure/go-autorest/autorest/azure/auth"
 )
 
 // AzureMetricClient is used to make requests to Azure Monitor
 type AzureMetricClient struct {
 	monitorClient         insights.MetricsClient
-	appinsightsclient     appinsights.MetricsClient
+	appinsightsclient     aiapiclient.AiAPIClient
 	defaultSubscriptionID string
 }
 
@@ -39,11 +36,10 @@ func NewAzureMetricClient() AzureMetricClient {
 
 	// looks for ENV variables then falls back to AIM issue #10
 	monitorClient := insights.NewMetricsClient(defaultSubscriptionID)
-	appInsightsClient := appinsights.NewMetricsClient()
+	appInsightsClient := aiapiclient.NewAiAPIClient()
 	authorizer, err := auth.NewAuthorizerFromEnvironment()
 	if err == nil {
 		monitorClient.Authorizer = authorizer
-		appInsightsClient.Authorizer = authorizer
 	}
 
 	return AzureMetricClient{
@@ -85,60 +81,14 @@ func (c AzureMetricClient) GetAzureMetric(metricSelector labels.Selector) (exter
 	}, nil
 }
 
-func LogRequest() autorest.PrepareDecorator {
-	return func(p autorest.Preparer) autorest.Preparer {
-		return autorest.PreparerFunc(func(r *http.Request) (*http.Request, error) {
-			r, err := p.Prepare(r)
-			if err != nil {
-
-				glog.V(2).Infof("error", err)
-			}
-			dump, _ := httputil.DumpRequestOut(r, true)
-			glog.V(2).Infof("request ", string(dump))
-			return r, err
-		})
-	}
-}
-
 func (c AzureMetricClient) GetCustomMetric(groupResource schema.GroupResource, namespace string, selector labels.Selector, metricName string) (int64, error) {
 
-	var applicationId string
-
-	requirements, _ := selector.Requirements()
-	for _, request := range requirements {
-		if request.Operator() != selection.Equals {
-			return 0, errors.New("selector type not supported. only equals is supported at this time")
-		}
-
-		value := request.Values().List()[0]
-
-		switch request.Key() {
-		case "applicationId":
-			glog.V(2).Infof("applicationId: %s", value)
-			applicationId = value
-		default:
-			continue
-		}
-	}
-
-	metricid := appinsights.MetricID("performanceCounters/requestsPerSecond")
-	interval := "PT1M"
-	aggList := make([]appinsights.MetricsAggregation, 0)
-	aggList = append(aggList, appinsights.MetricsAggregation("avg"))
-
-	c.appinsightsclient.RequestInspector = LogRequest()
-	result, err := c.appinsightsclient.Get(context.Background(), applicationId, metricid, "PT5M", &interval, aggList, nil, nil, "", "")
+	result, err := c.appinsightsclient.GetMetric("performanceCounters/requestsPerSecond", "avg")
 	if err != nil {
 		return 0, err
 	}
 
-	segments := *(result.Value.Segments)
-	value := segments[len(segments)-1].AdditionalProperties["performanceCounters/requestsPerSecond"]
-
-	glog.V(2).Infof("perf/rps", value)
-	v := value.(map[string]int64)
-
-	return v["avg"], nil
+	return *result, nil
 }
 
 func extractValue(metricResult insights.Response) float64 {
