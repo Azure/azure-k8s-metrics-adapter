@@ -11,3 +11,8 @@ az role assignment create --role "Monitoring Reader" --assignee-object-id <objec
 # use output from create-for-rbac to create secret
 kubectl create secret generic adapter-service-principal -n custom-metrics --from-literal=azure-tenant-id=<tenantid> --from-literal=azure-client-id=<azure-client-id>  --from-literal=azure-client-secret=<azure-client-secret>
 ```
+
+## Application Insights Permissions
+https://docs.microsoft.com/en-us/azure/application-insights/app-insights-resources-roles-access-control
+
+https://stackoverflow.com/questions/42978366/authenticate-on-application-insights-rest-api-with-aad?rq=1
