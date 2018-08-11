@@ -26,7 +26,10 @@ helm delete my-release
 | `image.tag` | Image tag | `latest` |
 | `image.pullPolicy` | Image pull policy | `Always` |
 | `replicaCount`  | Number of azure-k8s-metrics-adapter replicas  | `1` |
-| `adapterSecurePort` | Port on which the adapter is listenting | `6443` |
+| `adapterSecurePort` | Port on which the adapter is listening | `6443` |
+| `apiServiceInsecureSkipTLSVerify` | Disables TLS certificate verification when communicating with the apiService | `true` |
+| `apiServiceGroupPriorityMinimum` | The priority the APIService group should have at least | `100` |
+| `apiServiceVersionPriority` | Controls the ordering of this API version inside of its group | `100` |
 | `azureTenantId` | Specifies the Tenant to which to authenticate | `''`
 | `azureClientId` | Specifies the app client ID to use | `''`
 | `azureClientSecret` | Specifies the app secret to use | `''`

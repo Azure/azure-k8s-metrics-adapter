@@ -22,6 +22,10 @@ serviceAccount:
 
 adapterSecurePort: 6443
 
+apiServiceInsecureSkipTLSVerify: true
+apiServiceGroupPriorityMinimum: 100
+apiServiceVersionPriority: 100
+
 service:
   type: ClusterIP
   port: 443
