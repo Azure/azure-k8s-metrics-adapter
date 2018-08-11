@@ -28,7 +28,7 @@ spec:
             - /adapter
             - --secure-port={{ .Values.adapterSecurePort }}
             - --logtostderr=true
-            - --v=2
+            - --v={{ .Values.logLevel }}
             {{- range $key, $value := .Values.extraArgs }}
             - --{{ $key }}{{ if $value }}={{ $value }}{{ end }}
             {{- end }}
