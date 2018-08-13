@@ -83,12 +83,30 @@ func (c AzureMetricClient) GetAzureMetric(metricSelector labels.Selector) (exter
 
 func (c AzureMetricClient) GetCustomMetric(groupResource schema.GroupResource, namespace string, selector labels.Selector, metricName string) (int64, error) {
 
-	result, err := c.appinsightsclient.GetMetric("performanceCounters/requestsPerSecond", "avg")
+	metricRequestInfo := aiapiclient.NewMetricRequest("performanceCounters/requestsPerSecond")
+
+	// get the last 5 mins and chunking into 30 seconds
+	// this seems to be the best way to get the closest average rate at time of request
+	// any smaller time intervals and the values come back null
+	metricRequestInfo.Timespan = "PT5M"
+	metricRequestInfo.Interval = "PT30S"
+	metricRequestInfo.Aggregation = "avg"
+
+	result, err := c.appinsightsclient.GetMetric(metricRequestInfo)
 	if err != nil {
 		return 0, err
 	}
 
-	return *result, nil
+	segments := result.Value.Segments
+	if len(segments) <= 0 {
+		return 0, nil
+	}
+
+	// grab just the last value which will be the latest value of the metric
+	metric := segments[len(segments)-1].MetricValues[metricRequestInfo.MetricName]
+	value := metric[metricRequestInfo.Aggregation].(float64)
+
+	return int64(value), nil
 }
 
 func extractValue(metricResult insights.Response) float64 {
