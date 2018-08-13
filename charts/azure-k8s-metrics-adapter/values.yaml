@@ -33,17 +33,16 @@ service:
   port: 443
 
 # Azure Configuration
-## Common authentication configuration values
-azureTenantId: ""
-azureClientId: ""
 
-## Azure Active Directory Application with Password
-azureClientSecret: ""
-
-## Azure Active Directory Application with Certificate
-azureClientCertificate: ""
-azureClientCertificatePath: ""
-azureClientCertificatePassword: ""
+azureAuthentication:
+  # method: {msi,clientSecret,clientCertificate}
+  method: msi
+  tenantID: ""
+  clientID: ""
+  clientSecret: ""
+  clientCertificate: ""
+  clientCertificatePath: ""
+  clientCertificatePassword: ""
 
 # Override the subscription if outside of Azure or for full control with `SUBSCRIPTION_ID`
 # See https://github.com/jsturtevant/azure-k8-metrics-adapter#subscription-information
