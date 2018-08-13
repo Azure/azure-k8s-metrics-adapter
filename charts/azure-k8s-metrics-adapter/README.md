@@ -31,12 +31,13 @@ helm delete my-release
 | `apiServiceInsecureSkipTLSVerify` | Disables TLS certificate verification when communicating with the apiService | `true` |
 | `apiServiceGroupPriorityMinimum` | The priority the APIService group should have at least | `100` |
 | `apiServiceVersionPriority` | Controls the ordering of this API version inside of its group | `100` |
-| `azureTenantId` | Specifies the Tenant to which to authenticate | `''`
-| `azureClientId` | Specifies the app client ID to use | `''`
-| `azureClientSecret` | Specifies the app secret to use | `''`
-| `azureClientCertificate` | Specifies the contents of the certificate to use | `''`
-| `azureClientCertificatePath` | Specifies the certificate Path to use | `''`
-| `azureClientCertificatePassword` | Specifies the certificate password to use | `''`
+| `azureAuthentication.method` | Which method to use when authenticating with the Azure Resource Monitory service. Valid options are `msi`, `clientSecret`, and `clientCertificate` | `msi` |
+| `azureAuthentication.clientID` | The Azure Active Directory Application client ID to use if using the authentication method `clientSecret` or `clientCertificate` | `''` |
+| `azureAuthentication.tenantID` | Specifies the Tenant to which to authenticate if using the authentication method `clientSecret` or `clientCertificate | `''` |
+| `azureAuthentication.clientSecret` | Specifies the app secret to use if using the authentication method `clientSecret` | `''` |
+| `azureAuthentication.clientCertificate` | Specifies the contents of the certificate if using the authentication method `clientCertificate`  | `''` |
+| `azureAuthentication.clientCertificatePath` | Specifies certificate Path to use if using the authentication method `clientCertificate`  | `''` |
+| `azureAuthentication.azureClientCertificatePassword` | Specifies the certificate password to use  if using the authentication method `clientCertificate`  | `''` |
 | `defaultSubscriptionId` | Specifies the subscription to use instead of using Azure Instance Metadata  | `''` |
 | `extraArgs` | Optional flags for azure-k8s-metrics-adapter | `{}` |
 | `extraEnv` | Optional environment variables for azure-k8s-metrics-adapter | `{}` |
