@@ -37,28 +37,26 @@ spec:
               containerPort: {{ .Values.adapterSecurePort }}
               protocol: TCP
           env:
-          {{- if .Values.azureTenantId }}
+          {{- if not (eq "msi" .Values.azureAuthentication.method) }}
             - name: AZURE_TENANT_ID
               valueFrom:
                 secretKeyRef:
                   name: {{ template "azure-k8s-metrics-adapter.fullname" . }}
                   key: azure-tenant-id
-          {{- end }}
-           {{- if .Values.azureClientId }}
             - name: AZURE_CLIENT_ID
               valueFrom:
                 secretKeyRef:
                   name: {{ template "azure-k8s-metrics-adapter.fullname" . }}
                   key: azure-client-id
           {{- end }}
-          {{- if .Values.azureClientSecret }}
+          {{- if eq "clientSecret" .Values.azureAuthentication.method }}
             - name: AZURE_CLIENT_SECRET
               valueFrom:
                 secretKeyRef:
                   name: {{ template "azure-k8s-metrics-adapter.fullname" . }}
                   key: azure-client-secret
           {{- end }}
-          {{- if .Values.azureClientCertificate }}
+          {{- if eq "clientCertificate" .Values.azureAuthentication.method }}
             - name: AZURE_CERTIFICATE_PATH
               value: {{ .Values.azureClientCertificatePath }}
             - name: AZURE_CERTIFICATE_PASSWORD
@@ -81,7 +79,7 @@ spec:
           volumeMounts:
             - mountPath: /tmp
               name: temp-vol
-            {{- if .Values.azureClientCertificate }}
+            {{- if eq "clientCertificate" .Values.azureAuthentication.method }}
             - mountPath: {{ .Values.azureClientCertificatePath }}
               name: azure-client-certificate  
             {{- end }}
@@ -102,7 +100,7 @@ spec:
       volumes:
         - name: temp-vol
           emptyDir: {}
-        {{- if .Values.azureClientCertificate }}
+        {{- if eq "clientCertificate" .Values.azureAuthentication.method }}
         - name: azure-client-certificate
           secret:
             secretName: {{ template "azure-k8s-metrics-adapter.fullname" . }}
