@@ -49,18 +49,18 @@ helm delete my-release
 | `affinity` | Node affinity for pod assignment | `{}` |
 | `tolerations` | Node tolerations for pod assignment | `[]` |
 
-### Authenticating with an Azure AD Application ID and Secret
+## Authentication to Azure Montior
 
-To authenticate with an Azure AD Application ID and Secret set the following configuration values
-- `azureTenantId`
-- `azureClientId`
-- `azureClientSecret`
+This project offers 3 methods for authenticating to the Azure Monitor API: [MSI](https://github.com/Azure/azure-k8s-metrics-adapter#using-azure-managed-service-identity-msi), Azure AD Application with Client Secret, and Azure AD Application with Client Certificate. By default this chart will use MSI authentication.
 
-### Authenticating with an Azure AD Application ID and X.509 Certificate
-
-To authenticate with an Azure AD Application ID and X.509 Certificate set the following configuration values
-- `azureTenantId`
-- `azureClientId`
-- `azureClientCertificate`
-- `azureClientCertificatePath`
-- `azureClientCertificatePassword`
+Optionally the `azureAuthentication.method` value can be specified and either Azure AD Application with Client Secret or Azure AD Application with Client Certificate can be set using the following values for `azureAuthentication.method`
+- `clientSecret` for Azure AD Application with Client Secre. These additional values must be set to use the client certificate
+    - `azureAuthentication.clientID`
+    - `azureAuthentication.tenantID`
+    - `azureAuthentication.clientSecret`
+- `clientCertificate` Azure AD Application with Client Certificate. These additional values must be set to use the client certificate
+    - `azureAuthentication.clientID`
+    - `azureAuthentication.tenantID`
+    - `azureAuthentication.clientCertificate`
+    - `azureAuthentication.clientCertificatePath`
+    - `azureAuthentication.clientCertificatePassword`
