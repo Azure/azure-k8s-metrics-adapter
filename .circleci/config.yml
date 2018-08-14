@@ -11,7 +11,7 @@ jobs:
       - checkout
       - setup_remote_docker
       - run: |  
-          echo 'export VERSION="$(if [ -z ${CIRCLE_TAG} ]; then echo "beta"; else echo "$CIRCLE_TAG"; fi)+$CIRCLE_BUILD_NUM"' >> $BASH_ENV
+          echo 'export VERSION="$(if [ -z ${CIRCLE_TAG} ]; then echo "beta"; else echo "$CIRCLE_TAG"; fi)-$CIRCLE_BUILD_NUM"' >> $BASH_ENV
       - run: |
           make build
       - run:
@@ -38,7 +38,7 @@ jobs:
     steps:
       - setup_remote_docker
       - run: |  
-          echo 'export VERSION="$(if [ -z ${CIRCLE_TAG} ]; then echo "beta"; else echo "$CIRCLE_TAG"; fi)+$CIRCLE_BUILD_NUM"' >> $BASH_ENV
+          echo 'export VERSION="$(if [ -z ${CIRCLE_TAG} ]; then echo "beta"; else echo "$CIRCLE_TAG"; fi)-$CIRCLE_BUILD_NUM"' >> $BASH_ENV
       - restore_cache:
           keys:
             - v1-{{ .Branch }}
