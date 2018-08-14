@@ -21,7 +21,7 @@ jobs:
       - save_cache:
           key: v1-{{ .Branch }}-{{ epoch }}
           paths:
-            - /caches/app.tar
+            - app.tar
   build_pr:
     docker:
       - image: circleci/golang:1.10.3
@@ -44,7 +44,7 @@ jobs:
       - run:
           name: Push it 
           command: |
-            docker load < /caches/app.tar
+            docker load < app.tar
             make push
       
 workflows:

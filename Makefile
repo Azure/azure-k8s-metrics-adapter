@@ -8,7 +8,9 @@ SEMVER=minor
 VERSION?=latest
 GOIMAGE=golang:1.10
 
-.PHONY: all build test verify build-container
+BRANCH=$(shell git rev-parse --abbrev-ref HEAD)
+
+.PHONY: all build test verify build-container version save
 
 all: build
 build-local: vendor
@@ -18,11 +20,16 @@ build:
 	docker build -t $(REGISTRY)/$(IMAGE)-$(ARCH):$(VERSION) .
 
 save:
-	docker save -o /caches/app.tar $(REGISTRY)/$(IMAGE)-$(ARCH):$(VERSION)
+	docker save -o app.tar $(REGISTRY)/$(IMAGE)-$(ARCH):$(VERSION)
 
-version:
+version:	
+ifeq ("$(BRANCH)", "master")
+	@echo "versioning on master"
 	go get -u github.com/Clever/gitsem
 	gitsem $(SEMVER)
+else
+	@echo "must be on clean master branch"
+endif	
 	
 push:
 	@docker login -u $(DOCKER_USER) -p '$(DOCKER_PASS)'    
