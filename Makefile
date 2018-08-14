@@ -21,7 +21,7 @@ save:
 
 version:
 	go get -u github.com/Clever/gitsem
-	gitsem patch
+	gitsem minor
 	
 push:
 	@docker login -u $(DOCKER_USER) -p '$(DOCKER_PASS)'    
