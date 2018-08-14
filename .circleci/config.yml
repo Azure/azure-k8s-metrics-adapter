@@ -33,6 +33,7 @@ jobs:
       - image: circleci/golang:1.10.3
     working_directory: /go/src/github.com/Azure/azure-k8s-metrics-adapter
     steps:
+      - checkout
       - setup_remote_docker
       - run: |  
           echo 'export VERSION="$(if [ -z ${CIRCLE_TAG} ]; then echo "beta"; else echo "$CIRCLE_TAG"; fi)-$CIRCLE_BUILD_NUM"' >> $BASH_ENV
