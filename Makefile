@@ -16,6 +16,13 @@ build-local: vendor
 build:
 	docker build -t $(REGISTRY)/$(IMAGE)-$(ARCH):$(VERSION) .
 
+save:
+	docker save -o /caches/app.tar $(REGISTRY)/$(IMAGE)-$(ARCH):$(VERSION)
+
+version:
+	go get -u github.com/Clever/gitsem
+	gitsem patch tag=true
+	
 push:
 	@docker login -u $(DOCKER_USER) -p '$(DOCKER_PASS)'    
 	docker push $(REGISTRY)/$(IMAGE)-$(ARCH):$(VERSION)
