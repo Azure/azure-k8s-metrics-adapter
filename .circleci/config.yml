@@ -12,12 +12,10 @@ jobs:
       - setup_remote_docker
       - run: |  
           echo 'export VERSION="$(if [ -z ${CIRCLE_TAG} ]; then echo "beta"; else echo "$CIRCLE_TAG"; fi)-$CIRCLE_BUILD_NUM"' >> $BASH_ENV
-      - run: |
-          make build
+      - run: make build
       - run:
           name: Save Docker image layer cache
-          command: |
-            make save
+          command: make save
       - save_cache:
           key: v1-{{ .Branch }}-{{ epoch }}
           paths:
@@ -29,8 +27,7 @@ jobs:
     steps:
       - checkout
       - setup_remote_docker
-      - run: |
-          make build
+      - run: make build
   deploy:
     docker:
       - image: circleci/golang:1.10.3
@@ -42,12 +39,8 @@ jobs:
       - restore_cache:
           keys:
             - v1-{{ .Branch }}
-      - run:
-          name: Push it 
-          command: |
-            docker load < app.tar
-            make push
-      
+      - run: docker load < app.tar
+      - run: make push
 workflows:
   version: 2
   build_master:
