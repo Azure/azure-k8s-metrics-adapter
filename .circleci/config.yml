@@ -11,11 +11,19 @@ jobs:
       - checkout
       - setup_remote_docker
       - run: |  
-          echo 'export VERSION="0.3.0-alpha.$CIRCLE_BUILD_NUM"' >> $BASH_ENV
+          GIT_TAG=$(shell git describe --tags --abbrev=0 --exact-match 2>/dev/null || echo beta)
+          echo 'export VERSION="$GIT_TAG.$CIRCLE_BUILD_NUM"' >> $BASH_ENV
       - run: |
           make build
-      - run: |
-          make push
+      - run:
+          name: Save Docker image layer cache
+          command: |
+            mkdir -p /caches
+            make save
+      - save_cache:
+          key: v1-{{ .Branch }}-{{ epoch }}
+          paths:
+            - /caches/app.tar
   build_pr:
     docker:
       - image: circleci/golang:1.10.3
@@ -25,6 +33,23 @@ jobs:
       - setup_remote_docker
       - run: |
           make build
+  deploy:
+    docker:
+      - image: circleci/golang:1.10.3
+    steps:
+      - setup_remote_docker
+      - run: |  
+          GIT_TAG=$(shell git describe --tags --abbrev=0 --exact-match 2>/dev/null || echo beta)
+          echo 'export VERSION="$GIT_TAG.$CIRCLE_BUILD_NUM"' >> $BASH_ENV
+      - restore_cache:
+          keys:
+            - v1-{{ .Branch }}
+      - run:
+          name: Push it 
+          command: |
+            docker load < /caches/app.tar
+            make push
+      
 workflows:
   version: 2
   build_master:
@@ -33,6 +58,16 @@ workflows:
           filters:
             branches:
               only: master
+            tags:
+              only: /.*/
+      - deploy:
+          requires:
+            - build
+          filters:
+            tags:
+              only: /^v.*/
+            branches:
+              ignore: /.*/
   build_pr:
     jobs:
       - build_pr:
