@@ -69,7 +69,7 @@ make dev
 ## Releasing
 
 1. Switch to the `master` branch and run `make version`.  
-2. then run `git push --tags`
+2. then run `git push --follow-tags`
 3. Everything is automated after the `git push`.  `make version` will bump the version and tag the commit.  The Circle CI will recognize the tagged master branch and push to the repository.
 
 > note: you must be on the master branch and it must be clean. By default `make version` bumps the minor semantic version.  You can override it with either `make version SEMVER=major` or `make version SEMVER=patch`  
