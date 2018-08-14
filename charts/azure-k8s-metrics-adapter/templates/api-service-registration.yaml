@@ -4,7 +4,7 @@ metadata:
   name: v1beta1.custom.metrics.k8s.io
 spec:
   service:
-    name: {{ template "azure-k8s-metrics-adapter.name" . }}
+    name: {{ template "azure-k8s-metrics-adapter.fullname" . }}
     namespace: {{ .Release.Namespace }}
   group: custom.metrics.k8s.io
   version: v1beta1
@@ -18,7 +18,7 @@ metadata:
   name: v1beta1.external.metrics.k8s.io
 spec:
   service:
-    name: {{ template "azure-k8s-metrics-adapter.name" . }}
+    name: {{ template "azure-k8s-metrics-adapter.fullname" . }}
     namespace: {{ .Release.Namespace }}
   group: external.metrics.k8s.io
   version: v1beta1
