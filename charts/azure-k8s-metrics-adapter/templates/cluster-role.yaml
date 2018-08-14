@@ -18,10 +18,32 @@ rules:
   verbs:
   - get
   - list
+---
+apiVersion: rbac.authorization.k8s.io/v1
+kind: ClusterRole
+metadata:
+  name: {{ template "azure-k8s-metrics-adapter.fullname" . }}:custom-metrics-reader
+  labels:
+    app: {{ template "azure-k8s-metrics-adapter.name" . }}
+    chart: {{ template "azure-k8s-metrics-adapter.chart" . }}
+    release: {{ .Release.Name }}
+    heritage: {{ .Release.Service }}
+rules:
 - apiGroups:
   - custom.metrics.k8s.io
   resources: ["*"]
   verbs: ["get", "list"]
+---
+apiVersion: rbac.authorization.k8s.io/v1
+kind: ClusterRole
+metadata:
+  name: {{ template "azure-k8s-metrics-adapter.fullname" . }}:external-metrics-reader
+  labels:
+    app: {{ template "azure-k8s-metrics-adapter.name" . }}
+    chart: {{ template "azure-k8s-metrics-adapter.chart" . }}
+    release: {{ .Release.Name }}
+    heritage: {{ .Release.Service }}
+rules:
 - apiGroups:
   - "external.metrics.k8s.io"
   resources:

@@ -35,4 +35,40 @@ subjects:
   - name: {{ template "azure-k8s-metrics-adapter.serviceAccountName" . }}
     namespace: {{ .Release.Namespace | quote }}
     kind: ServiceAccount
+---
+apiVersion: rbac.authorization.k8s.io/v1beta1
+kind: ClusterRoleBinding
+metadata:
+  name: {{ template "azure-k8s-metrics-adapter.fullname" . }}:hpa-external-metrics-reader
+  labels:
+    app: {{ template "azure-k8s-metrics-adapter.name" . }}
+    chart: {{ template "azure-k8s-metrics-adapter.chart" . }}
+    release: {{ .Release.Name }}
+    heritage: {{ .Release.Service }}
+roleRef:
+  apiGroup: rbac.authorization.k8s.io
+  kind: ClusterRole
+  name: {{ template "azure-k8s-metrics-adapter.fullname" . }}:external-metrics-reader
+subjects:
+  - kind: ServiceAccount
+    name: horizontal-pod-autoscaler
+    namespace: kube-system
+---
+apiVersion: rbac.authorization.k8s.io/v1beta1
+kind: ClusterRoleBinding
+metadata:
+  name: {{ template "azure-k8s-metrics-adapter.fullname" . }}:hpa-custom-metrics-reader
+  labels:
+    app: {{ template "azure-k8s-metrics-adapter.name" . }}
+    chart: {{ template "azure-k8s-metrics-adapter.chart" . }}
+    release: {{ .Release.Name }}
+    heritage: {{ .Release.Service }}
+roleRef:
+  apiGroup: rbac.authorization.k8s.io
+  kind: ClusterRole
+  name: {{ template "azure-k8s-metrics-adapter.fullname" . }}:custom-metrics-reader
+subjects:
+  - kind: ServiceAccount
+    name: horizontal-pod-autoscaler
+    namespace: kube-system
 {{- end }}
