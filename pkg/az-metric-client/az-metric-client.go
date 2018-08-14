@@ -81,9 +81,12 @@ func (c AzureMetricClient) GetAzureMetric(metricSelector labels.Selector) (exter
 	}, nil
 }
 
+// GetCustomMetric calls to Application Insights to retrieve the value of the metric requested
 func (c AzureMetricClient) GetCustomMetric(groupResource schema.GroupResource, namespace string, selector labels.Selector, metricName string) (int64, error) {
-
-	metricRequestInfo := aiapiclient.NewMetricRequest("performanceCounters/requestsPerSecond")
+	// because metrics names are multipart in AI and we can not pass an extra /
+	// through k8s api we convert - to / to get around that
+	convertedMetricName := strings.Replace(metricName, "-", "/", -1)
+	metricRequestInfo := aiapiclient.NewMetricRequest(convertedMetricName)
 
 	// get the last 5 mins and chunking into 30 seconds
 	// this seems to be the best way to get the closest average rate at time of request

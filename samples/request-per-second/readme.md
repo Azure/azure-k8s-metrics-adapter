@@ -1,8 +1,6 @@
 # Requests per Second Custom Metric Scaling
 This is an example on using custom metric from Application insights to scale a deployment.
 
-> note: this is currently a work in progress
-
 - [Requests per Second Custom Metric Scaling](#requests-per-second-custom-metric-scaling)
     - [Walkthrough](#walkthrough)
     - [Configure Application Insights](#configure-application-insights)
