@@ -3,6 +3,7 @@ IMAGE?=azure-k8-metrics-adapter
 TEMP_DIR:=$(shell mktemp -d)
 ARCH?=amd64
 OUT_DIR?=./_output
+SEMVER=minor
 
 VERSION?=latest
 GOIMAGE=golang:1.10
@@ -21,7 +22,7 @@ save:
 
 version:
 	go get -u github.com/Clever/gitsem
-	gitsem minor
+	gitsem $(SEMVER)
 	
 push:
 	@docker login -u $(DOCKER_USER) -p '$(DOCKER_PASS)'    
