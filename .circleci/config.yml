@@ -11,7 +11,7 @@ jobs:
       - checkout
       - setup_remote_docker
       - run: |  
-          echo 'export VERSION="$(if [ -z ${CIRCLE_TAG} ]; then echo "beta"; else echo "$CIRCLE_TAG"; fi)-$CIRCLE_BUILD_NUM"' >> $BASH_ENV
+          echo 'export VERSION="$CIRCLE_WORKFLOW_ID"' >> $BASH_ENV
       - run: make build
       - run:
           name: Save Docker image layer cache
@@ -41,6 +41,8 @@ jobs:
           keys:
             - v1-{{ .Branch }}
       - run: docker load < app.tar
+      - run: |
+          docker tag jsturtevant/azure-k8s-metrics-adapter-amd64:$CIRCLE_WORKFLOW_ID jsturtevant/azure-k8s-metrics-adapter-amd64:$VERSION
       - run: make push
 workflows:
   version: 2
