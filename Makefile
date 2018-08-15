@@ -1,5 +1,5 @@
 REGISTRY?=jsturtevant
-IMAGE?=azure-k8-metrics-adapter
+IMAGE?=azure-k8s-metrics-adapter
 TEMP_DIR:=$(shell mktemp -d)
 ARCH?=amd64
 OUT_DIR?=./_output

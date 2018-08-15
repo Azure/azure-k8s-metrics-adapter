@@ -21,7 +21,7 @@ spec:
       serviceAccountName: custom-metrics-azure-apiserver
       containers:
       - name: custom-metrics-azure-apiserver
-        image: jsturtevant/azure-k8-metrics-adapter-amd64
+        image: jsturtevant/azure-k8s-metrics-adapter-amd64
         args:
         - /adapter
         - --secure-port=6443

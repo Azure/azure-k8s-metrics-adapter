@@ -37,7 +37,7 @@ To build the docker image use:
 
 ```bash
 export REGISTRY=<your registry name>
-export IMAGE=azure-k8-metrics-adapter-testimage
+export IMAGE=azure-k8s-metrics-adapter-testimage
 make build
 ```
 
