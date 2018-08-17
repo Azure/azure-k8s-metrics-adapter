@@ -40,33 +40,16 @@ First thing to do is create an [application insights instance](https://docs.micr
 After the application instance is created [get your instrumentation key](https://docs.microsoft.com/en-us/azure/application-insights/app-insights-nodejs-quick-start#configure-app-insights-sdk.
 
 ### Get your appid and api key
-Get your [appid and key](https://dev.applicationinsights.io/documentation/Authorization/API-key-and-App-ID).
-
-Once you have your appid and api key you can download and add the following environment variables to the [adapter deployment](~/deploy/adapter.yaml) manifest:
-
-```yaml
-- name: APP_INSIGHTS_APP_ID
-valueFrom:
-    secretKeyRef:
-    name: app-insights-api
-    key: app-insights-app-id
-- name: APP_INSIGHTS_KEY
-valueFrom:
-    secretKeyRef:
-    name: app-insights-api
-    key: app-insights-key
-```
-
-The create a secret for the adapter to use:
+Get your [appid and key](https://dev.applicationinsights.io/documentation/Authorization/API-key-and-App-ID). Then create a secret for the adapter to use:
 
 ```
 kubectl create secret generic app-insights-api -n custom-metrics --from-literal=app-insights-app-id=<appid> --from-literal=app-insights-key=<key> 
 ```
 
-And deploy the modified adapter.yaml:
+Deploy the modified [adapter.yaml](https://gist.github.com/jsturtevant/966371df82be922e14438bcbc81f1f65) that uses the secret just created:
 
 ```bash
-kubectl apply -f <path-to-modified-adpater>/adapter.yaml
+kubectl apply -f https://gist.githubusercontent.com/jsturtevant/966371df82be922e14438bcbc81f1f65/raw/2ca706bcc18d20af5956c66400df69c3bb83c002/deploy.yaml
 ```
 
 ## Deploy the app that will be scaled
