@@ -5,8 +5,8 @@
 replicaCount: 1
 
 image:
-  repository: jsturtevant/azure-k8-metrics-adapter-amd64
-  tag: latest
+  repository: jsturtevant/azure-k8s-metrics-adapter-amd64
+  tag: v0.3.8-90
   pullPolicy: Always
 
 logLevel: 2
