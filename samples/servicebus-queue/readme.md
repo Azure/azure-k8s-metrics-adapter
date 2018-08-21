@@ -46,7 +46,7 @@ Create an auth rules for queue:
 az servicebus queue authorization-rule create --resource-group sb-external-example --namespace-name sb-external-ns --queue-name externalq  --name demorule --rights Listen Manage Send
 
 #save for connection string for later
-export SERVICEBUS_CONNECTION_STRING="$(az servicebus queue authorization-rule keys list --resource-group sb-external-example --namespace-name sb-external-ns --name demorule  --queue-name externalq | jq -r .primaryConnectionString)"
+export SERVICEBUS_CONNECTION_STRING="$(az servicebus queue authorization-rule keys list --resource-group sb-external-example --namespace-name sb-external-ns --name demorule  --queue-name externalq -o json | jq -r .primaryConnectionString)"
 ```
 
 > note: this gives full access to the queue for ease of use of demo.  You should create more fine grained control for each component of your app.  For example the consumer app should only have `Listen` rights and the producer app should only have `Send` rights.
@@ -80,7 +80,7 @@ Run the producer to create a few queue items, then hit `ctl-c` after a few messa
 Check the queue has values:
 
 ```
-az servicebus queue show --resource-group sb-external-example --namespace-name sb-external-ns --name externalq | jq .messageCount
+az servicebus queue show --resource-group sb-external-example --namespace-name sb-external-ns --name externalq -o json | jq .messageCount
 ```
 
 ### Configure Secret for consumer pod
@@ -172,7 +172,7 @@ Put some load on the queue. Note this will add 20,000 message then exit.
 Now check your queue is loaded:
 
 ```
-az servicebus queue show --resource-group sb-external-example --namespace-name sb-external-ns --name externalq | jq .messageCount
+az servicebus queue show --resource-group sb-external-example --namespace-name sb-external-ns --name externalq -o json | jq .messageCount
 
 // should have a good 19,000 or more
 19,858
