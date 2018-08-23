@@ -154,10 +154,25 @@ done <<< "$VMS"
 #### Using Azure AD Application ID and Secret
 See how to create an [example deployment](samples/azure-authentication).
 
+Create a service principal scoped to the resource group the resource you monitoring and assign  `Monitoring Reader` to it:
+
+```
+az ad sp create-for-rbac -n "adapter-sp" --role "Monitoring Reader" --scopes /subscriptions/{SubID}/resourceGroups/{ResourceGroup1}
+```
+
 Required environment variables:
 - `AZURE_TENANT_ID`: Specifies the Tenant to which to authenticate.
 - `AZURE_CLIENT_ID`: Specifies the app client ID to use.
 - `AZURE_CLIENT_SECRET`: Specifies the app secret to use.
+
+Deploy the environment variables via secret: 
+
+```
+ kubectl create secret generic adapter-service-principal -n custom-metrics \
+  --from-literal=azure-tenant-id=<tenantid> \
+  --from-literal=azure-client-id=<clientid>  \
+  --from-literal=azure-client-secret=<secret>
+ ```
     
 #### Azure AD Application ID and X.509 Certificate
 Required environment variables:

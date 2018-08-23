@@ -6,7 +6,7 @@ This is an example of how to scale using Service Bus Queue as an external metric
     - [Walkthrough](#walkthrough)
     - [Setup Service Bus](#setup-service-bus)
     - [Setup AKS Cluster](#setup-aks-cluster)
-        - [Enable Managed Service Identity (MSI)](#enable-managed-service-identity-msi)
+        - [Enable Access to Azure Resources](#enable-access-to-azure-resources)
         - [Start the producer](#start-the-producer)
         - [Configure Secret for consumer pod](#configure-secret-for-consumer-pod)
         - [Deploy Consumer](#deploy-consumer)
@@ -53,8 +53,8 @@ export SERVICEBUS_CONNECTION_STRING="$(az servicebus queue authorization-rule ke
 
 ## Setup AKS Cluster
 
-### Enable Managed Service Identity (MSI)
-Run the scripts provided to [enable MSI](https://github.com/Azure/azure-k8s-metrics-adapter#azure-setup) with the following environment variables for giving the MSI access to the Service Bus Namespace Insights provider.
+### Enable Access to Azure Resources
+Run the scripts provided to either [enable MSI](https://github.com/Azure/azure-k8s-metrics-adapter#azure-setup) or [configure a Service Principal](https://github.com/Azure/azure-k8s-metrics-adapter/blob/master/README.md#using-azure-ad-application-id-and-secret) with the following environment variables for giving the access to the Service Bus Namespace Insights provider.
 
 ```
 export ACCESS_RG=sb-external-example
@@ -127,6 +127,8 @@ Deploy the adapter:
 ```
 kubectl apply -f https://raw.githubusercontent.com/Azure/azure-k8s-metrics-adapter/master/deploy/adapter.yaml
 ```
+
+> note if you used a Service Principal you will need the deployment with a service principal configured and a secret deployed with the service principal values `kubectl apply -f https://gist.githubusercontent.com/jsturtevant/3e30d57c2ecc3d09bbac5b4131f27907/raw/374bdd238f3b829c0f15f0030d197609e5a01cf5/deploy.yaml`
 
 Check you can hit the external metric endpoint.  The resources will be empty as it [is not implemented yet](https://github.com/Azure/azure-k8s-metrics-adapter/issues/3) but you should receive a result.
 
