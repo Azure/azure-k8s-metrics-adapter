@@ -1,6 +1,6 @@
 REGISTRY?=csemcr.azurecr.io
-REGISTRY_PATH?=test
-IMAGE?=azure-k8s-metrics-adapter
+REGISTRY_PATH?=test/k8s/metrics
+IMAGE?=adapter
 TEMP_DIR:=$(shell mktemp -d)
 ARCH?=amd64
 OUT_DIR?=./_output
@@ -11,9 +11,9 @@ VERSION?=latest
 GOIMAGE=golang:1.10
 
 ifeq ("$(REGISTRY_PATH)", "")
-	FULL_IMAGE=$(REGISTRY)/$(IMAGE)-$(ARCH)
+	FULL_IMAGE=$(REGISTRY)/$(IMAGE)
 else
-	FULL_IMAGE=$(REGISTRY)/$(REGISTRY_PATH)/$(IMAGE)-$(ARCH)
+	FULL_IMAGE=$(REGISTRY)/$(REGISTRY_PATH)/$(IMAGE)
 endif	
 
 BRANCH=$(shell git rev-parse --abbrev-ref HEAD)
