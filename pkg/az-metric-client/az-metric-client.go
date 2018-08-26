@@ -113,6 +113,10 @@ func (c AzureMetricClient) GetCustomMetric(groupResource schema.GroupResource, n
 
 func normalizeValue(value interface{}) float64 {
 	switch t := value.(type) {
+	case int32:
+		return float64(value.(int32))
+	case float32:
+		return float64(value.(float32))
 	case float64:
 		return value.(float64)
 	case int64:
