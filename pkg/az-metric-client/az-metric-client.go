@@ -56,10 +56,7 @@ func (c AzureMetricClient) GetAzureMetric(metricSelector labels.Selector) (exter
 		return external_metrics.ExternalMetricValue{}, err
 	}
 	metricResourceURI := azMetricRequest.metricResourceURI()
-
 	glog.V(2).Infof("resource uri: %s", metricResourceURI)
-	glog.V(2).Infof("filter: %s", azMetricRequest.filter)
-	glog.V(2).Infof("metric name : %s", azMetricRequest.metricName)
 
 	// make call to azure resource provider with subscription id provided issue #9
 	c.monitorClient.SubscriptionID = azMetricRequest.subscriptionID
@@ -72,6 +69,8 @@ func (c AzureMetricClient) GetAzureMetric(metricSelector labels.Selector) (exter
 	}
 
 	total := extractValue(metricResult)
+
+	glog.V(2).Infof("found metric value: %s", total)
 
 	// TODO set Value based on aggregations type
 	return external_metrics.ExternalMetricValue{
