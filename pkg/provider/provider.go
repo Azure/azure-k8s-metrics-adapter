@@ -90,7 +90,7 @@ func (p *AzureProvider) GetNamespacedMetricBySelector(groupResource schema.Group
 		},
 		MetricName: metricName,
 		Timestamp:  metav1.Time{time.Now()},
-		Value:      *resource.NewQuantity(val, resource.DecimalSI), //TODO what's the difference between quantity and milliqauntity?
+		Value:      *resource.NewMilliQuantity(int64(val*1000), resource.DecimalSI),
 	}
 
 	metricList := make([]custom_metrics.MetricValue, 0)
