@@ -107,8 +107,10 @@ func (c AzureMetricClient) GetCustomMetric(groupResource schema.GroupResource, n
 	// grab just the last value which will be the latest value of the metric
 	metric := segments[len(segments)-1].MetricValues[metricRequestInfo.MetricName]
 	value := metric[metricRequestInfo.Aggregation]
+	normalizedValue := normalizeValue(value)
 
-	return normalizeValue(value), nil
+	glog.V(2).Infof("found metric value: %s", normalizedValue)
+	return normalizedValue, nil
 }
 
 func normalizeValue(value interface{}) float64 {
