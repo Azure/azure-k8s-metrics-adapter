@@ -2,7 +2,7 @@ apiVersion: skaffold/v1alpha2
 kind: Config
 build:
   artifacts:
-  - imageName: jsturtevant/azure-k8s-metrics-adapter-amd64
+  - imageName: azure-k8s-metrics-adapter
 deploy:
   kubectl:
     manifests:
