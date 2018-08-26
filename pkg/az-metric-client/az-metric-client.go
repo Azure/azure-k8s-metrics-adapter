@@ -81,7 +81,7 @@ func (c AzureMetricClient) GetAzureMetric(metricSelector labels.Selector) (exter
 }
 
 // GetCustomMetric calls to Application Insights to retrieve the value of the metric requested
-func (c AzureMetricClient) GetCustomMetric(groupResource schema.GroupResource, namespace string, selector labels.Selector, metricName string) (int64, error) {
+func (c AzureMetricClient) GetCustomMetric(groupResource schema.GroupResource, namespace string, selector labels.Selector, metricName string) (float64, error) {
 	// because metrics names are multipart in AI and we can not pass an extra /
 	// through k8s api we convert - to / to get around that
 	convertedMetricName := strings.Replace(metricName, "-", "/", -1)
@@ -106,9 +106,21 @@ func (c AzureMetricClient) GetCustomMetric(groupResource schema.GroupResource, n
 
 	// grab just the last value which will be the latest value of the metric
 	metric := segments[len(segments)-1].MetricValues[metricRequestInfo.MetricName]
-	value := metric[metricRequestInfo.Aggregation].(float64)
+	value := metric[metricRequestInfo.Aggregation]
 
-	return int64(value), nil
+	return normalizeValue(value), nil
+}
+
+func normalizeValue(value interface{}) float64 {
+	switch t := value.(type) {
+	case float64:
+		return value.(float64)
+	case int64:
+		return float64(value.(int64))
+	default:
+		glog.V(0).Infof("unexpected type: %T", t)
+		return 0
+	}
 }
 
 func extractValue(metricResult insights.Response) float64 {
