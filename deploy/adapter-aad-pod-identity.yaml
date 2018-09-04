@@ -46,7 +46,7 @@ kind: Deployment
 metadata:
   labels:
     app: custom-metrics-azure-apiserver
-    aadpodidbinding: k8s-custom-metrics-identity-binding
+    aadpodidbinding: custom-metrics-identity
   name: custom-metrics-azure-apiserver
   namespace: custom-metrics
 spec:
@@ -58,7 +58,7 @@ spec:
     metadata:
       labels:
         app: custom-metrics-azure-apiserver
-        aadpodidbinding: k8s-custom-metrics-identity-binding
+        aadpodidbinding: custom-metrics-identity
       name: custom-metrics-azure-apiserver
     spec:
       serviceAccountName: custom-metrics-azure-apiserver

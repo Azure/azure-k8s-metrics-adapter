@@ -167,19 +167,21 @@ Using this project requires to deploy a bit of infrastructure first. You can do 
 Once the aad-pod-identity infrastructure is running, you need to create an Azure identity scoped to the resource group you are monitoring:
 
 ```bash
-az identity create -g {ResourceGroup1} -n k8s-custom-metrics-identity
+az identity create -g {ResourceGroup1} -n custom-metrics-identity
 ```
 
 Assign `Monitoring Reader` to it
 
 ```bash
-az role assignment create --role "Monitoring Reader" --assignee <principalId> --scopes /subscriptions/{SubID}/resourceGroups/{ResourceGroup1}
+az role assignment create --role "Monitoring Reader" --assignee <principalId> --scope /subscriptions/{SubID}/resourceGroups/{ResourceGroup1}
 ```
+
+> Note: you need to assign this role to all resources groups that you want the identity to be able to read Azure Monitor data.
 
 As documented [here](https://github.com/Azure/aad-pod-identity#providing-required-permissions-for-mic) *aad-pod-identity* uses the service principal of  your Kubernetes cluster to access the Azure resources. You need to give this service principal the rights to use the managed identity created before:
 
 ```bash
-az role assignment create --role "Managed Identity Operator" --assignee <servicePrincipalId> --scope /subscriptions/{SubID}/resourceGroups/{ResourceGroup1}/providers/Microsoft.ManagedIdentity/userAssignedIdentities/k8s-custom-metrics-identity
+az role assignment create --role "Managed Identity Operator" --assignee <servicePrincipalId> --scope /subscriptions/{SubID}/resourceGroups/{ResourceGroup1}/providers/Microsoft.ManagedIdentity/userAssignedIdentities/custom-metrics-identity
 ```
 
 Install the Azure Identity to your Kubernetes cluster:
@@ -188,11 +190,10 @@ Install the Azure Identity to your Kubernetes cluster:
 apiVersion: "aadpodidentity.k8s.io/v1"
 kind: AzureIdentity
 metadata:
-  name: k8s-custom-metrics-identity
-  namespace: custom-metrics
+  name: custom-metrics-identity
 spec:
   type: 0
-  ResourceID: /subscriptions/{SubID}/resourceGroups/{ResourceGroup1}/providers/Microsoft.ManagedIdentity/userAssignedIdentities/k8s-custom-metrics-identity
+  ResourceID: /subscriptions/{SubID}/resourceGroups/{ResourceGroup1}/providers/Microsoft.ManagedIdentity/userAssignedIdentities/custom-metrics-identity
   ClientID: <clientid>
 ```
 
@@ -202,11 +203,13 @@ Install the Azure Identity Binding on your Kubernetes cluster:
 apiVersion: "aadpodidentity.k8s.io/v1"
 kind: AzureIdentityBinding
 metadata:
-  name: k8s-custom-metrics-identity-binding
+  name: custom-metrics-identity-binding
 spec:
-  AzureIdentity: k8s-custom-metrics-identity
-  Selector: k8s-custom-metrics-identity
+  AzureIdentity: custom-metrics-identity
+  Selector: custom-metrics-identity
 ```
+
+> Note: pay attention to the name of the selector above. You will need to use it to bind the identity to your pod.
 
 #### Using Azure AD Application ID and Secret
 
