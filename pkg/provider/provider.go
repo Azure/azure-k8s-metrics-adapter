@@ -12,7 +12,7 @@ import (
 	metav1 "k8s.io/apimachinery/pkg/apis/meta/v1"
 	"k8s.io/apimachinery/pkg/labels"
 	"k8s.io/apimachinery/pkg/runtime"
-	"k8s.io/apimachinery/pkg/runtime/schema"
+	"k8s.io/apimachinery/pkg/types"
 	"k8s.io/client-go/dynamic"
 	"k8s.io/metrics/pkg/apis/custom_metrics"
 
@@ -39,56 +39,43 @@ func NewAzureProvider(client dynamic.Interface, mapper apimeta.RESTMapper, azMet
 see https://github.com/kubernetes/community/blob/master/contributors/design-proposals/instrumentation/custom-metrics-api.md#api-paths
 */
 
-// GetRootScopedMetricByName fetches a particular metric for a particular root-scoped object (such as Node, PersistentVolume)
-func (p *AzureProvider) GetRootScopedMetricByName(groupResource schema.GroupResource, name string, metricName string) (*custom_metrics.MetricValue, error) {
-	//not implemented yet
-	return nil, errors.NewServiceUnavailable("not implemented yet")
-}
-
-// GetRootScopedMetricBySelector fetches a particular metric for a set of root-scoped objects (such as Node, PersistentVolume)
-// matching the given label selector.
-func (p *AzureProvider) GetRootScopedMetricBySelector(groupResource schema.GroupResource, selector labels.Selector, metricName string) (*custom_metrics.MetricValueList, error) {
+// GetMetricByName fetches a particular metric for a particular object.
+// The namespace will be empty if the metric is root-scoped.
+func (p *AzureProvider) GetMetricByName(name types.NamespacedName, info provider.CustomMetricInfo) (*custom_metrics.MetricValue, error) {
 	// not implemented yet
 	return nil, errors.NewServiceUnavailable("not implemented yet")
 }
 
-// GetNamespacedMetricByName fetches a particular metric for a particular namespaced object (such as pod, deployment)
-func (p *AzureProvider) GetNamespacedMetricByName(groupResource schema.GroupResource, namespace string, name string, metricName string) (*custom_metrics.MetricValue, error) {
-	glog.V(0).Infof("Received request for custom metric: groupresource: %s, namespace: %s, name: %s, metric name: %s", groupResource.String(), namespace, name, metricName)
-
-	return nil, errors.NewServiceUnavailable("not implemented yet")
-}
-
-// GetNamespacedMetricBySelector fetches a particular metric for a set of namespaced objects (such as pod, deployment)
-// matching the given label selector.
-func (p *AzureProvider) GetNamespacedMetricBySelector(groupResource schema.GroupResource, namespace string, selector labels.Selector, metricName string) (*custom_metrics.MetricValueList, error) {
-	glog.V(0).Infof("Received request for custom metric: groupresource: %s, namespace: %s, metric name: %s, selectors: %s", groupResource.String(), namespace, metricName, selector.String())
+// GetMetricBySelector fetches a particular metric for a set of objects matching
+// the given label selector.  The namespace will be empty if the metric is root-scoped.
+func (p *AzureProvider) GetMetricBySelector(namespace string, selector labels.Selector, info provider.CustomMetricInfo) (*custom_metrics.MetricValueList, error) {
+	glog.V(0).Infof("Received request for custom metric: groupresource: %s, namespace: %s, metric name: %s, selectors: %s", info.GroupResource.String(), namespace, info.Metric, selector.String())
 
 	_, selectable := selector.Requirements()
 	if !selectable {
 		return nil, errors.NewBadRequest("label is set to not selectable. this should not happen")
 	}
 
-	val, err := p.azMetricClient.GetCustomMetric(groupResource, namespace, selector, metricName)
+	val, err := p.azMetricClient.GetCustomMetric(info.GroupResource, namespace, selector, info.Metric)
 	if err != nil {
 		glog.Errorf("bad request: %v", err)
 		return nil, errors.NewBadRequest(err.Error())
 	}
 
 	// TODO what does version do?
-	kind, err := p.mapper.KindFor(groupResource.WithVersion(""))
+	kind, err := p.mapper.KindFor(info.GroupResource.WithVersion(""))
 	if err != nil {
 		return nil, errors.NewBadRequest(err.Error())
 	}
 
 	metricValue := custom_metrics.MetricValue{
 		DescribedObject: custom_metrics.ObjectReference{
-			APIVersion: groupResource.Group + "/" + runtime.APIVersionInternal,
+			APIVersion: info.GroupResource.Group + "/" + runtime.APIVersionInternal,
 			Kind:       kind.Kind,
-			Name:       metricName,
+			Name:       info.Metric,
 			Namespace:  namespace,
 		},
-		MetricName: metricName,
+		MetricName: info.Metric,
 		Timestamp:  metav1.Time{time.Now()},
 		Value:      *resource.NewMilliQuantity(int64(val*1000), resource.DecimalSI),
 	}
@@ -110,14 +97,18 @@ func (p *AzureProvider) ListAllMetrics() []provider.CustomMetricInfo {
 	return []provider.CustomMetricInfo{}
 }
 
-func (p *AzureProvider) GetExternalMetric(namespace string, metricName string, metricSelector labels.Selector) (*external_metrics.ExternalMetricValueList, error) {
+// GetExternalMetric retrieves metrics from Azure Monitor Endpoint
+// Metric is normally identified by a name and a set of labels/tags. It is up to a specific
+// implementation how to translate metricSelector to a filter for metric values.
+// Namespace can be used by the implementation for metric identification, access control or ignored.
+func (p *AzureProvider) GetExternalMetric(namespace string, metricSelector labels.Selector, info provider.ExternalMetricInfo) (*external_metrics.ExternalMetricValueList, error) {
 	// Note:
 	//		namespace is Kubernetes namespace when using hpa.
 	// 		This doesn't have affect on azure resources so is ignored.
 	//
 	//		metric name is also ignored as azure metric name is case sensitve
 	//		and this metric name is passed via url which removes case
-	glog.V(0).Infof("Received request for namespace: %s, metric name: %s, metric selectors: %s", namespace, metricName, metricSelector.String())
+	glog.V(0).Infof("Received request for namespace: %s, metric name: %s, metric selectors: %s", namespace, info.Metric, metricSelector.String())
 
 	_, selectable := metricSelector.Requirements()
 	if !selectable {
