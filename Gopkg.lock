@@ -237,12 +237,6 @@
   version = "v0.3.5"
 
 [[projects]]
-  name = "github.com/inconshreveable/mousetrap"
-  packages = ["."]
-  revision = "76626ae9c91c4f2a10f34cad8ce83ea42c93bb75"
-  version = "v1.0"
-
-[[projects]]
   name = "github.com/json-iterator/go"
   packages = ["."]
   revision = "ab8a2e0c74be9d3be70b3184d9acc634935ded82"
@@ -253,6 +247,7 @@
   packages = [
     "pkg/apiserver",
     "pkg/apiserver/installer",
+    "pkg/cmd",
     "pkg/cmd/server",
     "pkg/dynamicmapper",
     "pkg/provider",
@@ -339,12 +334,6 @@
     "xfs"
   ]
   revision = "ae68e2d4c00fed4943b5f6698d504a5fe083da8a"
-
-[[projects]]
-  name = "github.com/spf13/cobra"
-  packages = ["."]
-  revision = "ef82de70bb3f60c65fb8eebacbb2d122ef517385"
-  version = "v0.0.3"
 
 [[projects]]
   name = "github.com/spf13/pflag"
@@ -825,6 +814,6 @@
 [solve-meta]
   analyzer-name = "dep"
   analyzer-version = 1
-  inputs-digest = "03c3a77e98804c4af172609455604093537c51de07562dce04cb53df1f4ffd1b"
+  inputs-digest = "d072417a81ea18524e02227cdf40a9e6731468be1a7e8cedd00624f490283058"
   solver-name = "gps-cdcl"
   solver-version = 1
