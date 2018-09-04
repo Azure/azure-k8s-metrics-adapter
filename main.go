@@ -1,17 +1,6 @@
 /*
-Copyright 2016 The Kubernetes Authors.
-
-Licensed under the Apache License, Version 2.0 (the "License");
-you may not use this file except in compliance with the License.
-You may obtain a copy of the License at
-
-    http://www.apache.org/licenses/LICENSE-2.0
-
-Unless required by applicable law or agreed to in writing, software
-distributed under the License is distributed on an "AS IS" BASIS,
-WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
-See the License for the specific language governing permissions and
-limitations under the License.
+Uses base classes and Provider interfaces from https://github.com/kubernetes-incubator/custom-metrics-apiserver to build
+a metric server for Azure based services.
 */
 
 package main
@@ -21,8 +10,10 @@ import (
 	"os"
 	"runtime"
 
-	"github.com/Azure/azure-k8s-metrics-adapter/cmd"
-
+	"github.com/Azure/azure-k8s-metrics-adapter/pkg/az-metric-client"
+	"github.com/Azure/azure-k8s-metrics-adapter/pkg/provider"
+	"github.com/golang/glog"
+	basecmd "github.com/kubernetes-incubator/custom-metrics-apiserver/pkg/cmd"
 	"k8s.io/apimachinery/pkg/util/wait"
 	"k8s.io/apiserver/pkg/util/logs"
 )
@@ -35,9 +26,25 @@ func main() {
 		runtime.GOMAXPROCS(runtime.NumCPU())
 	}
 
-	cmd := cmd.NewCommandStartSampleAdapterServer(os.Stdout, os.Stderr, wait.NeverStop)
+	cmd := &basecmd.AdapterBase{}
 	cmd.Flags().AddGoFlagSet(flag.CommandLine)
-	if err := cmd.Execute(); err != nil {
-		panic(err)
+	cmd.Flags().Parse(os.Args)
+
+	client, err := cmd.DynamicClient()
+	if err != nil {
+		glog.Fatalf("unable to construct dynamic client: %v", err)
+	}
+
+	mapper, err := cmd.RESTMapper()
+	if err != nil {
+		glog.Fatalf("unable to construct discovery REST mapper: %v", err)
+	}
+
+	azureProvider := provider.NewAzureProvider(client, mapper, azureMetricClient.NewAzureMetricClient())
+	cmd.WithCustomMetrics(azureProvider)
+	cmd.WithExternalMetrics(azureProvider)
+
+	if err := cmd.Run(wait.NeverStop); err != nil {
+		glog.Fatalf("Unable to run Azure metrics adapter: %v", err)
 	}
 }
