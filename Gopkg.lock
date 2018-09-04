@@ -249,7 +249,6 @@
   version = "1.1.4"
 
 [[projects]]
-  branch = "master"
   name = "github.com/kubernetes-incubator/custom-metrics-apiserver"
   packages = [
     "pkg/apiserver",
@@ -260,7 +259,7 @@
     "pkg/registry/custom_metrics",
     "pkg/registry/external_metrics"
   ]
-  revision = "d8f23423aa1d0ff2bc9656da863d721725b3c68a"
+  revision = "1f1cda41a301080789507a291b999807002ede46"
 
 [[projects]]
   branch = "master"
@@ -567,8 +566,8 @@
     "third_party/forked/golang/json",
     "third_party/forked/golang/reflect"
   ]
-  revision = "fda675fbe85280c4550452dae2a5ebf74e4a59b7"
-  version = "kubernetes-1.11.0-rc.1"
+  revision = "103fd098999dc9c0c88536f5c9ad2e5da39373ae"
+  version = "kubernetes-1.11.0"
 
 [[projects]]
   name = "k8s.io/apiserver"
@@ -663,8 +662,8 @@
     "plugin/pkg/authenticator/token/webhook",
     "plugin/pkg/authorizer/webhook"
   ]
-  revision = "44b612291bb7545430c499a3882c610c727f37b0"
-  version = "kubernetes-1.11.0-rc.1"
+  revision = "1844acd6a03501626cd17e86248e6ebc0f3df5d9"
+  version = "kubernetes-1.11.2"
 
 [[projects]]
   name = "k8s.io/client-go"
@@ -795,8 +794,8 @@
     "util/integer",
     "util/retry"
   ]
-  revision = "4cacfee698b01630072bc41e3384280562a97d95"
-  version = "kubernetes-1.11.0-rc.1"
+  revision = "1f13a808da65775f22cbf47862c4e5898d8f4ca1"
+  version = "kubernetes-1.11.2"
 
 [[projects]]
   branch = "master"
@@ -820,12 +819,12 @@
     "pkg/apis/external_metrics/install",
     "pkg/apis/external_metrics/v1beta1"
   ]
-  revision = "89f8a18a5efb0c0162a32c75db752bc53ed7f8ee"
-  version = "kubernetes-1.11.0-rc.1"
+  revision = "7afb501849915187f5b29c9727e106cbc6299d1c"
+  version = "kubernetes-1.11.2"
 
 [solve-meta]
   analyzer-name = "dep"
   analyzer-version = 1
-  inputs-digest = "3fec3947af19d3ef7e4485c8faba1c17edcfd07007e8a3c03d2819126aa88950"
+  inputs-digest = "03c3a77e98804c4af172609455604093537c51de07562dce04cb53df1f4ffd1b"
   solver-name = "gps-cdcl"
   solver-version = 1
