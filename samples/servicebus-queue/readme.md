@@ -54,7 +54,9 @@ export SERVICEBUS_CONNECTION_STRING="$(az servicebus queue authorization-rule ke
 ## Setup AKS Cluster
 
 ### Enable Access to Azure Resources
-Run the scripts provided to either [enable MSI](https://github.com/Azure/azure-k8s-metrics-adapter#azure-setup) or [configure a Service Principal](https://github.com/Azure/azure-k8s-metrics-adapter/blob/master/README.md#using-azure-ad-application-id-and-secret) with the following environment variables for giving the access to the Service Bus Namespace Insights provider.
+
+Run the scripts provided to either [enable MSI](https://github.com/Azure/azure-k8s-metrics-adapter#azure-setup), [Azure AD Pod Identity](https://github.com/Azure/azure-k8s-metrics-adapter#azure-setup#using-azure-ad-pod-identity
+) or [configure a Service Principal](https://github.com/Azure/azure-k8s-metrics-adapter/blob/master/README.md#using-azure-ad-application-id-and-secret) with the following environment variables for giving the access to the Service Bus Namespace Insights provider.
 
 ```
 export ACCESS_RG=sb-external-example
