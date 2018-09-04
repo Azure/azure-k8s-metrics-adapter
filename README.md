@@ -94,6 +94,7 @@ Common external metrics to use for autoscaling are:
 - [Azure Eventhubs](https://docs.microsoft.com/en-us/azure/monitoring-and-diagnostics/monitoring-supported-metrics#microsofteventhubnamespaces)
 
 ## Custom Metrics
+
 Custom metrics are currently retrieved from Application Insights.  Currently you will need to use an [AppId and API key](https://dev.applicationinsights.io/documentation/Authorization/API-key-and-App-ID) to authenticate and retrieve metrics from Application Insights.  View a list of basic metrics that come out of the box and see sample values at the [AI api explorer](https://dev.applicationinsights.io/apiexplorer/metrics).  
 
 > note: Metrics that have multi parts currently need will be passed as with a separator of `-` in place of AI separator of `/`.  An example is `performanceCounters/requestsPerSecond` should be specified as `performanceCounters-requestsPerSecond`
@@ -105,17 +106,21 @@ Common Custom Metrics are:
 ## Azure Setup
 
 ### Security
+
 Authenticating with Azure Monitor can be achieved via a variety of authentication mechanisms. ([full list](https://github.com/Azure/azure-sdk-for-go#more-authentication-details))
 
 We recommend to use one of the following options:
+
 - [Azure Managed Service Identity](#using-azure-managed-service-identity-msi) (MSI)
+- [Azure AD Pod Identity](#using-azure-ad-pod-identity) (aad-pod-identity)
 - [Azure AD Application ID and Secret](#using-azure-ad-application-id-and-secret)
 - [Azure AD Application ID and X.509 Certificate](#azure-ad-application-id-and-x509-certificate)
 
 The Azure AD entity needs to have `Monitoring Reader` permission on the resource group that will be queried. More information can be found [here](https://docs.microsoft.com/en-us/azure/monitoring-and-diagnostics/monitoring-roles-permissions-security).
 
 #### Using Azure Managed Service Identity (MSI)
-Enable [Managed Service Identity](https://docs.microsoft.com/en-us/azure/active-directory/managed-service-identity/tutorial-linux-vm-access-arm) on each of your AKS vms: 
+
+Enable [Managed Service Identity](https://docs.microsoft.com/en-us/azure/active-directory/managed-service-identity/tutorial-linux-vm-access-arm) on each of your AKS vms:
 
 > There is a known issue when upgrading a AKS cluster with MSI enabled.  After the AKS upgrade you will lose your MSI setting and need to re-enable it. An alternative may be to use [aad-pod-identity](https://github.com/Azure/aad-pod-identity)
 
@@ -153,7 +158,58 @@ while read -r vm; do
 done <<< "$VMS"
 ```
 
+#### Using Azure AD Pod Identity
+
+[aad-pod-identity](https://github.com/Azure/aad-pod-identity) is currently in beta and allows to bind a user managed identity or a service principal to a pod. That means that instead of using the same managed identity for all the pod running on a node like explained above, you are able to get a specific identity with specific RBAC for a specific pod.
+
+Using this project requires to deploy a bit of infrastructure first. You can do it following the [Get started page](https://github.com/Azure/aad-pod-identity#get-started) of the project.
+
+Once the aad-pod-identity infrastructure is running, you need to create an Azure identity scoped to the resource group you are monitoring:
+
+```bash
+az identity create -g {ResourceGroup1} -n k8s-custom-metrics-identity
+```
+
+Assign `Monitoring Reader` to it
+
+```bash
+az role assignment create --role "Monitoring Reader" --assignee <principalId> --scopes /subscriptions/{SubID}/resourceGroups/{ResourceGroup1}
+```
+
+As documented [here](https://github.com/Azure/aad-pod-identity#providing-required-permissions-for-mic) *aad-pod-identity* uses the service principal of  your Kubernetes cluster to access the Azure resources. You need to give this service principal the rights to use the managed identity created before:
+
+```bash
+az role assignment create --role "Managed Identity Operator" --assignee <servicePrincipalId> --scope /subscriptions/{SubID}/resourceGroups/{ResourceGroup1}/providers/Microsoft.ManagedIdentity/userAssignedIdentities/k8s-custom-metrics-identity
+```
+
+Install the Azure Identity to your Kubernetes cluster:
+
+```yaml
+apiVersion: "aadpodidentity.k8s.io/v1"
+kind: AzureIdentity
+metadata:
+  name: k8s-custom-metrics-identity
+  namespace: custom-metrics
+spec:
+  type: 0
+  ResourceID: /subscriptions/{SubID}/resourceGroups/{ResourceGroup1}/providers/Microsoft.ManagedIdentity/userAssignedIdentities/k8s-custom-metrics-identity
+  ClientID: <clientid>
+```
+
+Install the Azure Identity Binding on your Kubernetes cluster:
+
+```yaml
+apiVersion: "aadpodidentity.k8s.io/v1"
+kind: AzureIdentityBinding
+metadata:
+  name: k8s-custom-metrics-identity-binding
+spec:
+  AzureIdentity: k8s-custom-metrics-identity
+  Selector: k8s-custom-metrics-identity
+```
+
 #### Using Azure AD Application ID and Secret
+
 See how to create an [example deployment](samples/azure-authentication).
 
 Create a service principal scoped to the resource group the resource you monitoring and assign  `Monitoring Reader` to it:
