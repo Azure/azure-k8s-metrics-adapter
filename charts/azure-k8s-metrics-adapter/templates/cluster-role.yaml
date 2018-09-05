@@ -52,4 +52,23 @@ rules:
   - list
   - get
   - watch
+---
+apiVersion: rbac.authorization.k8s.io/v1
+kind: ClusterRole
+metadata:
+  name: {{ template "azure-k8s-metrics-adapter.fullname" . }}:crd-metrics-reader
+  labels:
+    app: {{ template "azure-k8s-metrics-adapter.name" . }}
+    chart: {{ template "azure-k8s-metrics-adapter.chart" . }}
+    release: {{ .Release.Name }}
+    heritage: {{ .Release.Service }}
+rules:
+- apiGroups:
+  - azure.com
+  resources:
+  - "externalmetrics"
+  verbs:
+  - list
+  - get
+  - watch
 {{- end }}

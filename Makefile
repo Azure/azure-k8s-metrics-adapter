@@ -23,7 +23,7 @@ all: build
 build-local: test
 	CGO_ENABLED=0 go build -a -tags netgo -o $(OUT_DIR)/adapter github.com/Azure/azure-k8s-metrics-adapter
 
-build: vendor verify-deploy
+build: vendor verify-deploy verify-apis
 	docker build -t $(FULL_IMAGE):$(VERSION) .
 
 vendor: 
@@ -72,4 +72,11 @@ save:
 tag-ci:
 	docker tag $(FULL_IMAGE):$(CIRCLE_WORKFLOW_ID) $(FULL_IMAGE):$(VERSION)
 	
+gen-apis:
+	go get -u k8s.io/code-generator/...
+	hack/update-codegen.sh
+
+verify-apis:
+	go get -u k8s.io/code-generator/...
+	hack/verify-codegen.sh
 
