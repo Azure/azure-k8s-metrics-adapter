@@ -20,6 +20,8 @@ azure-k8s-metrics-adapter
 debug
 _output/
 **/bin/
+_tmp
+hack
 
 # Logs
 logs

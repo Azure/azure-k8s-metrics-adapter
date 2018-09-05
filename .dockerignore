@@ -8,3 +8,5 @@ README.md
 skaffold.yaml
 samples/
 CONTRIBUTING.md
+_tmp
+hack
