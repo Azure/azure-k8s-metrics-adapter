@@ -81,7 +81,7 @@ kubectl  get --raw "/apis/external.metrics.k8s.io/v1beta1/namespaces/test/queuem
 
 ## External Metrics
 
-Requires k8 1.10+
+Requires k8s 1.10+
 
 See a full [list of hundreds of available azure external metrics](https://docs.microsoft.com/en-us/azure/monitoring-and-diagnostics/monitoring-supported-metrics) that can be used.  
 
