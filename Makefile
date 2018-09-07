@@ -72,11 +72,14 @@ save:
 tag-ci:
 	docker tag $(FULL_IMAGE):$(CIRCLE_WORKFLOW_ID) $(FULL_IMAGE):$(VERSION)
 	
-gen-apis:
-	go get -u k8s.io/code-generator/...
+gen-apis: codegen-fix
 	hack/update-codegen.sh
 
-verify-apis:
-	go get -u k8s.io/code-generator/...
+verify-apis: codegen-fix
 	hack/verify-codegen.sh
 
+codegen-fix: codegen-get
+	hack/codegen-repo-fix.sh
+
+codegen-get:
+	go get -u k8s.io/code-generator/...
