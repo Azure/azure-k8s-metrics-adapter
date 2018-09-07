@@ -21,7 +21,7 @@ debug
 _output/
 **/bin/
 _tmp
-hack
+
 
 # Logs
 logs
