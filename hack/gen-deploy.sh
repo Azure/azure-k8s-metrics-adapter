@@ -7,15 +7,15 @@ set -euo pipefail
 IFS=$'\n\t'
 
 SCRIPT_ROOT=$(dirname "${BASH_SOURCE}")
-REPO_ROOT="${SCRIPT_ROOT}/../.."
+REPO_ROOT="${SCRIPT_ROOT}/.."
 
 gen() {
 	OUTPUT=$1
     VALUES_PATH=""
 	TMP_OUTPUT=$(mktemp)
 	mkdir -p "$(dirname ${OUTPUT})"
-    if [[ ! -z "$2" ]]; then
-        VALUES=$2
+    VALUES=${2:-}
+    if [[ ! -z "$VALUES" ]]; then
         VALUES_PATH="--values=${SCRIPT_ROOT}/deploy/values/${VALUES}.yaml"
     fi
     helm template \
@@ -29,4 +29,7 @@ gen() {
 	mv "${TMP_OUTPUT}" "${OUTPUT}"
 }
 
-gen "${REPO_ROOT}/deploy/adapter.yaml" "adapter"
+# Additional deployment files can be generated here with the following format:
+#   gen /path/to/deployment-file.yaml [values.yaml file name in deploy/values]
+#   gen ${REPO_ROOT}/deploy/adapter.yaml the-values 
+gen "${REPO_ROOT}/deploy/adapter.yaml"
