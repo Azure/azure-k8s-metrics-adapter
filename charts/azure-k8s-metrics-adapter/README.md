@@ -7,7 +7,8 @@ This adapter enables you to scale your [application deployment pods](https://kub
 ## Installing the Chart
 
 ```sh
-helm install --name my-release charts/azure-k8s-metrics-adapter
+kubectl create namespace custom-metrics
+helm install --name my-release charts/azure-k8s-metrics-adapter --namespace custom-metrics
 ```
 
 ## Uninstalling the Chart
