@@ -1,4 +1,8 @@
 #!/bin/bash
+
+# Adapted for this project from cert-manager
+# License: https://github.com/jetstack/cert-manager/blob/master/LICENSE
+# Script: https://github.com/jetstack/cert-manager/blob/master/hack/update-deploy-gen.sh
 set -euo pipefail
 IFS=$'\n\t'
 
