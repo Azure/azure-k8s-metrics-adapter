@@ -27,6 +27,8 @@ Requires some [set up on your AKS Cluster](#azure-setup) and [Metric Server depl
 kubectl apply -f https://raw.githubusercontent.com/Azure/azure-k8s-metrics-adapter/master/deploy/adapter.yaml
 ```
 
+There is also a [Helm chart](https://github.com/Azure/azure-k8s-metrics-adapter/charts/azure-k8s-metrics-adapter) available for deployment for those using Helm in their cluster.
+
 After deployment you can create an Horizontal Pod Auto Scaler (HPA) to scale of your [external metric](#external-metrics) of choice:
 
 ```yaml
