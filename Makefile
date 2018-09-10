@@ -24,7 +24,7 @@ all: build
 build-local: test
 	CGO_ENABLED=0 GOARCH=$(ARCH) go build -a -tags netgo -o $(OUT_DIR)/$(ARCH)/adapter github.com/Azure/azure-k8s-metrics-adapter
 
-build:
+build: vendor
 	docker build -t $(FULL_IMAGE):$(VERSION) .
 
 save:
