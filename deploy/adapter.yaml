@@ -7,20 +7,6 @@ metadata:
   name: "custom-metrics"
 
 ---
-# Source: azure-k8s-metrics-adapter/templates/secret.yaml
-apiVersion: v1
-kind: Secret
-metadata:
-  labels:
-    app: azure-k8s-metrics-adapter
-    chart: azure-k8s-metrics-adapter-0.1.0
-    heritage: "Tiller"
-    release: "azure-k8s-metrics-adapter"
-  name: azure-k8s-metrics-adapter
-  namespace: "custom-metrics"
-data:
-
----
 # Source: azure-k8s-metrics-adapter/templates/serviceAccount.yaml
 
 apiVersion: v1
@@ -290,4 +276,7 @@ spec:
   insecureSkipTLSVerify: true
   groupPriorityMinimum: 100
   versionPriority: 100
+
+---
+# Source: azure-k8s-metrics-adapter/templates/secret.yaml
 
