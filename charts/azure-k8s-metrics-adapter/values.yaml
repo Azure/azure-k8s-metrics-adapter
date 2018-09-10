@@ -37,6 +37,9 @@ service:
 azureAuthentication:
   # method: {msi,clientSecret,clientCertificate}
   method: msi
+  # Generate secret file. If false you are responsible for creating secret 
+  # To generate secret file swith to true then fill in values below
+  createSecret: false
   tenantID: ""
   clientID: ""
   clientSecret: ""
