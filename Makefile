@@ -24,7 +24,7 @@ all: build
 build-local: test
 	CGO_ENABLED=0 GOARCH=$(ARCH) go build -a -tags netgo -o $(OUT_DIR)/$(ARCH)/adapter github.com/Azure/azure-k8s-metrics-adapter
 
-build: vendor
+build: vendor verify-deploy
 	docker build -t $(FULL_IMAGE):$(VERSION) .
 
 save:
@@ -56,6 +56,12 @@ vendor:
 
 test: vendor
 	CGO_ENABLED=0 go test ./pkg/...
+
+verify-deploy:
+	hack/verify-deploy.sh
+
+gen-deploy:
+	hack/gen-deploy.sh
 
 dev:
 	skaffold dev

@@ -1,116 +1,51 @@
 ---
+# Source: azure-k8s-metrics-adapter/templates/00-namespace.yaml
+
 apiVersion: v1
 kind: Namespace
 metadata:
-  name: custom-metrics
+  name: "custom-metrics"
+
 ---
-kind: ServiceAccount
+# Source: azure-k8s-metrics-adapter/templates/secret.yaml
 apiVersion: v1
-metadata:
-  name: custom-metrics-azure-apiserver
-  namespace: custom-metrics
----
-# allow custom metrics server to authenticate/auth
----
-apiVersion: rbac.authorization.k8s.io/v1
-kind: ClusterRoleBinding
-metadata:
-  name: custom-metrics:system:auth-delegator
-roleRef:
-  apiGroup: rbac.authorization.k8s.io
-  kind: ClusterRole
-  name: system:auth-delegator
-subjects:
-- kind: ServiceAccount
-  name: custom-metrics-azure-apiserver
-  namespace: custom-metrics
----
-apiVersion: rbac.authorization.k8s.io/v1
-kind: RoleBinding
-metadata:
-  name: custom-metrics-auth-reader
-  namespace: kube-system
-roleRef:
-  apiGroup: rbac.authorization.k8s.io
-  kind: Role
-  name: extension-apiserver-authentication-reader
-subjects:
-- kind: ServiceAccount
-  name: custom-metrics-azure-apiserver
-  namespace: custom-metrics
----
-# deployment
----
-apiVersion: apps/v1
-kind: Deployment
+kind: Secret
 metadata:
   labels:
-    app: custom-metrics-azure-apiserver
-  name: custom-metrics-azure-apiserver
-  namespace: custom-metrics
-spec:
-  replicas: 1
-  selector:
-    matchLabels:
-      app: custom-metrics-azure-apiserver
-  template:
-    metadata:
-      labels:
-        app: custom-metrics-azure-apiserver
-      name: custom-metrics-azure-apiserver
-    spec:
-      serviceAccountName: custom-metrics-azure-apiserver
-      containers:
-      - name: custom-metrics-azure-apiserver
-        image: jsturtevant/azure-k8s-metrics-adapter-amd64
-        args:
-        - /adapter
-        - --secure-port=6443
-        - --logtostderr=true
-        - --v=2
-        ports:
-        - containerPort: 6443
-        volumeMounts:
-        - mountPath: /tmp
-          name: temp-vol
-      volumes:
-      - name: temp-vol
-        emptyDir: {}
+    app: azure-k8s-metrics-adapter
+    chart: azure-k8s-metrics-adapter-0.1.0
+    heritage: "Tiller"
+    release: "azure-k8s-metrics-adapter"
+  name: azure-k8s-metrics-adapter
+  namespace: "custom-metrics"
+data:
+
 ---
+# Source: azure-k8s-metrics-adapter/templates/serviceAccount.yaml
+
 apiVersion: v1
-kind: Service
+kind: ServiceAccount
 metadata:
-  name: custom-metrics-azure-apiserver
-  namespace: custom-metrics
-spec:
-  ports:
-  - port: 443
-    targetPort: 6443
-  selector:
-    app: custom-metrics-azure-apiserver
+  name: azure-k8s-metrics-adapter
+  namespace: "custom-metrics"
+  labels:
+    app: azure-k8s-metrics-adapter
+    chart: azure-k8s-metrics-adapter-0.1.0
+    release: azure-k8s-metrics-adapter
+    heritage: Tiller
+
 ---
-# register custom metrics api
----
-apiVersion: apiregistration.k8s.io/v1beta1
-kind: APIService
-metadata:
-  name: v1beta1.custom.metrics.k8s.io
-spec:
-  service:
-    name: custom-metrics-azure-apiserver
-    namespace: custom-metrics
-  group: custom.metrics.k8s.io
-  version: v1beta1
-  insecureSkipTLSVerify: true
-  groupPriorityMinimum: 100
-  versionPriority: 100
----
-# give custom metrics service access specific resources
----
+# Source: azure-k8s-metrics-adapter/templates/cluster-role.yaml
+
 apiVersion: rbac.authorization.k8s.io/v1
 kind: ClusterRole
 metadata:
-  name: custom-metrics-resource-reader
+  name: azure-k8s-metrics-adapter
+  labels:
+    app: azure-k8s-metrics-adapter
+    chart: azure-k8s-metrics-adapter-0.1.0
+    release: azure-k8s-metrics-adapter
+    heritage: Tiller
 rules:
 - apiGroups:
   - ""
@@ -123,24 +58,14 @@ rules:
   - list
 ---
 apiVersion: rbac.authorization.k8s.io/v1
-kind: ClusterRoleBinding
-metadata:
-  name: custom-metrics-resource-reader
-roleRef:
-  apiGroup: rbac.authorization.k8s.io
-  kind: ClusterRole
-  name: custom-metrics-resource-reader
-subjects:
-- kind: ServiceAccount
-  name: custom-metrics-azure-apiserver
-  namespace: custom-metrics
----
-# give HPA access to custom metrics
----
-apiVersion: rbac.authorization.k8s.io/v1
 kind: ClusterRole
 metadata:
-  name: custom-metrics-server-resources
+  name: azure-k8s-metrics-adapter:custom-metrics-reader
+  labels:
+    app: azure-k8s-metrics-adapter
+    chart: azure-k8s-metrics-adapter-0.1.0
+    release: azure-k8s-metrics-adapter
+    heritage: Tiller
 rules:
 - apiGroups:
   - custom.metrics.k8s.io
@@ -148,40 +73,14 @@ rules:
   verbs: ["get", "list"]
 ---
 apiVersion: rbac.authorization.k8s.io/v1
-kind: ClusterRoleBinding
-metadata:
-  name: hpa-controller-custom-metrics
-roleRef:
-  apiGroup: rbac.authorization.k8s.io
-  kind: ClusterRole
-  name: custom-metrics-server-resources
-subjects:
-- kind: ServiceAccount
-  name: horizontal-pod-autoscaler
-  namespace: kube-system
----
-# register external metrics api
----
-apiVersion: apiregistration.k8s.io/v1beta1
-kind: APIService
-metadata:
-  name: v1beta1.external.metrics.k8s.io
-spec:
-  service:
-    name: custom-metrics-azure-apiserver
-    namespace: custom-metrics
-  group: external.metrics.k8s.io
-  version: v1beta1
-  insecureSkipTLSVerify: true
-  groupPriorityMinimum: 100
-  versionPriority: 100
----
-# give HPA access to external metrics
----
-apiVersion: rbac.authorization.k8s.io/v1
 kind: ClusterRole
 metadata:
-  name: external-metrics-reader
+  name: azure-k8s-metrics-adapter:external-metrics-reader
+  labels:
+    app: azure-k8s-metrics-adapter
+    chart: azure-k8s-metrics-adapter-0.1.0
+    release: azure-k8s-metrics-adapter
+    heritage: Tiller
 rules:
 - apiGroups:
   - "external.metrics.k8s.io"
@@ -191,16 +90,204 @@ rules:
   - list
   - get
   - watch
+
 ---
+# Source: azure-k8s-metrics-adapter/templates/cluster-role-binding.yaml
+
 apiVersion: rbac.authorization.k8s.io/v1
 kind: ClusterRoleBinding
 metadata:
-  name: external-metrics-reader
+  name: azure-k8s-metrics-adapter:system:auth-delegator
+  namespace: kube-system
+  labels:
+    app: azure-k8s-metrics-adapter
+    chart: azure-k8s-metrics-adapter-0.1.0
+    release: azure-k8s-metrics-adapter
+    heritage: Tiller
 roleRef:
   apiGroup: rbac.authorization.k8s.io
   kind: ClusterRole
-  name: external-metrics-reader
+  name: system:auth-delegator
+subjects:
+  - name: azure-k8s-metrics-adapter
+    namespace: "custom-metrics"
+    kind: ServiceAccount
+---
+apiVersion: rbac.authorization.k8s.io/v1beta1
+kind: ClusterRoleBinding
+metadata:
+  name: azure-k8s-metrics-adapter
+  labels:
+    app: azure-k8s-metrics-adapter
+    chart: azure-k8s-metrics-adapter-0.1.0
+    release: azure-k8s-metrics-adapter
+    heritage: Tiller
+roleRef:
+  apiGroup: rbac.authorization.k8s.io
+  kind: ClusterRole
+  name: azure-k8s-metrics-adapter
+subjects:
+  - name: azure-k8s-metrics-adapter
+    namespace: "custom-metrics"
+    kind: ServiceAccount
+---
+apiVersion: rbac.authorization.k8s.io/v1beta1
+kind: ClusterRoleBinding
+metadata:
+  name: azure-k8s-metrics-adapter:hpa-external-metrics-reader
+  labels:
+    app: azure-k8s-metrics-adapter
+    chart: azure-k8s-metrics-adapter-0.1.0
+    release: azure-k8s-metrics-adapter
+    heritage: Tiller
+roleRef:
+  apiGroup: rbac.authorization.k8s.io
+  kind: ClusterRole
+  name: azure-k8s-metrics-adapter:external-metrics-reader
+subjects:
+  - kind: ServiceAccount
+    name: horizontal-pod-autoscaler
+    namespace: kube-system
+---
+apiVersion: rbac.authorization.k8s.io/v1beta1
+kind: ClusterRoleBinding
+metadata:
+  name: azure-k8s-metrics-adapter:hpa-custom-metrics-reader
+  labels:
+    app: azure-k8s-metrics-adapter
+    chart: azure-k8s-metrics-adapter-0.1.0
+    release: azure-k8s-metrics-adapter
+    heritage: Tiller
+roleRef:
+  apiGroup: rbac.authorization.k8s.io
+  kind: ClusterRole
+  name: azure-k8s-metrics-adapter:custom-metrics-reader
+subjects:
+  - kind: ServiceAccount
+    name: horizontal-pod-autoscaler
+    namespace: kube-system
+
+---
+# Source: azure-k8s-metrics-adapter/templates/role-binding.yaml
+
+apiVersion: rbac.authorization.k8s.io/v1
+kind: RoleBinding
+metadata:
+  name: azure-k8s-metrics-adapter:extension-apiserver-authentication-reader
+  labels:
+    app: azure-k8s-metrics-adapter
+    chart: azure-k8s-metrics-adapter-0.1.0
+    release: azure-k8s-metrics-adapter
+    heritage: Tiller
+  namespace: kube-system
+roleRef:
+  apiGroup: rbac.authorization.k8s.io
+  kind: Role
+  name: extension-apiserver-authentication-reader
 subjects:
 - kind: ServiceAccount
-  name: horizontal-pod-autoscaler
-  namespace: kube-system
+  name: azure-k8s-metrics-adapter
+  namespace: "custom-metrics"
+
+---
+# Source: azure-k8s-metrics-adapter/templates/service.yaml
+apiVersion: v1
+kind: Service
+metadata:
+  name: azure-k8s-metrics-adapter
+  namespace: "custom-metrics"
+  labels:
+    app: azure-k8s-metrics-adapter
+    chart: azure-k8s-metrics-adapter-0.1.0
+    release: azure-k8s-metrics-adapter
+    heritage: Tiller
+spec:
+  type: ClusterIP
+  ports:
+    - port: 443
+      targetPort: http
+      protocol: TCP
+      name: http
+  selector:
+    app: azure-k8s-metrics-adapter
+    release: azure-k8s-metrics-adapter
+
+---
+# Source: azure-k8s-metrics-adapter/templates/deployment.yaml
+apiVersion: apps/v1beta2
+kind: Deployment
+metadata:
+  name: azure-k8s-metrics-adapter
+  namespace: "custom-metrics"
+  labels:
+    app: azure-k8s-metrics-adapter
+    chart: azure-k8s-metrics-adapter-0.1.0
+    release: azure-k8s-metrics-adapter
+    heritage: Tiller
+spec:
+  replicas: 1
+  selector:
+    matchLabels:
+      app: azure-k8s-metrics-adapter
+      release: azure-k8s-metrics-adapter
+  template:
+    metadata:
+      labels:
+        app: azure-k8s-metrics-adapter
+        release: azure-k8s-metrics-adapter
+    spec:
+      serviceAccountName: azure-k8s-metrics-adapter
+      containers:
+        - name: azure-k8s-metrics-adapter
+          image: "mcr.microsoft.com/k8s/metrics/adapter:latest"
+          imagePullPolicy: Always
+          args:
+            - /adapter
+            - --secure-port=6443
+            - --logtostderr=true
+            - --v=2
+          ports:
+            - name: http
+              containerPort: 6443
+              protocol: TCP
+          env:
+          volumeMounts:
+            - mountPath: /tmp
+              name: temp-vol
+          resources:
+            {}
+            
+      volumes:
+        - name: temp-vol
+          emptyDir: {}
+
+---
+# Source: azure-k8s-metrics-adapter/templates/api-service-registration.yaml
+apiVersion: apiregistration.k8s.io/v1beta1
+kind: APIService
+metadata:
+  name: v1beta1.custom.metrics.k8s.io
+spec:
+  service:
+    name: azure-k8s-metrics-adapter
+    namespace: custom-metrics
+  group: custom.metrics.k8s.io
+  version: v1beta1
+  insecureSkipTLSVerify: true
+  groupPriorityMinimum: 100
+  versionPriority: 100
+---
+apiVersion: apiregistration.k8s.io/v1beta1
+kind: APIService
+metadata:
+  name: v1beta1.external.metrics.k8s.io
+spec:
+  service:
+    name: azure-k8s-metrics-adapter
+    namespace: custom-metrics
+  group: external.metrics.k8s.io
+  version: v1beta1
+  insecureSkipTLSVerify: true
+  groupPriorityMinimum: 100
+  versionPriority: 100
+
