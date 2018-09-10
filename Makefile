@@ -27,7 +27,7 @@ build: vendor verify-deploy
 	docker build -t $(FULL_IMAGE):$(VERSION) .
 
 vendor: 
-	dep ensure -v
+	dep ensure 
 
 test: vendor
 	CGO_ENABLED=0 go test ./pkg/...
