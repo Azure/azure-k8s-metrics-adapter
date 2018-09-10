@@ -41,8 +41,7 @@ jobs:
           keys:
             - v1-{{ .Branch }}
       - run: docker load < app.tar
-      - run: |
-          docker tag jsturtevant/azure-k8s-metrics-adapter-amd64:$CIRCLE_WORKFLOW_ID jsturtevant/azure-k8s-metrics-adapter-amd64:$VERSION
+      - run: make tag-ci
       - run: make push
 workflows:
   version: 2
