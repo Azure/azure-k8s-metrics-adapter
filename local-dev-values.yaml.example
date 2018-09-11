@@ -1,0 +1,9 @@
+azureAuthentication:
+  # method: {msi,clientSecret,clientCertificate}
+  method: clientSecret
+  createSecret: true
+  tenantID: ""
+  clientID: ""
+  clientSecret: ""
+
+defaultSubscriptionId: ""
