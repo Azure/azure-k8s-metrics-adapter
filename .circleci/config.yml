@@ -12,6 +12,7 @@ jobs:
       - setup_remote_docker
       - run: |  
           echo 'export VERSION="$CIRCLE_WORKFLOW_ID"' >> $BASH_ENV
+          echo 'export REGISTRY_PATH="public/k8s/metrics"' >> $BASH_ENV
       - run: 
           name: install helm
           command: .circleci/install-helm.sh
