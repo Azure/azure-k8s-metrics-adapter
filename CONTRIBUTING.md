@@ -17,7 +17,9 @@ or contact [opencode@microsoft.com](mailto:opencode@microsoft.com) with any addi
 To do development you will need:
 
 - [Golang](https://golang.org/doc/install) - same as current [Kubernetes version ](https://github.com/kubernetes/community/blob/master/contributors/devel/development.md#go)
-- Kubernetes cluster - [minikube](https://github.com/kubernetes/minikube) or [AKS](https://docs.microsoft.com/en-us/azure/aks/kubernetes-walkthrough) or any other cluster
+- Kubernetes cluster - [minikube](https://github.com/kubernetes/minikube), , [Docker for Mac with Kubernetes support](https://docs.docker.com/docker-for-mac/kubernetes/),  [Docker for Windows with Kubernetes support](https://docs.docker.com/docker-for-windows/kubernetes/), [AKS](https://docs.microsoft.com/en-us/azure/aks/kubernetes-walkthrough)
+- [git](https://git-scm.com/downloads) 
+- [mercurial](https://www.mercurial-scm.org/downloads)  
 
 ### Get the source
 
