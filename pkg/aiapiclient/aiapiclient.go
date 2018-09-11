@@ -9,6 +9,8 @@ import (
 	"os"
 	"time"
 
+	"github.com/Azure/azure-sdk-for-go/services/appinsights/v1/appinsights"
+	"github.com/Azure/go-autorest/autorest/azure/auth"
 	"github.com/golang/glog"
 )
 
@@ -19,8 +21,9 @@ const (
 
 // AiAPIClient is used to call Application Insights Api
 type AiAPIClient struct {
-	appID  string
-	appKey string
+	appID           string
+	appKey          string
+	useADAuthorizer bool
 }
 
 // NewAiAPIClient creates a client for calling Application
@@ -30,13 +33,36 @@ func NewAiAPIClient() AiAPIClient {
 	appInsightsKey := os.Getenv("APP_INSIGHTS_KEY")
 
 	return AiAPIClient{
-		appID:  defaultAppInsightsAppID,
-		appKey: appInsightsKey,
+		appID:           defaultAppInsightsAppID,
+		appKey:          appInsightsKey,
+		useADAuthorizer: appInsightsKey == "",
 	}
 }
 
 // GetMetric calls to API to retrieve a specific metric
 func (ai AiAPIClient) GetMetric(metricInfo MetricRequest) (*MetricsResponse, error) {
+	if ai.useADAuthorizer {
+		return getMetricUsingADAuthorizer(ai, metricInfo)
+	}
+
+	return getMetricUsingAPIKey(ai, metricInfo)
+}
+
+func getMetricUsingADAuthorizer(ai AiAPIClient, metricInfo MetricRequest) (*MetricsResponse, error) {
+
+	authorizer, err := auth.NewAuthorizerFromEnvironmentWithResource(defaultAPIUrl)
+	if err != nil {
+		glog.Errorf("unable to retrieve an authorizer from environment: %v", err)
+		return nil, err
+	}
+
+	applicationInsights := insights.New(ai.appID)
+	applicationInsights.Authorizer = authorizer
+
+	return nil, nil
+}
+
+func getMetricUsingAPIKey(ai AiAPIClient, metricInfo MetricRequest) (*MetricsResponse, error) {
 	client := &http.Client{}
 
 	request := fmt.Sprintf("/%s/apps/%s/metrics/%s", apiVersion, ai.appID, metricInfo.MetricName)
