@@ -25,7 +25,7 @@ To do development you will need:
 
 ```bash
 go get github.com/Azure/azure-k8s-metrics-adapter
-cd $GOPATH/github.com/Azure/azure-k8s-metrics-adapter
+cd $GOPATH/src/github.com/Azure/azure-k8s-metrics-adapter
 ```
 
 ### Building the project

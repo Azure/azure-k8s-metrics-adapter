@@ -5,6 +5,7 @@ import (
 	"encoding/json"
 	"errors"
 	"fmt"
+	"io"
 	"io/ioutil"
 	"net/http"
 	"os"
@@ -33,6 +34,7 @@ func NewAiAPIClient() AiAPIClient {
 	defaultAppInsightsAppID := os.Getenv("APP_INSIGHTS_APP_ID")
 	appInsightsKey := os.Getenv("APP_INSIGHTS_KEY")
 
+	// if no application insights key has been specified, then we will use AD authentication
 	return AiAPIClient{
 		appID:           defaultAppInsightsAppID,
 		appKey:          appInsightsKey,
@@ -84,19 +86,7 @@ func getMetricUsingADAuthorizer(ai AiAPIClient, metricInfo MetricRequest) (*Metr
 		StatusCode: metricsResult.StatusCode,
 	}
 
-	defer metricsResult.Body.Close()
-	respBody, err := ioutil.ReadAll(metricsResult.Body)
-	if err != nil {
-		glog.Errorf("unable to get read metric response body: %v", err)
-		return nil, err
-	}
-
-	err = json.Unmarshal(respBody, &response)
-	if err != nil {
-		return nil, errors.New("unknown response format")
-	}
-
-	return &response, nil
+	return unmarshalResponse(metricsResult.Body, &response)
 }
 
 func getMetricUsingAPIKey(ai AiAPIClient, metricInfo MetricRequest) (*MetricsResponse, error) {
@@ -123,19 +113,23 @@ func getMetricUsingAPIKey(ai AiAPIClient, metricInfo MetricRequest) (*MetricsRes
 		StatusCode: resp.StatusCode,
 	}
 
-	defer resp.Body.Close()
-	respBody, err := ioutil.ReadAll(resp.Body)
+	return unmarshalResponse(resp.Body, &response)
+}
+
+func unmarshalResponse(body io.ReadCloser, response *MetricsResponse) (*MetricsResponse, error) {
+	defer body.Close()
+	respBody, err := ioutil.ReadAll(body)
 	if err != nil {
 		glog.Errorf("unable to get read metric response body: %v", err)
 		return nil, err
 	}
 
-	err = json.Unmarshal(respBody, &response)
+	err = json.Unmarshal(respBody, response)
 	if err != nil {
 		return nil, errors.New("unknown response format")
 	}
 
-	return &response, nil
+	return response, nil
 }
 
 // MetricsResponse is the response from the api that holds metric values and segments
