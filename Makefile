@@ -5,7 +5,7 @@ IMAGE?=adapter
 VERSION?=latest
 
 OUT_DIR?=./_output
-SEMVER=minor
+SEMVER=""
 PUSH_LATEST=true
 
 ifeq ("$(REGISTRY_PATH)", "")
@@ -33,6 +33,10 @@ test: vendor
 	CGO_ENABLED=0 go test ./pkg/...
 
 version: build	
+ifeq ("$(SEMVER)", "")
+	@echo "Please set sem version bump: can be 'major', 'minor', or 'patch'"
+	exit
+endif
 ifeq ("$(BRANCH)", "master")
 	@echo "versioning on master"
 	go get -u github.com/jsturtevant/gitsem
