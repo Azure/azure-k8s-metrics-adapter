@@ -1,6 +1,7 @@
 package aiapiclient
 
 import (
+	"context"
 	"encoding/json"
 	"errors"
 	"fmt"
@@ -59,7 +60,43 @@ func getMetricUsingADAuthorizer(ai AiAPIClient, metricInfo MetricRequest) (*Metr
 	applicationInsights := insights.New(ai.appID)
 	applicationInsights.Authorizer = authorizer
 
-	return nil, nil
+	metricsBody := []insights.MetricsPostBodySchemaType{}
+
+	var metricsBodyShema insights.MetricsPostBodySchemaType
+	bodyShemaID := "schemaId" // todo: generate a unique ID
+	metricsBodyShema.ID = &bodyShemaID
+
+	var metricsBodyParameters *insights.MetricsPostBodySchemaParametersType
+	metricsBodyParameters.Interval = &metricInfo.Interval
+	metricsBodyParameters.Timespan = &metricInfo.Timespan
+
+	metricsBodyShema.Parameters = metricsBodyParameters
+	metricsBody = append(metricsBody, metricsBodyShema)
+
+	metricsResult, err := applicationInsights.GetMetricsMethod(context.Background(), metricsBody)
+	if err != nil {
+		glog.Errorf("unable to get retrive metric: %v", err)
+		return nil, err
+	}
+
+	// todo: can be refactorized to mutualize the code with the getMetricUsingAPIKey function
+	response := MetricsResponse{
+		StatusCode: metricsResult.StatusCode,
+	}
+
+	defer metricsResult.Body.Close()
+	respBody, err := ioutil.ReadAll(metricsResult.Body)
+	if err != nil {
+		glog.Errorf("unable to get read metric response body: %v", err)
+		return nil, err
+	}
+
+	err = json.Unmarshal(respBody, &response)
+	if err != nil {
+		return nil, errors.New("unknown response format")
+	}
+
+	return &response, nil
 }
 
 func getMetricUsingAPIKey(ai AiAPIClient, metricInfo MetricRequest) (*MetricsResponse, error) {
