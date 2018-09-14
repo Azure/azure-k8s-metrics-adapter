@@ -17,8 +17,9 @@ import (
 )
 
 const (
-	defaultAPIUrl = "api.applicationinsights.io"
-	apiVersion    = "v1"
+	defaultAPIUrl   = "api.applicationinsights.io"
+	apiVersion      = "v1"
+	azureAdResource = "https://api.applicationinsights.io"
 )
 
 // AiAPIClient is used to call Application Insights Api
@@ -53,7 +54,7 @@ func (ai AiAPIClient) GetMetric(metricInfo MetricRequest) (*MetricsResponse, err
 
 func getMetricUsingADAuthorizer(ai AiAPIClient, metricInfo MetricRequest) (*MetricsResponse, error) {
 
-	authorizer, err := auth.NewAuthorizerFromEnvironmentWithResource(defaultAPIUrl)
+	authorizer, err := auth.NewAuthorizerFromEnvironmentWithResource(azureAdResource)
 	if err != nil {
 		glog.Errorf("unable to retrieve an authorizer from environment: %v", err)
 		return nil, err
@@ -62,18 +63,17 @@ func getMetricUsingADAuthorizer(ai AiAPIClient, metricInfo MetricRequest) (*Metr
 	applicationInsights := insights.New(ai.appID)
 	applicationInsights.Authorizer = authorizer
 
-	metricsBody := []insights.MetricsPostBodySchemaType{}
-
-	var metricsBodyShema insights.MetricsPostBodySchemaType
 	bodyShemaID := "schemaId" // todo: generate a unique ID
-	metricsBodyShema.ID = &bodyShemaID
-
-	var metricsBodyParameters *insights.MetricsPostBodySchemaParametersType
-	metricsBodyParameters.Interval = &metricInfo.Interval
-	metricsBodyParameters.Timespan = &metricInfo.Timespan
-
-	metricsBodyShema.Parameters = metricsBodyParameters
-	metricsBody = append(metricsBody, metricsBodyShema)
+	metricsBodyParameter := insights.MetricsPostBodySchemaParametersType{
+		Interval: &metricInfo.Interval,
+		Timespan: &metricInfo.Timespan,
+	}
+	metricsBody := []insights.MetricsPostBodySchemaType{
+		insights.MetricsPostBodySchemaType{
+			ID:         &bodyShemaID,
+			Parameters: &metricsBodyParameter,
+		},
+	}
 
 	metricsResult, err := applicationInsights.GetMetricsMethod(context.Background(), metricsBody)
 	if err != nil {
@@ -81,12 +81,13 @@ func getMetricUsingADAuthorizer(ai AiAPIClient, metricInfo MetricRequest) (*Metr
 		return nil, err
 	}
 
-	// todo: can be refactorized to mutualize the code with the getMetricUsingAPIKey function
 	response := MetricsResponse{
 		StatusCode: metricsResult.StatusCode,
 	}
 
-	return unmarshalResponse(metricsResult.Body, &response)
+	// todo: parse result from AI SDK
+
+	return &response, nil
 }
 
 func getMetricUsingAPIKey(ai AiAPIClient, metricInfo MetricRequest) (*MetricsResponse, error) {
