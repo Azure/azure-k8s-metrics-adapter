@@ -27,10 +27,10 @@ build: vendor verify-deploy verify-apis
 	docker build -t $(FULL_IMAGE):$(VERSION) .
 
 vendor: 
-	dep ensure 
+	dep ensure -v
 
 test: vendor
-	CGO_ENABLED=0 go test ./pkg/...
+	hack/run-tests.sh
 
 version: build	
 ifeq ("$(SEMVER)", "")
@@ -54,13 +54,6 @@ ifeq ("$(PUSH_LATEST)", "true")
 	docker push $(FULL_IMAGE):latest
 endif		
 
-# Code generation commands
-verify-deploy:
-	hack/verify-deploy.sh
-
-gen-deploy:
-	hack/gen-deploy.sh
-
 # dev setup
 dev:
 	skaffold dev
@@ -71,7 +64,8 @@ save:
 
 tag-ci:
 	docker tag $(FULL_IMAGE):$(CIRCLE_WORKFLOW_ID) $(FULL_IMAGE):$(VERSION)
-	
+
+# Code gen helpers
 gen-apis: codegen-fix
 	hack/update-codegen.sh
 
@@ -83,3 +77,11 @@ codegen-fix: codegen-get
 
 codegen-get:
 	go get -u k8s.io/code-generator/...
+
+verify-deploy:
+	hack/verify-deploy.sh
+
+gen-deploy:
+	hack/gen-deploy.sh
+
+gen-all: gen-apis gen-deploy
