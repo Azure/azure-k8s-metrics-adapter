@@ -115,7 +115,7 @@ func (p *AzureProvider) GetExternalMetric(namespace string, metricSelector label
 		return nil, errors.NewBadRequest("label is set to not selectable. this should not happen")
 	}
 
-	metricValue, err := p.azMetricClient.GetAzureMetric(metricSelector)
+	metricValue, err := p.azMetricClient.GetAzureMetric(namespace, info.Metric, metricSelector)
 	if err != nil {
 		glog.Errorf("bad request: %v", err)
 		return nil, errors.NewBadRequest(err.Error())
