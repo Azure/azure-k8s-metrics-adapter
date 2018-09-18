@@ -4,6 +4,8 @@ import (
 	"fmt"
 	"time"
 
+	"github.com/Azure/azure-k8s-metrics-adapter/pkg/metriccache"
+
 	"github.com/golang/glog"
 	"k8s.io/apimachinery/pkg/util/runtime"
 	utilruntime "k8s.io/apimachinery/pkg/util/runtime"
@@ -22,11 +24,11 @@ type Controller struct {
 }
 
 // NewController returns a new controller for handling external and custom metric types
-func NewController(externalMetricInformer informers.ExternalMetricInformer) *Controller {
+func NewController(externalMetricInformer informers.ExternalMetricInformer, metricCache *metriccache.MetricCache) *Controller {
 	controller := &Controller{
 		externalMetricSynced: externalMetricInformer.Informer().HasSynced,
 		externalMetricqueue:  workqueue.NewNamedRateLimitingQueue(workqueue.DefaultControllerRateLimiter(), "externalmetrics"),
-		handler:              NewHandler(externalMetricInformer.Lister()),
+		handler:              NewHandler(externalMetricInformer.Lister(), metricCache),
 	}
 
 	glog.Info("Setting up external metric event handlers")
@@ -97,16 +99,7 @@ func (c *Controller) processNextItem() bool {
 		return true
 	}
 
-	ns, name, err := cache.SplitMetaNamespaceKey(namespaceNameKey)
-	if err != nil {
-		// not a valid key do not put back on queue
-		c.externalMetricqueue.Forget(key)
-		runtime.HandleError(fmt.Errorf("expected namespace/name key in workqueue but got %s", namespaceNameKey))
-		return true
-	}
-
-	glog.V(2).Infof("processing item '%s' in namespace '%s'", name, ns)
-	err = c.handler.Process(ns, name)
+	err := c.handler.Process(namespaceNameKey)
 	if err != nil {
 		retrys := c.externalMetricqueue.NumRequeues(key)
 		if retrys < 5 {
@@ -123,7 +116,7 @@ func (c *Controller) processNextItem() bool {
 	}
 
 	//if here success for get item
-	glog.V(2).Infof("succesfully proccessed item '%s' in namespace '%s'", name, ns)
+	glog.V(2).Infof("succesfully proccessed item '%s'", namespaceNameKey)
 	c.externalMetricqueue.Forget(key)
 	return true
 }

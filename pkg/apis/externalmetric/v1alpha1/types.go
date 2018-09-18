@@ -22,11 +22,22 @@ type ExternalMetric struct {
 
 // ExternalMetricSpec is the spec for a ExternalMetric resource
 type ExternalMetricSpec struct {
-	// Message and SomeValue are example custom spec fields
-	//
-	// this is where you would put your custom resource data
-	Message   string `json:"message"`
-	SomeValue *int32 `json:"someValue"`
+	MetricConfig MetricConfig `json:"metric"`
+	AzureConfig  AzureConfig  `json:"azure"`
+}
+
+type MetricConfig struct {
+	MetricName  string `json:"metricName"`
+	Aggregation string `json:"aggregation"`
+	Filter      string `json:"filter"`
+}
+
+type AzureConfig struct {
+	ResourceGroup             string `json:"resourceGroup"`
+	ResourceName              string `json:"resourceName"`
+	ResourceProviderNamespace string `json:"resourceProviderNamespace"`
+	ResourceType              string `json:"resourceType"`
+	SubscriptionID            string `json:"subscriptionID"`
 }
 
 // +k8s:deepcopy-gen:interfaces=k8s.io/apimachinery/pkg/runtime.Object

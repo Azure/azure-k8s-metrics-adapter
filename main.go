@@ -11,6 +11,8 @@ import (
 	"runtime"
 	"time"
 
+	"github.com/Azure/azure-k8s-metrics-adapter/pkg/metriccache"
+
 	"github.com/Azure/azure-k8s-metrics-adapter/pkg/az-metric-client"
 	clientset "github.com/Azure/azure-k8s-metrics-adapter/pkg/client/clientset/versioned"
 	informers "github.com/Azure/azure-k8s-metrics-adapter/pkg/client/informers/externalversions"
@@ -36,19 +38,21 @@ func main() {
 
 	stopCh := signals.SetupSignalHandler()
 
+	metriccache := metriccache.NewMetricCache()
+
 	// start and run contoller components
-	controller, adapterInformerFactory := newController(cmd)
+	controller, adapterInformerFactory := newController(cmd, metriccache)
 	go adapterInformerFactory.Start(stopCh)
 	go controller.Run(2, time.Second, stopCh)
 
 	//setup and run metric server
-	setupAzureProvider(cmd)
+	setupAzureProvider(cmd, metriccache)
 	if err := cmd.Run(stopCh); err != nil {
 		glog.Fatalf("Unable to run Azure metrics adapter: %v", err)
 	}
 }
 
-func setupAzureProvider(cmd *basecmd.AdapterBase) {
+func setupAzureProvider(cmd *basecmd.AdapterBase, metricsCache *metriccache.MetricCache) {
 	client, err := cmd.DynamicClient()
 	if err != nil {
 		glog.Fatalf("unable to construct dynamic client: %v", err)
@@ -59,12 +63,12 @@ func setupAzureProvider(cmd *basecmd.AdapterBase) {
 		glog.Fatalf("unable to construct discovery REST mapper: %v", err)
 	}
 
-	azureProvider := azureprovider.NewAzureProvider(client, mapper, azureMetricClient.NewAzureMetricClient())
+	azureProvider := azureprovider.NewAzureProvider(client, mapper, azureMetricClient.NewAzureMetricClient(metricsCache))
 	cmd.WithCustomMetrics(azureProvider)
 	cmd.WithExternalMetrics(azureProvider)
 }
 
-func newController(cmd *basecmd.AdapterBase) (*controller.Controller, informers.SharedInformerFactory) {
+func newController(cmd *basecmd.AdapterBase, metricsCache *metriccache.MetricCache) (*controller.Controller, informers.SharedInformerFactory) {
 	clientConfig, err := cmd.ClientConfig()
 	if err != nil {
 		glog.Fatalf("unable to construct client config: %s", err)
@@ -75,7 +79,8 @@ func newController(cmd *basecmd.AdapterBase) (*controller.Controller, informers.
 	}
 
 	adapterInformerFactory := informers.NewSharedInformerFactory(adapterClientSet, time.Second*30)
-	controller := controller.NewController(adapterInformerFactory.Metrics().V1alpha1().ExternalMetrics())
+
+	controller := controller.NewController(adapterInformerFactory.Metrics().V1alpha1().ExternalMetrics(), metricsCache)
 
 	return controller, adapterInformerFactory
 }
