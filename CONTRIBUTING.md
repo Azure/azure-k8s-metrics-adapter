@@ -17,7 +17,7 @@ or contact [opencode@microsoft.com](mailto:opencode@microsoft.com) with any addi
 To do development you will need:
 
 - [Golang](https://golang.org/doc/install) - same as current [Kubernetes version ](https://github.com/kubernetes/community/blob/master/contributors/devel/development.md#go)
-- Kubernetes cluster - [minikube](https://github.com/kubernetes/minikube), , [Docker for Mac with Kubernetes support](https://docs.docker.com/docker-for-mac/kubernetes/),  [Docker for Windows with Kubernetes support](https://docs.docker.com/docker-for-windows/kubernetes/), [AKS](https://docs.microsoft.com/en-us/azure/aks/kubernetes-walkthrough)
+- Kubernetes cluster - [minikube](https://github.com/kubernetes/minikube), [Docker for Mac with Kubernetes support](https://docs.docker.com/docker-for-mac/kubernetes/),  [Docker for Windows with Kubernetes support](https://docs.docker.com/docker-for-windows/kubernetes/), [AKS](https://docs.microsoft.com/en-us/azure/aks/kubernetes-walkthrough)
 - [git](https://git-scm.com/downloads) 
 - [mercurial](https://www.mercurial-scm.org/downloads)  
 
@@ -27,6 +27,19 @@ To do development you will need:
 go get github.com/Azure/azure-k8s-metrics-adapter
 cd $GOPATH/src/github.com/Azure/azure-k8s-metrics-adapter
 ```
+
+### Add your fork
+
+[Fork this project in GitHub](https://help.github.com/articles/fork-a-repo/). Then add your fork:
+
+```bash
+cd $GOPATH/github.com/Azure/azure-k8s-metrics-adapter
+git remote rename origin upstream #rename to upstream so you can sync 
+git remote add origin <your-fork-url>
+git checkout -b <your-feature-branch>
+```
+
+Renaming the `origin` set by `go get` to `upstream` let's you use [upstream to sync your repository](https://help.github.com/articles/syncing-a-fork/) so you can keep your project uptodate with changes.
 
 ### Building the project
 To build the project locally, with out creating a docker image:
@@ -58,7 +71,7 @@ make vendor
 ```
 
 ### Use Skaffold
-To create a fast dev cycle you can use skaffold.  Before you run the command below be sure to:
+To create a fast dev cycle you can use skaffold with a local cluster (minikube or Docker for win/mac).  Before you run the command below be sure to:
 
 - Download [skaffold](https://github.com/GoogleContainerTools/skaffold#installation) 
 - Have your K8s context set to the local cluster you want to deploy to: `kubectl config use-context`
