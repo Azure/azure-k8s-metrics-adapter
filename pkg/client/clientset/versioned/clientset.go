@@ -19,7 +19,7 @@ limitations under the License.
 package versioned
 
 import (
-	metricsv1alpha1 "github.com/Azure/azure-k8s-metrics-adapter/pkg/client/clientset/versioned/typed/externalmetric/v1alpha1"
+	azurev1alpha1 "github.com/Azure/azure-k8s-metrics-adapter/pkg/client/clientset/versioned/typed/externalmetric/v1alpha1"
 	discovery "k8s.io/client-go/discovery"
 	rest "k8s.io/client-go/rest"
 	flowcontrol "k8s.io/client-go/util/flowcontrol"
@@ -27,27 +27,27 @@ import (
 
 type Interface interface {
 	Discovery() discovery.DiscoveryInterface
-	MetricsV1alpha1() metricsv1alpha1.MetricsV1alpha1Interface
+	AzureV1alpha1() azurev1alpha1.AzureV1alpha1Interface
 	// Deprecated: please explicitly pick a version if possible.
-	Metrics() metricsv1alpha1.MetricsV1alpha1Interface
+	Azure() azurev1alpha1.AzureV1alpha1Interface
 }
 
 // Clientset contains the clients for groups. Each group has exactly one
 // version included in a Clientset.
 type Clientset struct {
 	*discovery.DiscoveryClient
-	metricsV1alpha1 *metricsv1alpha1.MetricsV1alpha1Client
+	azureV1alpha1 *azurev1alpha1.AzureV1alpha1Client
 }
 
-// MetricsV1alpha1 retrieves the MetricsV1alpha1Client
-func (c *Clientset) MetricsV1alpha1() metricsv1alpha1.MetricsV1alpha1Interface {
-	return c.metricsV1alpha1
+// AzureV1alpha1 retrieves the AzureV1alpha1Client
+func (c *Clientset) AzureV1alpha1() azurev1alpha1.AzureV1alpha1Interface {
+	return c.azureV1alpha1
 }
 
-// Deprecated: Metrics retrieves the default version of MetricsClient.
+// Deprecated: Azure retrieves the default version of AzureClient.
 // Please explicitly pick a version.
-func (c *Clientset) Metrics() metricsv1alpha1.MetricsV1alpha1Interface {
-	return c.metricsV1alpha1
+func (c *Clientset) Azure() azurev1alpha1.AzureV1alpha1Interface {
+	return c.azureV1alpha1
 }
 
 // Discovery retrieves the DiscoveryClient
@@ -66,7 +66,7 @@ func NewForConfig(c *rest.Config) (*Clientset, error) {
 	}
 	var cs Clientset
 	var err error
-	cs.metricsV1alpha1, err = metricsv1alpha1.NewForConfig(&configShallowCopy)
+	cs.azureV1alpha1, err = azurev1alpha1.NewForConfig(&configShallowCopy)
 	if err != nil {
 		return nil, err
 	}
@@ -82,7 +82,7 @@ func NewForConfig(c *rest.Config) (*Clientset, error) {
 // panics if there is an error in the config.
 func NewForConfigOrDie(c *rest.Config) *Clientset {
 	var cs Clientset
-	cs.metricsV1alpha1 = metricsv1alpha1.NewForConfigOrDie(c)
+	cs.azureV1alpha1 = azurev1alpha1.NewForConfigOrDie(c)
 
 	cs.DiscoveryClient = discovery.NewDiscoveryClientForConfigOrDie(c)
 	return &cs
@@ -91,7 +91,7 @@ func NewForConfigOrDie(c *rest.Config) *Clientset {
 // New creates a new Clientset for the given RESTClient.
 func New(c rest.Interface) *Clientset {
 	var cs Clientset
-	cs.metricsV1alpha1 = metricsv1alpha1.New(c)
+	cs.azureV1alpha1 = azurev1alpha1.New(c)
 
 	cs.DiscoveryClient = discovery.NewDiscoveryClient(c)
 	return &cs

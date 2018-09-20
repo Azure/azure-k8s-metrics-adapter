@@ -25,22 +25,22 @@ import (
 	rest "k8s.io/client-go/rest"
 )
 
-type MetricsV1alpha1Interface interface {
+type AzureV1alpha1Interface interface {
 	RESTClient() rest.Interface
 	ExternalMetricsGetter
 }
 
-// MetricsV1alpha1Client is used to interact with features provided by the metrics.azure.com group.
-type MetricsV1alpha1Client struct {
+// AzureV1alpha1Client is used to interact with features provided by the azure.com group.
+type AzureV1alpha1Client struct {
 	restClient rest.Interface
 }
 
-func (c *MetricsV1alpha1Client) ExternalMetrics(namespace string) ExternalMetricInterface {
+func (c *AzureV1alpha1Client) ExternalMetrics(namespace string) ExternalMetricInterface {
 	return newExternalMetrics(c, namespace)
 }
 
-// NewForConfig creates a new MetricsV1alpha1Client for the given config.
-func NewForConfig(c *rest.Config) (*MetricsV1alpha1Client, error) {
+// NewForConfig creates a new AzureV1alpha1Client for the given config.
+func NewForConfig(c *rest.Config) (*AzureV1alpha1Client, error) {
 	config := *c
 	if err := setConfigDefaults(&config); err != nil {
 		return nil, err
@@ -49,12 +49,12 @@ func NewForConfig(c *rest.Config) (*MetricsV1alpha1Client, error) {
 	if err != nil {
 		return nil, err
 	}
-	return &MetricsV1alpha1Client{client}, nil
+	return &AzureV1alpha1Client{client}, nil
 }
 
-// NewForConfigOrDie creates a new MetricsV1alpha1Client for the given config and
+// NewForConfigOrDie creates a new AzureV1alpha1Client for the given config and
 // panics if there is an error in the config.
-func NewForConfigOrDie(c *rest.Config) *MetricsV1alpha1Client {
+func NewForConfigOrDie(c *rest.Config) *AzureV1alpha1Client {
 	client, err := NewForConfig(c)
 	if err != nil {
 		panic(err)
@@ -62,9 +62,9 @@ func NewForConfigOrDie(c *rest.Config) *MetricsV1alpha1Client {
 	return client
 }
 
-// New creates a new MetricsV1alpha1Client for the given RESTClient.
-func New(c rest.Interface) *MetricsV1alpha1Client {
-	return &MetricsV1alpha1Client{c}
+// New creates a new AzureV1alpha1Client for the given RESTClient.
+func New(c rest.Interface) *AzureV1alpha1Client {
+	return &AzureV1alpha1Client{c}
 }
 
 func setConfigDefaults(config *rest.Config) error {
@@ -82,7 +82,7 @@ func setConfigDefaults(config *rest.Config) error {
 
 // RESTClient returns a RESTClient that is used to communicate
 // with API server by this client implementation.
-func (c *MetricsV1alpha1Client) RESTClient() rest.Interface {
+func (c *AzureV1alpha1Client) RESTClient() rest.Interface {
 	if c == nil {
 		return nil
 	}

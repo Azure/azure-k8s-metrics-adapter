@@ -20,8 +20,8 @@ package fake
 
 import (
 	clientset "github.com/Azure/azure-k8s-metrics-adapter/pkg/client/clientset/versioned"
-	metricsv1alpha1 "github.com/Azure/azure-k8s-metrics-adapter/pkg/client/clientset/versioned/typed/externalmetric/v1alpha1"
-	fakemetricsv1alpha1 "github.com/Azure/azure-k8s-metrics-adapter/pkg/client/clientset/versioned/typed/externalmetric/v1alpha1/fake"
+	azurev1alpha1 "github.com/Azure/azure-k8s-metrics-adapter/pkg/client/clientset/versioned/typed/externalmetric/v1alpha1"
+	fakeazurev1alpha1 "github.com/Azure/azure-k8s-metrics-adapter/pkg/client/clientset/versioned/typed/externalmetric/v1alpha1/fake"
 	"k8s.io/apimachinery/pkg/runtime"
 	"k8s.io/apimachinery/pkg/watch"
 	"k8s.io/client-go/discovery"
@@ -71,12 +71,12 @@ func (c *Clientset) Discovery() discovery.DiscoveryInterface {
 
 var _ clientset.Interface = &Clientset{}
 
-// MetricsV1alpha1 retrieves the MetricsV1alpha1Client
-func (c *Clientset) MetricsV1alpha1() metricsv1alpha1.MetricsV1alpha1Interface {
-	return &fakemetricsv1alpha1.FakeMetricsV1alpha1{Fake: &c.Fake}
+// AzureV1alpha1 retrieves the AzureV1alpha1Client
+func (c *Clientset) AzureV1alpha1() azurev1alpha1.AzureV1alpha1Interface {
+	return &fakeazurev1alpha1.FakeAzureV1alpha1{Fake: &c.Fake}
 }
 
-// Metrics retrieves the MetricsV1alpha1Client
-func (c *Clientset) Metrics() metricsv1alpha1.MetricsV1alpha1Interface {
-	return &fakemetricsv1alpha1.FakeMetricsV1alpha1{Fake: &c.Fake}
+// Azure retrieves the AzureV1alpha1Client
+func (c *Clientset) Azure() azurev1alpha1.AzureV1alpha1Interface {
+	return &fakeazurev1alpha1.FakeAzureV1alpha1{Fake: &c.Fake}
 }

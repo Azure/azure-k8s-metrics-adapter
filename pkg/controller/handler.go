@@ -26,8 +26,12 @@ func NewHandler(externalmetricLister listers.ExternalMetricLister, metricCache *
 	}
 }
 
+type ContollerHandler interface {
+	Process(namespaceNameKey string) error
+}
+
 // Process validates the item exists then stores updates the metric cached used to make requests to azure
-func (handler *Handler) Process(namespaceNameKey string) error {
+func (handler Handler) Process(namespaceNameKey string) error {
 	ns, name, err := cache.SplitMetaNamespaceKey(namespaceNameKey)
 	if err != nil {
 		// not a valid key do not put back on queue

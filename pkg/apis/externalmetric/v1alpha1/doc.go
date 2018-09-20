@@ -1,4 +1,4 @@
 // +k8s:deepcopy-gen=package
-// +groupName=metrics.azure.com
+// +groupName=azure.com
 
 package v1alpha1
