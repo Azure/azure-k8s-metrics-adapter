@@ -53,7 +53,7 @@ type externalMetrics struct {
 }
 
 // newExternalMetrics returns a ExternalMetrics
-func newExternalMetrics(c *MetricsV1alpha1Client, namespace string) *externalMetrics {
+func newExternalMetrics(c *AzureV1alpha1Client, namespace string) *externalMetrics {
 	return &externalMetrics{
 		client: c.RESTClient(),
 		ns:     namespace,

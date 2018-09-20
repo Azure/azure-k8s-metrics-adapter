@@ -172,9 +172,9 @@ type SharedInformerFactory interface {
 	ForResource(resource schema.GroupVersionResource) (GenericInformer, error)
 	WaitForCacheSync(stopCh <-chan struct{}) map[reflect.Type]bool
 
-	Metrics() externalmetric.Interface
+	Azure() externalmetric.Interface
 }
 
-func (f *sharedInformerFactory) Metrics() externalmetric.Interface {
+func (f *sharedInformerFactory) Azure() externalmetric.Interface {
 	return externalmetric.New(f, f.namespace, f.tweakListOptions)
 }

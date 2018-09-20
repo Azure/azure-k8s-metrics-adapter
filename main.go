@@ -20,7 +20,6 @@ import (
 	azureprovider "github.com/Azure/azure-k8s-metrics-adapter/pkg/provider"
 	"github.com/golang/glog"
 	basecmd "github.com/kubernetes-incubator/custom-metrics-apiserver/pkg/cmd"
-	"github.com/kubernetes/kubernetes/staging/src/k8s.io/sample-controller/pkg/signals"
 	"k8s.io/apiserver/pkg/util/logs"
 )
 
@@ -36,7 +35,8 @@ func main() {
 	cmd.Flags().AddGoFlagSet(flag.CommandLine)
 	cmd.Flags().Parse(os.Args)
 
-	stopCh := signals.SetupSignalHandler()
+	stopCh := make(chan struct{})
+	defer close(stopCh)
 
 	metriccache := metriccache.NewMetricCache()
 
@@ -80,7 +80,8 @@ func newController(cmd *basecmd.AdapterBase, metricsCache *metriccache.MetricCac
 
 	adapterInformerFactory := informers.NewSharedInformerFactory(adapterClientSet, time.Second*30)
 
-	controller := controller.NewController(adapterInformerFactory.Metrics().V1alpha1().ExternalMetrics(), metricsCache)
+	handler := controller.NewHandler(adapterInformerFactory.Azure().V1alpha1().ExternalMetrics().Lister(), metricsCache)
+	controller := controller.NewController(adapterInformerFactory.Azure().V1alpha1().ExternalMetrics(), handler)
 
 	return controller, adapterInformerFactory
 }

@@ -61,13 +61,13 @@ func NewFilteredExternalMetricInformer(client versioned.Interface, namespace str
 				if tweakListOptions != nil {
 					tweakListOptions(&options)
 				}
-				return client.MetricsV1alpha1().ExternalMetrics(namespace).List(options)
+				return client.AzureV1alpha1().ExternalMetrics(namespace).List(options)
 			},
 			WatchFunc: func(options v1.ListOptions) (watch.Interface, error) {
 				if tweakListOptions != nil {
 					tweakListOptions(&options)
 				}
-				return client.MetricsV1alpha1().ExternalMetrics(namespace).Watch(options)
+				return client.AzureV1alpha1().ExternalMetrics(namespace).Watch(options)
 			},
 		},
 		&externalmetricv1alpha1.ExternalMetric{},

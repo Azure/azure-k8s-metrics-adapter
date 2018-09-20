@@ -4,8 +4,6 @@ import (
 	"fmt"
 	"time"
 
-	"github.com/Azure/azure-k8s-metrics-adapter/pkg/metriccache"
-
 	"github.com/golang/glog"
 	"k8s.io/apimachinery/pkg/util/runtime"
 	utilruntime "k8s.io/apimachinery/pkg/util/runtime"
@@ -20,27 +18,29 @@ import (
 type Controller struct {
 	externalMetricqueue  workqueue.RateLimitingInterface
 	externalMetricSynced cache.InformerSynced
-	handler              Handler
+	handler              ContollerHandler
+	enqueuer             func(obj interface{})
 }
 
 // NewController returns a new controller for handling external and custom metric types
-func NewController(externalMetricInformer informers.ExternalMetricInformer, metricCache *metriccache.MetricCache) *Controller {
+func NewController(externalMetricInformer informers.ExternalMetricInformer, handler ContollerHandler) *Controller {
 	controller := &Controller{
 		externalMetricSynced: externalMetricInformer.Informer().HasSynced,
 		externalMetricqueue:  workqueue.NewNamedRateLimitingQueue(workqueue.DefaultControllerRateLimiter(), "externalmetrics"),
-		handler:              NewHandler(externalMetricInformer.Lister(), metricCache),
+		handler:              handler,
 	}
 
 	glog.Info("Setting up external metric event handlers")
+	controller.enqueuer = controller.enqueueExternalMetric
 	externalMetricInformer.Informer().AddEventHandler(cache.ResourceEventHandlerFuncs{
-		AddFunc: controller.enqueueExternalMetric,
+		AddFunc: controller.enqueuer,
 		UpdateFunc: func(old, new interface{}) {
 			// Watches and Informers will “sync”.
 			// Periodically, they will deliver every matching object in the cluster to your Update method.
 			// https://github.com/kubernetes/community/blob/8cafef897a22026d42f5e5bb3f104febe7e29830/contributors/devel/controllers.md
-			controller.enqueueExternalMetric(new)
+			controller.enqueuer(new)
 		},
-		DeleteFunc: controller.enqueueExternalMetric,
+		DeleteFunc: controller.enqueuer,
 	})
 
 	return controller

@@ -30,13 +30,13 @@ import (
 
 // FakeExternalMetrics implements ExternalMetricInterface
 type FakeExternalMetrics struct {
-	Fake *FakeMetricsV1alpha1
+	Fake *FakeAzureV1alpha1
 	ns   string
 }
 
-var externalmetricsResource = schema.GroupVersionResource{Group: "metrics.azure.com", Version: "v1alpha1", Resource: "externalmetrics"}
+var externalmetricsResource = schema.GroupVersionResource{Group: "azure.com", Version: "v1alpha1", Resource: "externalmetrics"}
 
-var externalmetricsKind = schema.GroupVersionKind{Group: "metrics.azure.com", Version: "v1alpha1", Kind: "ExternalMetric"}
+var externalmetricsKind = schema.GroupVersionKind{Group: "azure.com", Version: "v1alpha1", Kind: "ExternalMetric"}
 
 // Get takes name of the externalMetric, and returns the corresponding externalMetric object, and an error if there is any.
 func (c *FakeExternalMetrics) Get(name string, options v1.GetOptions) (result *v1alpha1.ExternalMetric, err error) {
