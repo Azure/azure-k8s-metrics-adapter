@@ -39,12 +39,14 @@ func (handler Handler) Process(namespaceNameKey string) error {
 		return err
 	}
 
-	// Get the resource with this namespace/name
+	// check if item exists
 	glog.V(2).Infof("processing item '%s' in namespace '%s'", name, ns)
 	externalMetricInfo, err := handler.externalmetricLister.ExternalMetrics(ns).Get(name)
 	if err != nil {
 		if errors.IsNotFound(err) {
-			runtime.HandleError(fmt.Errorf("external metric '%s' in namespace '%s' from work queue no longer exists", name, ns))
+			// Then this we should remove
+			glog.V(2).Infof("removing item from cache '%s' in namespace '%s'", name, ns)
+			handler.metriccache.Remove(namespaceNameKey)
 			return nil
 		}
 
@@ -62,6 +64,7 @@ func (handler Handler) Process(namespaceNameKey string) error {
 		Aggregation:               externalMetricInfo.Spec.MetricConfig.Aggregation,
 	}
 
+	glog.V(2).Infof("adding to cache item '%s' in namespace '%s'", name, ns)
 	handler.metriccache.UpdateMetric(namespaceNameKey, azureMetricRequest)
 
 	return nil

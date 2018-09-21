@@ -41,3 +41,11 @@ func (mc *MetricCache) GetMetric(key string) (azmetricrequest.AzureMetricRequest
 
 	return metricRequest, true
 }
+
+// Remove retrieves a metric request from the cache
+func (mc *MetricCache) Remove(key string) {
+	mc.metricMutext.Lock()
+	defer mc.metricMutext.Unlock()
+
+	delete(mc.metrics, key)
+}
