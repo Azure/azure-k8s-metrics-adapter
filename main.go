@@ -11,7 +11,10 @@ import (
 	"runtime"
 	"time"
 
+	"github.com/Azure/azure-k8s-metrics-adapter/pkg/aim"
 	"github.com/Azure/azure-k8s-metrics-adapter/pkg/metriccache"
+	"github.com/Azure/azure-sdk-for-go/services/preview/monitor/mgmt/2018-03-01/insights"
+	"github.com/Azure/go-autorest/autorest/azure/auth"
 
 	"github.com/Azure/azure-k8s-metrics-adapter/pkg/az-metric-client"
 	clientset "github.com/Azure/azure-k8s-metrics-adapter/pkg/client/clientset/versioned"
@@ -63,7 +66,14 @@ func setupAzureProvider(cmd *basecmd.AdapterBase, metricsCache *metriccache.Metr
 		glog.Fatalf("unable to construct discovery REST mapper: %v", err)
 	}
 
-	azureProvider := azureprovider.NewAzureProvider(client, mapper, azureMetricClient.NewAzureMetricClient(metricsCache))
+	defaultSubscriptionID := getDefaultSubscriptionID()
+	monitorClient := insights.NewMetricsClient(defaultSubscriptionID)
+	authorizer, err := auth.NewAuthorizerFromEnvironment()
+	if err == nil {
+		monitorClient.Authorizer = authorizer
+	}
+
+	azureProvider := azureprovider.NewAzureProvider(client, mapper, azureMetricClient.NewAzureMetricClient(defaultSubscriptionID, metricsCache, monitorClient))
 	cmd.WithCustomMetrics(azureProvider)
 	cmd.WithExternalMetrics(azureProvider)
 }
@@ -84,4 +94,24 @@ func newController(cmd *basecmd.AdapterBase, metricsCache *metriccache.MetricCac
 	controller := controller.NewController(adapterInformerFactory.Azure().V1alpha1().ExternalMetrics(), handler)
 
 	return controller, adapterInformerFactory
+}
+
+func getDefaultSubscriptionID() string {
+	// if the user explicitly sets we should use that
+	subscriptionID := os.Getenv("SUBSCRIPTION_ID")
+	if subscriptionID == "" {
+		//fallback to trying azure instance meta data
+		azureConfig, err := aim.GetAzureConfig()
+		if err != nil {
+			glog.Errorf("Unable to get azure config from MSI: %v", err)
+		}
+
+		subscriptionID = azureConfig.SubscriptionID
+	}
+
+	if subscriptionID == "" {
+		glog.V(0).Info("Default Azure Subscription is not set.  You must provide subscription id via HPA lables, set an environment variable, or enable MSI.  See docs for more details")
+	}
+
+	return subscriptionID
 }

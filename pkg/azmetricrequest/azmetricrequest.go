@@ -26,6 +26,10 @@ type AzureMetricRequest struct {
 func ParseAzureMetric(metricSelector labels.Selector, defaultSubscriptionID string) (AzureMetricRequest, error) {
 	glog.V(2).Infof("begin parsing metric")
 
+	if metricSelector == nil {
+		return AzureMetricRequest{}, fmt.Errorf("metricSelector cannot be nil")
+	}
+
 	// Using selectors to pass required values thorugh
 	// to retain camel case as azure provider is case sensitive.
 	//
@@ -33,7 +37,7 @@ func ParseAzureMetric(metricSelector labels.Selector, defaultSubscriptionID stri
 	// restrictions here
 	// note: requirement values are already validated by apiserver
 	merticReq := AzureMetricRequest{
-		Timespan:       timeSpan(),
+		Timespan:       TimeSpan(),
 		SubscriptionID: defaultSubscriptionID,
 	}
 	requirements, _ := metricSelector.Requirements()
@@ -79,41 +83,52 @@ func ParseAzureMetric(metricSelector labels.Selector, defaultSubscriptionID stri
 		}
 	}
 
-	err := merticReq.Validate()
-	if err != nil {
-		return AzureMetricRequest{}, err
-	}
 	return merticReq, nil
+}
+
+type InvalidMetricRequestError struct {
+	err string
+}
+
+func (i InvalidMetricRequestError) Error() string {
+	return fmt.Sprintf(i.err)
+}
+
+func IsInvalidMetricRequestError(err error) bool {
+	if _, ok := err.(InvalidMetricRequestError); ok {
+		return true
+	}
+	return false
 }
 
 func (amr AzureMetricRequest) Validate() error {
 	if amr.MetricName == "" {
-		return fmt.Errorf("metricName is required")
+		return InvalidMetricRequestError{err: "metricName is required"}
 	}
 	if amr.ResourceGroup == "" {
-		return fmt.Errorf("resourceGroup is required")
+		return InvalidMetricRequestError{err: "resourceGroup is required"}
 	}
 	if amr.ResourceName == "" {
-		return fmt.Errorf("resourceName is required")
+		return InvalidMetricRequestError{err: "resourceName is required"}
 	}
 	if amr.ResourceProviderNamespace == "" {
-		return fmt.Errorf("resourceProviderNamespace is required")
+		return InvalidMetricRequestError{err: "resourceProviderNamespace is required"}
 	}
 	if amr.ResourceType == "" {
-		return fmt.Errorf("resourceType is required")
+		return InvalidMetricRequestError{err: "resourceType is required"}
 	}
 	if amr.Aggregation == "" {
-		return fmt.Errorf("aggregation is required")
+		return InvalidMetricRequestError{err: "aggregation is required"}
 	}
 	if amr.Timespan == "" {
-		return fmt.Errorf("timespan is required")
+		return InvalidMetricRequestError{err: "timespan is required"}
 	}
 	if amr.Filter == "" {
-		return fmt.Errorf("filter is required")
+		return InvalidMetricRequestError{err: "filter is required"}
 	}
 
 	if amr.SubscriptionID == "" {
-		return fmt.Errorf("subscriptionID is required. set a default or pass via label selectors")
+		return InvalidMetricRequestError{err: "subscriptionID is required. set a default or pass via label selectors"}
 	}
 
 	// if here then valid!
@@ -129,7 +144,8 @@ func (amr AzureMetricRequest) MetricResourceURI() string {
 		amr.ResourceName)
 }
 
-func timeSpan() string {
+// TimeSpan sets the default time to aggregate a metric
+func TimeSpan() string {
 	// defaults to last five minutes.
 	// TODO support configuration via config
 	endtime := time.Now().UTC().Format(time.RFC3339)
