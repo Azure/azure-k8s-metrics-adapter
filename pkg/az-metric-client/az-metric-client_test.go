@@ -13,7 +13,7 @@ import (
 	"github.com/Azure/azure-k8s-metrics-adapter/pkg/metriccache"
 )
 
-func Test_normalizeValue(t *testing.T) {
+func TestNormalizeValue(t *testing.T) {
 	type args struct {
 		value interface{}
 	}
@@ -67,53 +67,7 @@ func Test_normalizeValue(t *testing.T) {
 	}
 }
 
-func newFakeMonitorClient(result insights.Response, err error) MonitorClient {
-	return fakeMonitorClient{
-		err:    err,
-		result: result,
-	}
-}
-
-type fakeMonitorClient struct {
-	result insights.Response
-	err    error
-}
-
-func (f fakeMonitorClient) List(ctx context.Context, resourceURI string, timespan string, interval *string, metricnames string, aggregation string, top *int32, orderby string, filter string, resultType insights.ResultType, metricnamespace string) (result insights.Response, err error) {
-	result = f.result
-	err = f.err
-	return
-}
-
-func makeResponse(value float64) insights.Response {
-	metricValues := []insights.MetricValue{}
-	metrics := []insights.Metric{}
-	timeseries := []insights.TimeSeriesElement{}
-
-	te := insights.TimeSeriesElement{
-		Data: &metricValues,
-	}
-
-	v := value
-	mv := insights.MetricValue{
-		Total: &v,
-	}
-
-	metric := insights.Metric{
-		Timeseries: &timeseries,
-	}
-
-	metrics = append(metrics, metric)
-	timeseries = append(timeseries, te)
-	metricValues = append(metricValues, mv)
-
-	response := insights.Response{
-		Value: &metrics,
-	}
-	return response
-}
-
-func Test_IfNotValidCallGetError(t *testing.T) {
+func TestIfNotValidCallGetError(t *testing.T) {
 	monitorClient := newFakeMonitorClient(insights.Response{}, nil)
 	metricCache := metriccache.NewMetricCache()
 
@@ -126,7 +80,7 @@ func Test_IfNotValidCallGetError(t *testing.T) {
 	}
 }
 
-func Test_IfInsufficientDataGetError(t *testing.T) {
+func TestIfInsufficientDataGetError(t *testing.T) {
 	monitorClient := newFakeMonitorClient(insights.Response{}, nil)
 	metricCache := metriccache.NewMetricCache()
 
@@ -141,7 +95,7 @@ func Test_IfInsufficientDataGetError(t *testing.T) {
 	}
 }
 
-func Test_IfPassedViaLabelSelectorsItReturns(t *testing.T) {
+func TestIfPassedViaLabelSelectorsItReturns(t *testing.T) {
 	response := makeResponse(15)
 
 	monitorClient := newFakeMonitorClient(response, nil)
@@ -167,14 +121,14 @@ func Test_IfPassedViaLabelSelectorsItReturns(t *testing.T) {
 	}
 }
 
-func Test_IfCacheHasItReturn(t *testing.T) {
+func TestIfCacheHasItReturn(t *testing.T) {
 	response := makeResponse(15)
 
 	monitorClient := newFakeMonitorClient(response, nil)
 	metricCache := metriccache.NewMetricCache()
 
 	metricRequest := newMetricRequest()
-	metricCache.UpdateMetric("default/name", metricRequest)
+	metricCache.Update("default/name", metricRequest)
 	client := NewAzureMetricClient("", metricCache, monitorClient)
 
 	metricValue, err := client.GetAzureMetric("default", "name", nil)
@@ -193,6 +147,35 @@ func Test_IfCacheHasItReturn(t *testing.T) {
 	}
 }
 
+func makeResponse(value float64) insights.Response {
+	// create metric value
+	mv := insights.MetricValue{
+		Total: &value,
+	}
+	metricValues := []insights.MetricValue{}
+	metricValues = append(metricValues, mv)
+
+	// create timeseries
+	te := insights.TimeSeriesElement{
+		Data: &metricValues,
+	}
+	timeseries := []insights.TimeSeriesElement{}
+	timeseries = append(timeseries, te)
+
+	// create metric
+	metric := insights.Metric{
+		Timeseries: &timeseries,
+	}
+	metrics := []insights.Metric{}
+	metrics = append(metrics, metric)
+
+	// finish with response
+	response := insights.Response{
+		Value: &metrics,
+	}
+	return response
+}
+
 func newMetricRequest() azmetricrequest.AzureMetricRequest {
 	return azmetricrequest.AzureMetricRequest{
 		ResourceGroup:             "ResourceGroup",
@@ -204,4 +187,22 @@ func newMetricRequest() azmetricrequest.AzureMetricRequest {
 		Filter:                    "Filter",
 		Aggregation:               "Aggregation",
 	}
+}
+
+func newFakeMonitorClient(result insights.Response, err error) MonitorClient {
+	return fakeMonitorClient{
+		err:    err,
+		result: result,
+	}
+}
+
+type fakeMonitorClient struct {
+	result insights.Response
+	err    error
+}
+
+func (f fakeMonitorClient) List(ctx context.Context, resourceURI string, timespan string, interval *string, metricnames string, aggregation string, top *int32, orderby string, filter string, resultType insights.ResultType, metricnamespace string) (result insights.Response, err error) {
+	result = f.result
+	err = f.err
+	return
 }

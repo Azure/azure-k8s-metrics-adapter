@@ -91,7 +91,7 @@ func newController(cmd *basecmd.AdapterBase, metricsCache *metriccache.MetricCac
 	adapterInformerFactory := informers.NewSharedInformerFactory(adapterClientSet, time.Second*30)
 
 	handler := controller.NewHandler(adapterInformerFactory.Azure().V1alpha1().ExternalMetrics().Lister(), metricsCache)
-	controller := controller.NewController(adapterInformerFactory.Azure().V1alpha1().ExternalMetrics(), handler)
+	controller := controller.NewController(adapterInformerFactory.Azure().V1alpha1().ExternalMetrics(), &handler)
 
 	return controller, adapterInformerFactory
 }

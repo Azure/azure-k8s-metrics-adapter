@@ -20,16 +20,16 @@ func NewMetricCache() *MetricCache {
 	}
 }
 
-// UpdateMetric sets a metric request in the cache
-func (mc *MetricCache) UpdateMetric(key string, metricRequest azmetricrequest.AzureMetricRequest) {
+// Update sets a metric request in the cache
+func (mc *MetricCache) Update(key string, metricRequest azmetricrequest.AzureMetricRequest) {
 	mc.metricMutext.Lock()
 	defer mc.metricMutext.Unlock()
 
 	mc.metrics[key] = metricRequest
 }
 
-// GetMetric retrieves a metric request from the cache
-func (mc *MetricCache) GetMetric(key string) (azmetricrequest.AzureMetricRequest, bool) {
+// Get retrieves a metric request from the cache
+func (mc *MetricCache) Get(key string) (azmetricrequest.AzureMetricRequest, bool) {
 	mc.metricMutext.RLock()
 	defer mc.metricMutext.RUnlock()
 

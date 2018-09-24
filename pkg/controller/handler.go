@@ -31,7 +31,7 @@ type ContollerHandler interface {
 }
 
 // Process validates the item exists then stores updates the metric cached used to make requests to azure
-func (handler Handler) Process(namespaceNameKey string) error {
+func (h *Handler) Process(namespaceNameKey string) error {
 	ns, name, err := cache.SplitMetaNamespaceKey(namespaceNameKey)
 	if err != nil {
 		// not a valid key do not put back on queue
@@ -41,12 +41,12 @@ func (handler Handler) Process(namespaceNameKey string) error {
 
 	// check if item exists
 	glog.V(2).Infof("processing item '%s' in namespace '%s'", name, ns)
-	externalMetricInfo, err := handler.externalmetricLister.ExternalMetrics(ns).Get(name)
+	externalMetricInfo, err := h.externalmetricLister.ExternalMetrics(ns).Get(name)
 	if err != nil {
 		if errors.IsNotFound(err) {
 			// Then this we should remove
 			glog.V(2).Infof("removing item from cache '%s' in namespace '%s'", name, ns)
-			handler.metriccache.Remove(namespaceNameKey)
+			h.metriccache.Remove(namespaceNameKey)
 			return nil
 		}
 
@@ -65,7 +65,7 @@ func (handler Handler) Process(namespaceNameKey string) error {
 	}
 
 	glog.V(2).Infof("adding to cache item '%s' in namespace '%s'", name, ns)
-	handler.metriccache.UpdateMetric(namespaceNameKey, azureMetricRequest)
+	h.metriccache.Update(namespaceNameKey, azureMetricRequest)
 
 	return nil
 }
