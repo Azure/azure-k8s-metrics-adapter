@@ -36,7 +36,7 @@ func TestMetricValueIsStored(t *testing.T) {
 		t.Errorf("error after processing = %v, want %v", err, nil)
 	}
 
-	metricRequest, exists := metriccache.GetMetric(key)
+	metricRequest, exists := metriccache.Get(key)
 
 	if exists == false {
 		t.Errorf("exist = %v, want %v", exists, true)
@@ -62,7 +62,7 @@ func TestShouldFailOnInvalidCacheKey(t *testing.T) {
 		t.Errorf("error after processing nil, want non nil")
 	}
 
-	_, exists := metriccache.GetMetric(key)
+	_, exists := metriccache.Get(key)
 
 	if exists == true {
 		t.Errorf("exist = %v, want %v", exists, false)
@@ -80,7 +80,7 @@ func TestWhenItemHasBeenDeleted(t *testing.T) {
 
 	// add the item to the cache then test if it gets deleted
 	key := getKey(externalMetric)
-	metriccache.UpdateMetric(key, azmetricrequest.AzureMetricRequest{})
+	metriccache.Update(key, azmetricrequest.AzureMetricRequest{})
 
 	err := handler.Process(key)
 
@@ -88,7 +88,7 @@ func TestWhenItemHasBeenDeleted(t *testing.T) {
 		t.Errorf("error == %v, want nil", err)
 	}
 
-	_, exists := metriccache.GetMetric(key)
+	_, exists := metriccache.Get(key)
 
 	if exists == true {
 		t.Errorf("exist = %v, want %v", exists, false)

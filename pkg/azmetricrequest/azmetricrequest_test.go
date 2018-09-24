@@ -1,13 +1,16 @@
 package azmetricrequest
 
 import (
+	"fmt"
 	"reflect"
 	"testing"
 
 	"k8s.io/apimachinery/pkg/labels"
 )
 
-func Test_azureMetricRequest_metricResourceURI(t *testing.T) {
+const validLabelSelector = "resourceProviderNamespace=Microsoft.Servicebus,resourceType=namespaces,aggregation=Total,filter=EntityName_eq_externalq,resourceGroup=sb-external-example,resourceName=sb-external-ns,metricName=Messages"
+
+func TestAzureMetricRequestGeneratesValidMetricResourceURI(t *testing.T) {
 	tests := []struct {
 		name string
 		amr  AzureMetricRequest
@@ -69,7 +72,7 @@ func TestParseAzureMetric(t *testing.T) {
 	}
 }
 
-func Test_ParseInsufficientDataGetError(t *testing.T) {
+func TestParseInsufficientDataGetError(t *testing.T) {
 	// This doesn't have the all requeired selectors so should report that it is missing
 	selector, _ := labels.Parse("resourceProviderNamespace=Microsoft.Servicebus")
 
@@ -82,9 +85,8 @@ func Test_ParseInsufficientDataGetError(t *testing.T) {
 	}
 }
 
-func Test_ParseWithSubIdPassedIsValid(t *testing.T) {
-	// This doesn't have the all requeired selectors so should report that it is missing
-	selector, _ := labels.Parse("resourceProviderNamespace=Microsoft.Servicebus,resourceType=namespaces,aggregation=Total,filter=EntityName_eq_externalq,resourceGroup=sb-external-example,resourceName=sb-external-ns,metricName=Messages")
+func TestParseWithSubIdPassedIsValid(t *testing.T) {
+	selector, _ := labels.Parse(validLabelSelector)
 
 	metric, _ := ParseAzureMetric(selector, "1234")
 
@@ -95,11 +97,12 @@ func Test_ParseWithSubIdPassedIsValid(t *testing.T) {
 	}
 }
 
-func Test_ParseWithSubIdOnSelectorPassedIsValid(t *testing.T) {
-	// This doesn't have the all requeired selectors so should report that it is missing
-	selector, _ := labels.Parse("subscriptionID=1234,resourceProviderNamespace=Microsoft.Servicebus,resourceType=namespaces,aggregation=Total,filter=EntityName_eq_externalq,resourceGroup=sb-external-example,resourceName=sb-external-ns,metricName=Messages")
+func TestParseWithSubIdOnSelectorPassedIsValid(t *testing.T) {
 
-	metric, _ := ParseAzureMetric(selector, "1234")
+	subIDSelector := fmt.Sprintf("subscriptionID=1234,%s", validLabelSelector)
+	selector, _ := labels.Parse(subIDSelector)
+
+	metric, _ := ParseAzureMetric(selector, "")
 
 	err := metric.Validate()
 
@@ -108,9 +111,8 @@ func Test_ParseWithSubIdOnSelectorPassedIsValid(t *testing.T) {
 	}
 }
 
-func Test_ParseWithNoSubIdPassedIsFails(t *testing.T) {
-	// This doesn't have the all requeired selectors so should report that it is missing
-	selector, _ := labels.Parse("resourceProviderNamespace=Microsoft.Servicebus,resourceType=namespaces,aggregation=Total,filter=EntityName_eq_externalq,resourceGroup=sb-external-example,resourceName=sb-external-ns,metricName=Messages")
+func TestParseWithNoSubIdPassedIsFails(t *testing.T) {
+	selector, _ := labels.Parse(validLabelSelector)
 
 	metric, _ := ParseAzureMetric(selector, "")
 
