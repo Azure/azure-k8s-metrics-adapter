@@ -5,7 +5,7 @@ import (
 	"k8s.io/apimachinery/pkg/runtime"
 	"k8s.io/apimachinery/pkg/runtime/schema"
 
-	"github.com/Azure/azure-k8s-metrics-adapter/pkg/apis/externalmetric"
+	"github.com/Azure/azure-k8s-metrics-adapter/pkg/apis/metrics"
 )
 
 // GroupVersion is the identifier for the API which includes

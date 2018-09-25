@@ -19,7 +19,7 @@ limitations under the License.
 package scheme
 
 import (
-	azurev1alpha1 "github.com/Azure/azure-k8s-metrics-adapter/pkg/apis/externalmetric/v1alpha1"
+	azurev1alpha1 "github.com/Azure/azure-k8s-metrics-adapter/pkg/apis/metrics/v1alpha1"
 	v1 "k8s.io/apimachinery/pkg/apis/meta/v1"
 	runtime "k8s.io/apimachinery/pkg/runtime"
 	schema "k8s.io/apimachinery/pkg/runtime/schema"

@@ -19,8 +19,8 @@ limitations under the License.
 package azure
 
 import (
-	v1alpha1 "github.com/Azure/azure-k8s-metrics-adapter/pkg/client/informers/externalversions/externalmetric/v1alpha1"
 	internalinterfaces "github.com/Azure/azure-k8s-metrics-adapter/pkg/client/informers/externalversions/internalinterfaces"
+	v1alpha1 "github.com/Azure/azure-k8s-metrics-adapter/pkg/client/informers/externalversions/metrics/v1alpha1"
 )
 
 // Interface provides access to each of this group's versions.

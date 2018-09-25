@@ -6,7 +6,7 @@ import (
 
 	"github.com/Azure/azure-k8s-metrics-adapter/pkg/azmetricrequest"
 
-	api "github.com/Azure/azure-k8s-metrics-adapter/pkg/apis/externalmetric/v1alpha1"
+	api "github.com/Azure/azure-k8s-metrics-adapter/pkg/apis/metrics/v1alpha1"
 	"github.com/Azure/azure-k8s-metrics-adapter/pkg/metriccache"
 	metav1 "k8s.io/apimachinery/pkg/apis/meta/v1"
 	"k8s.io/apimachinery/pkg/runtime"
