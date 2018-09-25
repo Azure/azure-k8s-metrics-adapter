@@ -164,7 +164,7 @@ func newFullExternalMetric(name string) *api.ExternalMetric {
 				ResourceProviderNamespace: "Resource.NameSpace",
 				ResourceType:              "rt",
 			},
-			MetricConfig: api.MetricConfig{
+			MetricConfig: api.ExternalMetricConfig{
 				Aggregation: "Total",
 				MetricName:  "Name",
 				Filter:      "EntityName eq 'externalq'",

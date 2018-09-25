@@ -18,6 +18,14 @@ limitations under the License.
 
 package v1alpha1
 
+// CustomMetricListerExpansion allows custom methods to be added to
+// CustomMetricLister.
+type CustomMetricListerExpansion interface{}
+
+// CustomMetricNamespaceListerExpansion allows custom methods to be added to
+// CustomMetricNamespaceLister.
+type CustomMetricNamespaceListerExpansion interface{}
+
 // ExternalMetricListerExpansion allows custom methods to be added to
 // ExternalMetricLister.
 type ExternalMetricListerExpansion interface{}

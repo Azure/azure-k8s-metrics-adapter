@@ -212,7 +212,7 @@ func newExternalMetric() *api.ExternalMetric {
 		},
 		Spec: api.ExternalMetricSpec{
 			AzureConfig:  api.AzureConfig{},
-			MetricConfig: api.MetricConfig{},
+			MetricConfig: api.ExternalMetricConfig{},
 		},
 	}
 }

@@ -27,12 +27,17 @@ import (
 
 type AzureV1alpha1Interface interface {
 	RESTClient() rest.Interface
+	CustomMetricsGetter
 	ExternalMetricsGetter
 }
 
 // AzureV1alpha1Client is used to interact with features provided by the azure.com group.
 type AzureV1alpha1Client struct {
 	restClient rest.Interface
+}
+
+func (c *AzureV1alpha1Client) CustomMetrics(namespace string) CustomMetricInterface {
+	return newCustomMetrics(c, namespace)
 }
 
 func (c *AzureV1alpha1Client) ExternalMetrics(namespace string) ExternalMetricInterface {
