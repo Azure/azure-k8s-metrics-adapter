@@ -23,6 +23,7 @@ Prerequisites:
 - provisioned an [AKS Cluster](https://docs.microsoft.com/en-us/azure/aks/kubernetes-walkthrough)
 - your `kubeconfig` points to your cluster.  
 - [Metric Server deployed](https://github.com/kubernetes-incubator/metrics-server#deployment) to your cluster ([aks does not come with it deployed](https://github.com/Azure/AKS/issues/318)). Validate by running `kubectl get --raw "/apis/metrics.k8s.io/v1beta1/nodes" | jq .`
+- [helm](https://docs.helm.sh/using_helm/#quickstart-guide) or install on [helm on aks](https://docs.microsoft.com/en-us/azure/aks/kubernetes-helm)
 
 Get this repository and cd to this folder (on your GOPATH):
 
@@ -35,18 +36,19 @@ cd $GOPATH/src/github.com/Azure/azure-k8s-metrics-adapter/samples/servicebus-que
 Create a service bus in azure:
 
 ``` 
+export SERVICEBUS_NS=sb-external-ns-<your-initials>
 az group create -n sb-external-example -l eastus
-az servicebus namespace create -n sb-external-ns -g sb-external-example
-az servicebus queue create -n externalq --namespace-name sb-external-ns -g sb-external-example
+az servicebus namespace create -n $SERVICEBUS_NS -g sb-external-example
+az servicebus queue create -n externalq --namespace-name $SERVICEBUS_NS -g sb-external-example
 ```
 
 Create an auth rules for queue:
 
 ```
-az servicebus queue authorization-rule create --resource-group sb-external-example --namespace-name sb-external-ns --queue-name externalq  --name demorule --rights Listen Manage Send
+az servicebus queue authorization-rule create --resource-group sb-external-example --namespace-name $SERVICEBUS_NS --queue-name externalq  --name demorule --rights Listen Manage Send
 
 #save for connection string for later
-export SERVICEBUS_CONNECTION_STRING="$(az servicebus queue authorization-rule keys list --resource-group sb-external-example --namespace-name sb-external-ns --name demorule  --queue-name externalq -o json | jq -r .primaryConnectionString)"
+export SERVICEBUS_CONNECTION_STRING="$(az servicebus queue authorization-rule keys list --resource-group sb-external-example --namespace-name $SERVICEBUS_NS --name demorule  --queue-name externalq -o json | jq -r .primaryConnectionString)"
 ```
 
 > note: this gives full access to the queue for ease of use of demo.  You should create more fine grained control for each component of your app.  For example the consumer app should only have `Listen` rights and the producer app should only have `Send` rights.
@@ -57,10 +59,6 @@ export SERVICEBUS_CONNECTION_STRING="$(az servicebus queue authorization-rule ke
 
 Run the scripts provided to either [enable MSI](https://github.com/Azure/azure-k8s-metrics-adapter#azure-setup), [Azure AD Pod Identity](https://github.com/Azure/azure-k8s-metrics-adapter#azure-setup#using-azure-ad-pod-identity
 ) or [configure a Service Principal](https://github.com/Azure/azure-k8s-metrics-adapter/blob/master/README.md#using-azure-ad-application-id-and-secret) with the following environment variables for giving the access to the Service Bus Namespace Insights provider.
-
-```
-export ACCESS_RG=sb-external-example
-```
 
 ### Start the producer
 Make sure you have cloned this repository and are in the folder `samples/servicebus-queue` for remainder of this walkthrough.
@@ -82,7 +80,7 @@ Run the producer to create a few queue items, then hit `ctl-c` after a few messa
 Check the queue has values:
 
 ```
-az servicebus queue show --resource-group sb-external-example --namespace-name sb-external-ns --name externalq -o json | jq .messageCount
+az servicebus queue show --resource-group sb-external-example --namespace-name $SERVICEBUS_NS --name externalq -o json | jq .messageCount
 ```
 
 ### Configure Secret for consumer pod
@@ -127,17 +125,22 @@ received message:  the answer is 42
 
 Deploy the adapter:
 
-```bash
-kubectl apply -f https://raw.githubusercontent.com/Azure/azure-k8s-metrics-adapter/master/deploy/adapter.yaml
+```
+helm install --name sample-release ../../charts/azure-k8s-metrics-adapter --namespace custom-metrics 
 ```
 
-> note if you used [Azure AD Pod Identity](../../README.md#using-azure-ad-pod-identity) you need to use the specific adapter template file that declares the Azure Identity Binding on [Line 49](../../deploy/adapter-aad-pod-identity.yaml#L49) and [Line 61](../../deploy/adapter-aad-pod-identity.yaml#L61).
 
-```bash
-kubectl apply -f https://raw.githubusercontent.com/Azure/azure-k8s-metrics-adapter/master/deploy/adapter-aad-pod-identity.yaml
-```
+>Note: if you used a Service Principal you will need the deployment with a service principal configured and a secret deployed with the service principal values 
+>
+>```
+>helm install --name sample-release ../../charts/azure-k8s-metrics-adapter --namespace custom-metrics --set >azureAuthentication.method=clientSecret --set azureAuthentication.tenantID=<your tenantid> --set >azureAuthentication.clientID=<your clientID> --set azureAuthentication.clientSecret=<your clientSecret> --set >azureAuthentication.createSecret=true`
+>```
 
-> note if you used a Service Principal you will need the deployment with a service principal configured and a secret deployed with the service principal values `kubectl apply -f https://gist.githubusercontent.com/jsturtevant/3e30d57c2ecc3d09bbac5b4131f27907/raw/374bdd238f3b829c0f15f0030d197609e5a01cf5/deploy.yaml`
+> Note: if you used [Azure AD Pod Identity](../../README.md#using-azure-ad-pod-identity) you need to use the specific adapter template file that declares the Azure Identity Binding on [Line 49](../../deploy/adapter-aad-pod-identity.yaml#L49) and [Line 61](../../deploy/adapter-aad-pod-identity.yaml#L61).
+> ```bash
+> kubectl apply -f >https://raw.githubusercontent.com/Azure/azure-k8s-metrics-adapter/master/deploy/adapter-aad-pod-identity.yaml
+>```
+
 
 Check you can hit the external metric endpoint.  The resources will be empty as it [is not implemented yet](https://github.com/Azure/azure-k8s-metrics-adapter/issues/3) but you should receive a result.
 
@@ -153,12 +156,29 @@ kubectl get --raw "/apis/external.metrics.k8s.io/v1beta1" | jq .
 }
 ```
 
+### Configure Metric Adapter with metrics
+The metric adapter deploys a CRD called ExternalMetric which you can use to configure metrics.  To deploy these metric we need to update the Service Bus namespace in the configuration then deploy it:
+
+```
+sed -i 's|sb-external-ns|'${SERVICEBUS_NS}'|g' deploy/externalmetric.yaml
+kubectl apply -f deploy/externalmetric.yaml
+```
+
+You can list of the configured external metrics via:
+
+```
+kubectl get aem #shortcut for externalmetric
+
+```
+
 ### Deploy the HPA
 Deploy the HPA:
 
 ```
 kubectl apply -f deploy/hpa.yaml
 ```
+
+> note: the `external.metricName` defined on the HPA must match the `metadata.name` on the ExternalMetric HPA, in this case `queuemessages`.
 
 After a few seconds, validate that the HPA is configured.  If the `targets` shows `<unknown>` wait longer and try again.
 
@@ -169,7 +189,7 @@ kubectl get hpa consumer-scaler
 You can also check the queue value returns manually by running:
 
 ```
-kubectl  get --raw "/apis/external.metrics.k8s.io/v1beta1/namespaces/test/queuemessages?labelSelector=resourceProviderNamespace=Microsoft.Servicebus,resourceType=namespaces,aggregation=Total,filter=EntityName_eq_externalq,resourceGroup=sb-external-example,resourceName=sb-external-ns,metricName=Messages" | jq .
+kubectl  get --raw "/apis/external.metrics.k8s.io/v1beta1/namespaces/default/queuemessages" | jq .
 ```
 
 ## Scale!
@@ -183,7 +203,7 @@ Put some load on the queue. Note this will add 20,000 message then exit.
 Now check your queue is loaded:
 
 ```
-az servicebus queue show --resource-group sb-external-example --namespace-name sb-external-ns --name externalq -o json | jq .messageCount
+az servicebus queue show --resource-group sb-external-example --namespace-name $SERVICEBUS_NS --name externalq -o json | jq .messageCount
 
 // should have a good 19,000 or more
 19,858
@@ -233,7 +253,7 @@ Once you are done with this experiment you can delete kubernetes deployments and
 ```
 kubectl delete -f deploy/hpa.yaml
 kubectl delete -f deploy/consumer-deployment.yaml
-kubectl detele -f https://raw.githubusercontent.com/Azure/azure-k8s-metrics-adapter/master/deploy/adapter.yaml
+helm delete --purge sample-release
 
 az group delete -n sb-external-example
 ```

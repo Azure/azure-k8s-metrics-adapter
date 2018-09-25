@@ -1,0 +1,14 @@
+apiVersion: azure.com/v1alpha1
+kind: ExternalMetric
+metadata:
+  name: queuemessages
+spec:
+  azure:
+    resourceGroup: sb-external-example
+    resourceName: sb-external-ns
+    resourceProviderNamespace: Microsoft.ServiceBus
+    resourceType: namespaces
+  metric:
+    metricName: Messages
+    aggregation: Total
+    filter: EntityName eq 'externalq'

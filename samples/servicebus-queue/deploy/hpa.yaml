@@ -13,13 +13,4 @@ spec:
   - type: External
     external:
       metricName: queuemessages
-      metricSelector:
-        matchLabels:
-          metricName: Messages
-          resourceGroup: sb-external-example
-          resourceName: sb-external-ns
-          resourceProviderNamespace: Microsoft.Servicebus
-          resourceType: namespaces
-          aggregation: Total
-          filter: EntityName_eq_externalq
       targetValue: 30
