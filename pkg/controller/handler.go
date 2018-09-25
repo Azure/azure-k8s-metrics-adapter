@@ -4,7 +4,7 @@ import (
 	"fmt"
 
 	"github.com/Azure/azure-k8s-metrics-adapter/pkg/azmetricrequest"
-	listers "github.com/Azure/azure-k8s-metrics-adapter/pkg/client/listers/externalmetric/v1alpha1"
+	listers "github.com/Azure/azure-k8s-metrics-adapter/pkg/client/listers/metrics/v1alpha1"
 	"github.com/Azure/azure-k8s-metrics-adapter/pkg/metriccache"
 	"github.com/golang/glog"
 	"k8s.io/apimachinery/pkg/api/errors"

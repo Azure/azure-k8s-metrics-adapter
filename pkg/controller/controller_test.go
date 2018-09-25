@@ -4,7 +4,7 @@ import (
 	"errors"
 	"testing"
 
-	api "github.com/Azure/azure-k8s-metrics-adapter/pkg/apis/externalmetric/v1alpha1"
+	api "github.com/Azure/azure-k8s-metrics-adapter/pkg/apis/metrics/v1alpha1"
 	"github.com/Azure/azure-k8s-metrics-adapter/pkg/client/clientset/versioned/fake"
 	informers "github.com/Azure/azure-k8s-metrics-adapter/pkg/client/informers/externalversions"
 	metav1 "k8s.io/apimachinery/pkg/apis/meta/v1"

@@ -24,8 +24,8 @@ import (
 	time "time"
 
 	versioned "github.com/Azure/azure-k8s-metrics-adapter/pkg/client/clientset/versioned"
-	externalmetric "github.com/Azure/azure-k8s-metrics-adapter/pkg/client/informers/externalversions/externalmetric"
 	internalinterfaces "github.com/Azure/azure-k8s-metrics-adapter/pkg/client/informers/externalversions/internalinterfaces"
+	metrics "github.com/Azure/azure-k8s-metrics-adapter/pkg/client/informers/externalversions/metrics"
 	v1 "k8s.io/apimachinery/pkg/apis/meta/v1"
 	runtime "k8s.io/apimachinery/pkg/runtime"
 	schema "k8s.io/apimachinery/pkg/runtime/schema"
@@ -172,9 +172,9 @@ type SharedInformerFactory interface {
 	ForResource(resource schema.GroupVersionResource) (GenericInformer, error)
 	WaitForCacheSync(stopCh <-chan struct{}) map[reflect.Type]bool
 
-	Azure() externalmetric.Interface
+	Azure() metrics.Interface
 }
 
-func (f *sharedInformerFactory) Azure() externalmetric.Interface {
-	return externalmetric.New(f, f.namespace, f.tweakListOptions)
+func (f *sharedInformerFactory) Azure() metrics.Interface {
+	return metrics.New(f, f.namespace, f.tweakListOptions)
 }
