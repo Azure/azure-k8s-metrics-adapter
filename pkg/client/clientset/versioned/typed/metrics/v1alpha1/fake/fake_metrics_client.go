@@ -28,6 +28,10 @@ type FakeAzureV1alpha1 struct {
 	*testing.Fake
 }
 
+func (c *FakeAzureV1alpha1) CustomMetrics(namespace string) v1alpha1.CustomMetricInterface {
+	return &FakeCustomMetrics{c, namespace}
+}
+
 func (c *FakeAzureV1alpha1) ExternalMetrics(namespace string) v1alpha1.ExternalMetricInterface {
 	return &FakeExternalMetrics{c, namespace}
 }

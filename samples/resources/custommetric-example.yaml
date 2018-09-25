@@ -1,0 +1,9 @@
+apiVersion: azure.com/v1alpha1
+kind: CustomMetric
+metadata:
+  name: example-custom-metric-ai
+spec:
+  metric:
+    metricName: performanceCounters/requestsPerSecond
+    #applicationID: #optional
+    #query: #not implemented yet

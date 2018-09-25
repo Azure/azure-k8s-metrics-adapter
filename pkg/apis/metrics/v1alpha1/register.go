@@ -30,6 +30,8 @@ func addKnownTypes(scheme *runtime.Scheme) error {
 		SchemeGroupVersion,
 		&ExternalMetric{},
 		&ExternalMetricList{},
+		&CustomMetric{},
+		&CustomMetricList{},
 	)
 
 	// register the type in the scheme
