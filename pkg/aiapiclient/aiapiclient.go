@@ -11,7 +11,7 @@ import (
 	"os"
 	"time"
 
-	"github.com/Azure/azure-sdk-for-go/services/appinsights/v1/appinsights"
+	"github.com/Azure/azure-sdk-for-go/services/appinsights/v1/insights"
 	"github.com/Azure/go-autorest/autorest/azure/auth"
 	"github.com/golang/glog"
 )
@@ -60,22 +60,22 @@ func getMetricUsingADAuthorizer(ai AiAPIClient, metricInfo MetricRequest) (*Metr
 		return nil, err
 	}
 
-	applicationInsights := insights.New(ai.appID)
-	applicationInsights.Authorizer = authorizer
+	metricsClient := insights.NewMetricsClient()
+	metricsClient.Authorizer = authorizer
 
 	bodyShemaID := "schemaId" // todo: generate a unique ID
-	metricsBodyParameter := insights.MetricsPostBodySchemaParametersType{
+	metricsBodyParameter := insights.MetricsPostBodySchemaParameters{
 		Interval: &metricInfo.Interval,
 		Timespan: &metricInfo.Timespan,
 	}
-	metricsBody := []insights.MetricsPostBodySchemaType{
-		insights.MetricsPostBodySchemaType{
+	metricsBody := []insights.MetricsPostBodySchema{
+		insights.MetricsPostBodySchema{
 			ID:         &bodyShemaID,
 			Parameters: &metricsBodyParameter,
 		},
 	}
 
-	metricsResult, err := applicationInsights.GetMetricsMethod(context.Background(), metricsBody)
+	metricsResult, err := metricsClient.GetMultiple(context.Background(), ai.appID, metricsBody)
 	if err != nil {
 		glog.Errorf("unable to get retrive metric: %v", err)
 		return nil, err

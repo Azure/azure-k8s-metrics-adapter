@@ -10,16 +10,16 @@
   revision = "75cd24fc2f2c2a2088577d12123ddee5f54e0675"
 
 [[projects]]
-  digest = "1:a588325fe67e5c931a8de704caacafb80d7d89e18066070be8aef9209a38a002"
+  digest = "1:beb1ef131d100d1c6926743673a0f248cffb5741cc68858a18602076f12173dd"
   name = "github.com/Azure/azure-sdk-for-go"
   packages = [
-    "services/appinsights/v1/appinsights",
+    "services/appinsights/v1/insights",
     "services/preview/monitor/mgmt/2018-03-01/insights",
     "version",
   ]
   pruneopts = "UT"
-  revision = "2935c0241c74bd8549b843978dd6fc1be6f48b4a"
-  version = "v20.1.0"
+  revision = "d3bcaa706ac10b18784811ff31e43be635159013"
+  version = "v21.0.0"
 
 [[projects]]
   digest = "1:469646dd53a792f7ecbe8ddfb326a356354b7727ec26d783f3d76ea069eb432a"
@@ -941,7 +941,7 @@
   analyzer-name = "dep"
   analyzer-version = 1
   input-imports = [
-    "github.com/Azure/azure-sdk-for-go/services/appinsights/v1/appinsights",
+    "github.com/Azure/azure-sdk-for-go/services/appinsights/v1/insights",
     "github.com/Azure/azure-sdk-for-go/services/preview/monitor/mgmt/2018-03-01/insights",
     "github.com/Azure/go-autorest/autorest/azure/auth",
     "github.com/golang/glog",
