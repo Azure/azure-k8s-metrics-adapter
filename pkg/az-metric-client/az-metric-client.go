@@ -99,14 +99,22 @@ func (c AzureMetricClient) GetCustomMetric(groupResource schema.GroupResource, n
 		return 0, err
 	}
 
-	segments := result.Value.Segments
+	// check there is a metric result
+	if len(*result.Value) == 0 {
+		return 0, nil
+	}
+
+	// take only the first result (as we ask for a specific metric, there is only one result)
+	metricsResult := (*result.Value)[0]
+	segments := *metricsResult.Body.Value.Segments
 	if len(segments) <= 0 {
 		return 0, nil
 	}
 
 	// grab just the last value which will be the latest value of the metric
-	metric := segments[len(segments)-1].MetricValues[metricRequestInfo.MetricName]
-	value := metric[metricRequestInfo.Aggregation]
+	metric := segments[len(segments)-1].AdditionalProperties[metricRequestInfo.MetricName]
+	metricMap := metric.(map[string]interface{})
+	value := metricMap[metricRequestInfo.Aggregation]
 	normalizedValue := normalizeValue(value)
 
 	glog.V(2).Infof("found metric value: %s", normalizedValue)

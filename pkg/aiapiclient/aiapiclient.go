@@ -9,7 +9,6 @@ import (
 	"io/ioutil"
 	"net/http"
 	"os"
-	"time"
 
 	"github.com/Azure/azure-sdk-for-go/services/appinsights/v1/insights"
 	"github.com/Azure/go-autorest/autorest/azure/auth"
@@ -44,7 +43,7 @@ func NewAiAPIClient() AiAPIClient {
 }
 
 // GetMetric calls to API to retrieve a specific metric
-func (ai AiAPIClient) GetMetric(metricInfo MetricRequest) (*MetricsResponse, error) {
+func (ai AiAPIClient) GetMetric(metricInfo MetricRequest) (*insights.ListMetricsResultsItem, error) {
 	if ai.useADAuthorizer {
 		return getMetricUsingADAuthorizer(ai, metricInfo)
 	}
@@ -52,7 +51,7 @@ func (ai AiAPIClient) GetMetric(metricInfo MetricRequest) (*MetricsResponse, err
 	return getMetricUsingAPIKey(ai, metricInfo)
 }
 
-func getMetricUsingADAuthorizer(ai AiAPIClient, metricInfo MetricRequest) (*MetricsResponse, error) {
+func getMetricUsingADAuthorizer(ai AiAPIClient, metricInfo MetricRequest) (*insights.ListMetricsResultsItem, error) {
 
 	authorizer, err := auth.NewAuthorizerFromEnvironmentWithResource(azureAdResource)
 	if err != nil {
@@ -63,14 +62,17 @@ func getMetricUsingADAuthorizer(ai AiAPIClient, metricInfo MetricRequest) (*Metr
 	metricsClient := insights.NewMetricsClient()
 	metricsClient.Authorizer = authorizer
 
-	bodyShemaID := "schemaId" // todo: generate a unique ID
+	aggregation := []insights.MetricsAggregation{insights.MetricsAggregation(metricInfo.Aggregation)}
 	metricsBodyParameter := insights.MetricsPostBodySchemaParameters{
-		Interval: &metricInfo.Interval,
-		Timespan: &metricInfo.Timespan,
+		Interval:    &metricInfo.Interval,
+		Timespan:    &metricInfo.Timespan,
+		MetricID:    insights.MetricID(metricInfo.MetricName),
+		Aggregation: &aggregation,
+		Filter:      &metricInfo.Filter,
+		Orderby:     &metricInfo.OrderBy,
 	}
 	metricsBody := []insights.MetricsPostBodySchema{
 		insights.MetricsPostBodySchema{
-			ID:         &bodyShemaID,
 			Parameters: &metricsBodyParameter,
 		},
 	}
@@ -81,16 +83,10 @@ func getMetricUsingADAuthorizer(ai AiAPIClient, metricInfo MetricRequest) (*Metr
 		return nil, err
 	}
 
-	response := MetricsResponse{
-		StatusCode: metricsResult.StatusCode,
-	}
-
-	// todo: parse result from AI SDK
-
-	return &response, nil
+	return &metricsResult, nil
 }
 
-func getMetricUsingAPIKey(ai AiAPIClient, metricInfo MetricRequest) (*MetricsResponse, error) {
+func getMetricUsingAPIKey(ai AiAPIClient, metricInfo MetricRequest) (*insights.ListMetricsResultsItem, error) {
 	client := &http.Client{}
 
 	request := fmt.Sprintf("/%s/apps/%s/metrics/%s", apiVersion, ai.appID, metricInfo.MetricName)
@@ -110,14 +106,12 @@ func getMetricUsingAPIKey(ai AiAPIClient, metricInfo MetricRequest) (*MetricsRes
 		return nil, err
 	}
 
-	response := MetricsResponse{
-		StatusCode: resp.StatusCode,
-	}
+	response := insights.ListMetricsResultsItem{}
 
 	return unmarshalResponse(resp.Body, &response)
 }
 
-func unmarshalResponse(body io.ReadCloser, response *MetricsResponse) (*MetricsResponse, error) {
+func unmarshalResponse(body io.ReadCloser, response *insights.ListMetricsResultsItem) (*insights.ListMetricsResultsItem, error) {
 	defer body.Close()
 	respBody, err := ioutil.ReadAll(body)
 	if err != nil {
@@ -133,56 +127,56 @@ func unmarshalResponse(body io.ReadCloser, response *MetricsResponse) (*MetricsR
 	return response, nil
 }
 
-// MetricsResponse is the response from the api that holds metric values and segments
-type MetricsResponse struct {
-	StatusCode int
-	Value      struct {
-		Start        time.Time `json:"start"`
-		End          time.Time `json:"end"`
-		Interval     string    `json:"interval"`
-		Segments     []Segment `json:"segments"`
-		MetricValues Segment
-	} `json:"value"`
-}
+// // MetricsResponse is the response from the api that holds metric values and segments
+// type MetricsResponse struct {
+// 	StatusCode int
+// 	Value      struct {
+// 		Start        time.Time `json:"start"`
+// 		End          time.Time `json:"end"`
+// 		Interval     string    `json:"interval"`
+// 		Segments     []Segment `json:"segments"`
+// 		MetricValues Segment
+// 	} `json:"value"`
+// }
 
-// Segment holds the metric values for a given segment
-type Segment struct {
-	Start        time.Time `json:"start"`
-	End          time.Time `json:"end"`
-	MetricValues map[string]map[string]interface{}
-}
+// // Segment holds the metric values for a given segment
+// type Segment struct {
+// 	Start        time.Time `json:"start"`
+// 	End          time.Time `json:"end"`
+// 	MetricValues map[string]map[string]interface{}
+// }
 
-// UnmarshalJSON is a custom UnMarshaler that parses the Segment information
-func (s *Segment) UnmarshalJSON(b []byte) error {
-	var segments map[string]interface{}
-	if err := json.Unmarshal(b, &segments); err != nil {
-		return err
-	}
+// // UnmarshalJSON is a custom UnMarshaler that parses the Segment information
+// func (s *Segment) UnmarshalJSON(b []byte) error {
+// 	var segments map[string]interface{}
+// 	if err := json.Unmarshal(b, &segments); err != nil {
+// 		return err
+// 	}
 
-	for key, value := range segments {
-		switch key {
-		case "start":
-			t, err := time.Parse(time.RFC3339, value.(string))
-			if err != nil {
-				return err
-			}
-			s.Start = t
-		case "end":
-			t, err := time.Parse(time.RFC3339, value.(string))
-			if err != nil {
-				return err
-			}
-			s.End = t
-		default:
-			if s.MetricValues == nil {
-				s.MetricValues = make(map[string]map[string]interface{})
-			}
-			s.MetricValues[key] = value.(map[string]interface{})
-		}
-	}
+// 	for key, value := range segments {
+// 		switch key {
+// 		case "start":
+// 			t, err := time.Parse(time.RFC3339, value.(string))
+// 			if err != nil {
+// 				return err
+// 			}
+// 			s.Start = t
+// 		case "end":
+// 			t, err := time.Parse(time.RFC3339, value.(string))
+// 			if err != nil {
+// 				return err
+// 			}
+// 			s.End = t
+// 		default:
+// 			if s.MetricValues == nil {
+// 				s.MetricValues = make(map[string]map[string]interface{})
+// 			}
+// 			s.MetricValues[key] = value.(map[string]interface{})
+// 		}
+// 	}
 
-	return nil
-}
+// 	return nil
+// }
 
 // MetricRequest represents options for the AI endpoint
 type MetricRequest struct {
