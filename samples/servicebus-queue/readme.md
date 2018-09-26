@@ -99,10 +99,10 @@ Deploy the consumer:
 kubectl apply -f deploy/consumer-deployment.yaml
 ```
 
-Check that the consumer was able to recieve messages:
+Check that the consumer was able to receive messages:
 
 ```
-k logs -l app=consumer
+kubectl logs -l app=consumer
 
 # output should look something like
 connecting to queue:  externalq
