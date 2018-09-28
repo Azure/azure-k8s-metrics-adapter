@@ -1,26 +1,33 @@
 package aiapiclient
 
 import (
+	"context"
+	"crypto/rand"
 	"encoding/json"
 	"errors"
 	"fmt"
+	"io"
 	"io/ioutil"
+	"log"
 	"net/http"
 	"os"
-	"time"
 
+	"github.com/Azure/azure-sdk-for-go/services/appinsights/v1/insights"
+	"github.com/Azure/go-autorest/autorest/azure/auth"
 	"github.com/golang/glog"
 )
 
 const (
-	defaultAPIUrl = "api.applicationinsights.io"
-	apiVersion    = "v1"
+	defaultAPIUrl   = "api.applicationinsights.io"
+	apiVersion      = "v1"
+	azureAdResource = "https://api.applicationinsights.io"
 )
 
 // AiAPIClient is used to call Application Insights Api
 type AiAPIClient struct {
-	appID  string
-	appKey string
+	appID           string
+	appKey          string
+	useADAuthorizer bool
 }
 
 // NewAiAPIClient creates a client for calling Application
@@ -29,14 +36,85 @@ func NewAiAPIClient() AiAPIClient {
 	defaultAppInsightsAppID := os.Getenv("APP_INSIGHTS_APP_ID")
 	appInsightsKey := os.Getenv("APP_INSIGHTS_KEY")
 
+	// if no application insights key has been specified, then we will use AD authentication
 	return AiAPIClient{
-		appID:  defaultAppInsightsAppID,
-		appKey: appInsightsKey,
+		appID:           defaultAppInsightsAppID,
+		appKey:          appInsightsKey,
+		useADAuthorizer: appInsightsKey == "",
 	}
 }
 
 // GetMetric calls to API to retrieve a specific metric
-func (ai AiAPIClient) GetMetric(metricInfo MetricRequest) (*MetricsResponse, error) {
+func (ai AiAPIClient) GetMetric(metricInfo MetricRequest) (*insights.MetricsResult, error) {
+	if ai.useADAuthorizer {
+		glog.V(2).Infoln("No application insights key provided - using Azure GO SDK auth.")
+		return getMetricUsingADAuthorizer(ai, metricInfo)
+	}
+
+	glog.V(2).Infoln("Application insights key has been provided - using Application Insights REST API.")
+	return getMetricUsingAPIKey(ai, metricInfo)
+}
+
+func getMetricUsingADAuthorizer(ai AiAPIClient, metricInfo MetricRequest) (*insights.MetricsResult, error) {
+
+	authorizer, err := auth.NewAuthorizerFromEnvironmentWithResource(azureAdResource)
+	if err != nil {
+		glog.Errorf("unable to retrieve an authorizer from environment: %v", err)
+		return nil, err
+	}
+
+	metricsClient := insights.NewMetricsClient()
+	metricsClient.Authorizer = authorizer
+
+	metricsBodyParameter := insights.MetricsPostBodySchemaParameters{
+		Interval: &metricInfo.Interval,
+		Timespan: &metricInfo.Timespan,
+		MetricID: insights.MetricID(metricInfo.MetricName),
+	}
+
+	requestSchemaIdentifier := generateRequestSchemaUniqueIdentifier()
+	metricsBody := []insights.MetricsPostBodySchema{
+		insights.MetricsPostBodySchema{
+			ID:         &requestSchemaIdentifier,
+			Parameters: &metricsBodyParameter,
+		},
+	}
+
+	metricsResultsItem, err := metricsClient.GetMultiple(context.Background(), ai.appID, metricsBody)
+	if err != nil {
+		glog.Errorf("unable to get retrive metric: %v", err)
+		return nil, err
+	}
+
+	// check there is a metric result
+	if len(*metricsResultsItem.Value) == 0 {
+		return nil, errors.New("response from metrics request is empty")
+	}
+
+	// take only the first result (as we ask for a specific metric, there is only one result)
+	metricsResult := (*metricsResultsItem.Value)[0]
+
+	// check the body is not nil
+	if metricsResult.Body == nil {
+		return nil, errors.New("response from metrics request is empty")
+	}
+
+	return metricsResult.Body, nil
+}
+
+func generateRequestSchemaUniqueIdentifier() string {
+	b := make([]byte, 16)
+	_, err := rand.Read(b)
+	if err != nil {
+		log.Fatal(err)
+	}
+	uuid := fmt.Sprintf("%x-%x-%x-%x-%x",
+		b[0:4], b[4:6], b[6:8], b[8:10], b[10:])
+
+	return uuid
+}
+
+func getMetricUsingAPIKey(ai AiAPIClient, metricInfo MetricRequest) (*insights.MetricsResult, error) {
 	client := &http.Client{}
 
 	request := fmt.Sprintf("/%s/apps/%s/metrics/%s", apiVersion, ai.appID, metricInfo.MetricName)
@@ -52,78 +130,43 @@ func (ai AiAPIClient) GetMetric(metricInfo MetricRequest) (*MetricsResponse, err
 	glog.V(2).Infoln("request to: ", req.URL)
 	resp, err := client.Do(req)
 	if err != nil {
-		glog.Errorf("unable to get retrive metric: %v", err)
+		glog.Errorf("unable to retrive metric: %v", err)
 		return nil, err
 	}
 
-	response := MetricsResponse{
-		StatusCode: resp.StatusCode,
-	}
+	// check the response status is OK. If not, return the error
+	if resp.StatusCode != 200 {
+		defer resp.Body.Close()
+		respBody, err := ioutil.ReadAll(resp.Body)
+		if err != nil {
+			glog.Errorf("unable to retrieve metric: %s", err)
+			return nil, err
+		}
 
-	defer resp.Body.Close()
-	respBody, err := ioutil.ReadAll(resp.Body)
+		respMessage := string(respBody)
+		err = fmt.Errorf(respMessage)
+		return nil, err
+	}
+	// return the response unmarshaled
+	metricsResult := insights.MetricsResult{}
+	return unmarshalResponse(resp.Body, &metricsResult)
+}
+
+func unmarshalResponse(body io.ReadCloser, metricsResult *insights.MetricsResult) (*insights.MetricsResult, error) {
+	defer body.Close()
+	respBody, err := ioutil.ReadAll(body)
+
 	if err != nil {
 		glog.Errorf("unable to get read metric response body: %v", err)
 		return nil, err
 	}
 
-	err = json.Unmarshal(respBody, &response)
+	err = json.Unmarshal(respBody, metricsResult)
 	if err != nil {
 		return nil, errors.New("unknown response format")
 	}
 
-	return &response, nil
-}
-
-// MetricsResponse is the response from the api that holds metric values and segments
-type MetricsResponse struct {
-	StatusCode int
-	Value      struct {
-		Start        time.Time `json:"start"`
-		End          time.Time `json:"end"`
-		Interval     string    `json:"interval"`
-		Segments     []Segment `json:"segments"`
-		MetricValues Segment
-	} `json:"value"`
-}
-
-// Segment holds the metric values for a given segment
-type Segment struct {
-	Start        time.Time `json:"start"`
-	End          time.Time `json:"end"`
-	MetricValues map[string]map[string]interface{}
-}
-
-// UnmarshalJSON is a custom UnMarshaler that parses the Segment information
-func (s *Segment) UnmarshalJSON(b []byte) error {
-	var segments map[string]interface{}
-	if err := json.Unmarshal(b, &segments); err != nil {
-		return err
-	}
-
-	for key, value := range segments {
-		switch key {
-		case "start":
-			t, err := time.Parse(time.RFC3339, value.(string))
-			if err != nil {
-				return err
-			}
-			s.Start = t
-		case "end":
-			t, err := time.Parse(time.RFC3339, value.(string))
-			if err != nil {
-				return err
-			}
-			s.End = t
-		default:
-			if s.MetricValues == nil {
-				s.MetricValues = make(map[string]map[string]interface{})
-			}
-			s.MetricValues[key] = value.(map[string]interface{})
-		}
-	}
-
-	return nil
+	return metricsResult, nil
 }
 
 // MetricRequest represents options for the AI endpoint

@@ -85,28 +85,34 @@ func (c AzureMetricClient) GetCustomMetric(groupResource schema.GroupResource, n
 	// because metrics names are multipart in AI and we can not pass an extra /
 	// through k8s api we convert - to / to get around that
 	convertedMetricName := strings.Replace(metricName, "-", "/", -1)
-	metricRequestInfo := aiapiclient.NewMetricRequest(convertedMetricName)
+	glog.V(2).Infof("New call to GetCustomMetric: %s", convertedMetricName)
 
 	// get the last 5 mins and chunking into 30 seconds
 	// this seems to be the best way to get the closest average rate at time of request
 	// any smaller time intervals and the values come back null
+	metricRequestInfo := aiapiclient.NewMetricRequest(convertedMetricName)
 	metricRequestInfo.Timespan = "PT5M"
 	metricRequestInfo.Interval = "PT30S"
-	metricRequestInfo.Aggregation = "avg"
 
-	result, err := c.appinsightsclient.GetMetric(metricRequestInfo)
+	metricsResult, err := c.appinsightsclient.GetMetric(metricRequestInfo)
 	if err != nil {
 		return 0, err
 	}
 
-	segments := result.Value.Segments
+	if metricsResult.Value == nil || metricsResult.Value.Segments == nil {
+		return 0, errors.New("metrics result is nil")
+	}
+
+	segments := *metricsResult.Value.Segments
 	if len(segments) <= 0 {
+		glog.V(2).Info("segments length = 0")
 		return 0, nil
 	}
 
 	// grab just the last value which will be the latest value of the metric
-	metric := segments[len(segments)-1].MetricValues[metricRequestInfo.MetricName]
-	value := metric[metricRequestInfo.Aggregation]
+	metric := segments[len(segments)-1].AdditionalProperties[convertedMetricName]
+	metricMap := metric.(map[string]interface{})
+	value := metricMap["avg"]
 	normalizedValue := normalizeValue(value)
 
 	glog.V(2).Infof("found metric value: %s", normalizedValue)

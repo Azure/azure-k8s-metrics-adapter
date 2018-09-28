@@ -54,7 +54,9 @@ export SERVICEBUS_CONNECTION_STRING="$(az servicebus queue authorization-rule ke
 ## Setup AKS Cluster
 
 ### Enable Access to Azure Resources
-Run the scripts provided to either [enable MSI](https://github.com/Azure/azure-k8s-metrics-adapter#azure-setup) or [configure a Service Principal](https://github.com/Azure/azure-k8s-metrics-adapter/blob/master/README.md#using-azure-ad-application-id-and-secret) with the following environment variables for giving the access to the Service Bus Namespace Insights provider.
+
+Run the scripts provided to either [enable MSI](https://github.com/Azure/azure-k8s-metrics-adapter#azure-setup), [Azure AD Pod Identity](https://github.com/Azure/azure-k8s-metrics-adapter#azure-setup#using-azure-ad-pod-identity
+) or [configure a Service Principal](https://github.com/Azure/azure-k8s-metrics-adapter/blob/master/README.md#using-azure-ad-application-id-and-secret) with the following environment variables for giving the access to the Service Bus Namespace Insights provider.
 
 ```
 export ACCESS_RG=sb-external-example
@@ -122,10 +124,17 @@ received message:  the answer is 42
 ## Set up Azure Metrics Adapter
 
 ### Deploy the adapter
+
 Deploy the adapter:
 
-```
+```bash
 kubectl apply -f https://raw.githubusercontent.com/Azure/azure-k8s-metrics-adapter/master/deploy/adapter.yaml
+```
+
+> note if you used [Azure AD Pod Identity](../../README.md#using-azure-ad-pod-identity) you need to use the specific adapter template file that declares the Azure Identity Binding on [Line 49](../../deploy/adapter-aad-pod-identity.yaml#L49) and [Line 61](../../deploy/adapter-aad-pod-identity.yaml#L61).
+
+```bash
+kubectl apply -f https://raw.githubusercontent.com/Azure/azure-k8s-metrics-adapter/master/deploy/adapter-aad-pod-identity.yaml
 ```
 
 > note if you used a Service Principal you will need the deployment with a service principal configured and a secret deployed with the service principal values `kubectl apply -f https://gist.githubusercontent.com/jsturtevant/3e30d57c2ecc3d09bbac5b4131f27907/raw/374bdd238f3b829c0f15f0030d197609e5a01cf5/deploy.yaml`
