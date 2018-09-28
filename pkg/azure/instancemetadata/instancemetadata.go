@@ -3,7 +3,7 @@
 	under Apache License Version 2.0. See diff for changes.
 */
 
-package aim
+package instancemetadata
 
 import (
 	"io/ioutil"

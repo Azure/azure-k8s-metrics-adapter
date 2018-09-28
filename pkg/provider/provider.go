@@ -3,7 +3,6 @@ package provider
 import (
 	"time"
 
-	"github.com/Azure/azure-k8s-metrics-adapter/pkg/aim"
 	"github.com/Azure/azure-k8s-metrics-adapter/pkg/az-metric-client"
 	"github.com/golang/glog"
 	"k8s.io/apimachinery/pkg/api/errors"
@@ -23,7 +22,6 @@ import (
 type AzureProvider struct {
 	client         dynamic.Interface
 	mapper         apimeta.RESTMapper
-	azureConfig    aim.AzureConfig
 	azMetricClient azureMetricClient.AzureMetricClient
 }
 

@@ -1,4 +1,4 @@
-package aiapiclient
+package appinsights
 
 import (
 	"context"

@@ -11,7 +11,7 @@ import (
 	"runtime"
 	"time"
 
-	"github.com/Azure/azure-k8s-metrics-adapter/pkg/aim"
+	"github.com/Azure/azure-k8s-metrics-adapter/pkg/azure/instancemetadata"
 	"github.com/Azure/azure-k8s-metrics-adapter/pkg/metriccache"
 	"github.com/Azure/azure-sdk-for-go/services/preview/monitor/mgmt/2018-03-01/insights"
 	"github.com/Azure/go-autorest/autorest/azure/auth"
@@ -101,7 +101,7 @@ func getDefaultSubscriptionID() string {
 	subscriptionID := os.Getenv("SUBSCRIPTION_ID")
 	if subscriptionID == "" {
 		//fallback to trying azure instance meta data
-		azureConfig, err := aim.GetAzureConfig()
+		azureConfig, err := instancemetadata.GetAzureConfig()
 		if err != nil {
 			glog.Errorf("Unable to get azure config from MSI: %v", err)
 		}
