@@ -948,6 +948,7 @@
     "github.com/Azure/go-autorest/autorest/azure/auth",
     "github.com/golang/glog",
     "github.com/kubernetes-incubator/custom-metrics-apiserver/pkg/cmd",
+    "github.com/kubernetes-incubator/custom-metrics-apiserver/pkg/dynamicmapper",
     "github.com/kubernetes-incubator/custom-metrics-apiserver/pkg/provider",
     "k8s.io/apimachinery/pkg/api/errors",
     "k8s.io/apimachinery/pkg/api/meta",

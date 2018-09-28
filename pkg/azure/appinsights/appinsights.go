@@ -11,6 +11,7 @@ import (
 	"log"
 	"net/http"
 	"os"
+	"strings"
 
 	"github.com/Azure/azure-sdk-for-go/services/appinsights/v1/insights"
 	"github.com/Azure/go-autorest/autorest/azure/auth"
@@ -23,29 +24,89 @@ const (
 	azureAdResource = "https://api.applicationinsights.io"
 )
 
-// AiAPIClient is used to call Application Insights Api
-type AiAPIClient struct {
+// AzureAppInsightsClient provides methods for accessing App Insights via AD auth or App API Key
+type AzureAppInsightsClient interface {
+	GetCustomMetric(namespace string, metricName string) (float64, error)
+}
+
+// appinsightsClient is used to call Application Insights Api
+type appinsightsClient struct {
 	appID           string
 	appKey          string
 	useADAuthorizer bool
 }
 
-// NewAiAPIClient creates a client for calling Application
+// NewClient creates a client for calling Application
 // insights api
-func NewAiAPIClient() AiAPIClient {
+func NewClient() AzureAppInsightsClient {
 	defaultAppInsightsAppID := os.Getenv("APP_INSIGHTS_APP_ID")
 	appInsightsKey := os.Getenv("APP_INSIGHTS_KEY")
 
 	// if no application insights key has been specified, then we will use AD authentication
-	return AiAPIClient{
+	return appinsightsClient{
 		appID:           defaultAppInsightsAppID,
 		appKey:          appInsightsKey,
 		useADAuthorizer: appInsightsKey == "",
 	}
 }
 
+// GetCustomMetric calls to Application Insights to retrieve the value of the metric requested
+func (c appinsightsClient) GetCustomMetric(namespace string, metricName string) (float64, error) {
+	// because metrics names are multipart in AI and we can not pass an extra /
+	// through k8s api we convert - to / to get around that
+	convertedMetricName := strings.Replace(metricName, "-", "/", -1)
+	glog.V(2).Infof("New call to GetCustomMetric: %s", convertedMetricName)
+
+	// get the last 5 mins and chunking into 30 seconds
+	// this seems to be the best way to get the closest average rate at time of request
+	// any smaller time intervals and the values come back null
+	metricRequestInfo := NewMetricRequest(convertedMetricName)
+	metricRequestInfo.Timespan = "PT5M"
+	metricRequestInfo.Interval = "PT30S"
+
+	metricsResult, err := c.getMetric(metricRequestInfo)
+	if err != nil {
+		return 0, err
+	}
+
+	if metricsResult.Value == nil || metricsResult.Value.Segments == nil {
+		return 0, errors.New("metrics result is nil")
+	}
+
+	segments := *metricsResult.Value.Segments
+	if len(segments) <= 0 {
+		glog.V(2).Info("segments length = 0")
+		return 0, nil
+	}
+
+	// grab just the last value which will be the latest value of the metric
+	metric := segments[len(segments)-1].AdditionalProperties[convertedMetricName]
+	metricMap := metric.(map[string]interface{})
+	value := metricMap["avg"]
+	normalizedValue := normalizeValue(value)
+
+	glog.V(2).Infof("found metric value: %f", normalizedValue)
+	return normalizedValue, nil
+}
+
+func normalizeValue(value interface{}) float64 {
+	switch t := value.(type) {
+	case int32:
+		return float64(value.(int32))
+	case float32:
+		return float64(value.(float32))
+	case float64:
+		return value.(float64)
+	case int64:
+		return float64(value.(int64))
+	default:
+		glog.V(0).Infof("unexpected type: %T", t)
+		return 0
+	}
+}
+
 // GetMetric calls to API to retrieve a specific metric
-func (ai AiAPIClient) GetMetric(metricInfo MetricRequest) (*insights.MetricsResult, error) {
+func (ai appinsightsClient) getMetric(metricInfo MetricRequest) (*insights.MetricsResult, error) {
 	if ai.useADAuthorizer {
 		glog.V(2).Infoln("No application insights key provided - using Azure GO SDK auth.")
 		return getMetricUsingADAuthorizer(ai, metricInfo)
@@ -55,7 +116,7 @@ func (ai AiAPIClient) GetMetric(metricInfo MetricRequest) (*insights.MetricsResu
 	return getMetricUsingAPIKey(ai, metricInfo)
 }
 
-func getMetricUsingADAuthorizer(ai AiAPIClient, metricInfo MetricRequest) (*insights.MetricsResult, error) {
+func getMetricUsingADAuthorizer(ai appinsightsClient, metricInfo MetricRequest) (*insights.MetricsResult, error) {
 
 	authorizer, err := auth.NewAuthorizerFromEnvironmentWithResource(azureAdResource)
 	if err != nil {
@@ -114,7 +175,7 @@ func generateRequestSchemaUniqueIdentifier() string {
 	return uuid
 }
 
-func getMetricUsingAPIKey(ai AiAPIClient, metricInfo MetricRequest) (*insights.MetricsResult, error) {
+func getMetricUsingAPIKey(ai appinsightsClient, metricInfo MetricRequest) (*insights.MetricsResult, error) {
 	client := &http.Client{}
 
 	request := fmt.Sprintf("/%s/apps/%s/metrics/%s", apiVersion, ai.appID, metricInfo.MetricName)

@@ -34,7 +34,8 @@ func (p *AzureProvider) GetMetricBySelector(namespace string, selector labels.Se
 		return nil, errors.NewBadRequest("label is set to not selectable. this should not happen")
 	}
 
-	val, err := p.azMetricClient.GetCustomMetric(info.GroupResource, namespace, selector, info.Metric)
+	// TODO use selector info to restric metric query to specific app.
+	val, err := p.appinsightsClient.GetCustomMetric(namespace, info.Metric)
 	if err != nil {
 		glog.Errorf("bad request: %v", err)
 		return nil, errors.NewBadRequest(err.Error())

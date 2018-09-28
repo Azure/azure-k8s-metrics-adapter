@@ -1,4 +1,4 @@
-package azureMetricClient
+package appinsights
 
 import (
 	"testing"
