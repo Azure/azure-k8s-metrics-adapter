@@ -104,7 +104,7 @@ func newMetricRequest() AzureMetricRequest {
 	}
 }
 
-func newFakeMonitorClient(result insights.Response, err error) monitorClient {
+func newFakeMonitorClient(result insights.Response, err error) insightsmonitorClient {
 	return fakeMonitorClient{
 		err:    err,
 		result: result,
