@@ -11,11 +11,12 @@ import (
 	"runtime"
 	"time"
 
+	"github.com/Azure/azure-k8s-metrics-adapter/pkg/azure/appinsights"
+
 	"github.com/Azure/azure-k8s-metrics-adapter/pkg/azure/instancemetadata"
 	"github.com/Azure/azure-k8s-metrics-adapter/pkg/azure/monitor"
 	"github.com/Azure/azure-k8s-metrics-adapter/pkg/metriccache"
 
-	"github.com/Azure/azure-k8s-metrics-adapter/pkg/az-metric-client"
 	clientset "github.com/Azure/azure-k8s-metrics-adapter/pkg/client/clientset/versioned"
 	informers "github.com/Azure/azure-k8s-metrics-adapter/pkg/client/informers/externalversions"
 	"github.com/Azure/azure-k8s-metrics-adapter/pkg/controller"
@@ -61,10 +62,10 @@ func setupAzureProvider(cmd *basecmd.AdapterBase, metricsCache *metriccache.Metr
 	}
 
 	defaultSubscriptionID := getDefaultSubscriptionID()
+	monitorClient := monitor.NewClient(defaultSubscriptionID)
+	appinsightsClient := appinsights.NewClient()
 
-	client := monitor.NewClient(defaultSubscriptionID)
-
-	azureProvider := azureprovider.NewAzureProvider(defaultSubscriptionID, mapper, azureMetricClient.NewAzureMetricClient(defaultSubscriptionID), client, metricsCache)
+	azureProvider := azureprovider.NewAzureProvider(defaultSubscriptionID, mapper, appinsightsClient, monitorClient, metricsCache)
 	cmd.WithCustomMetrics(azureProvider)
 	cmd.WithExternalMetrics(azureProvider)
 }

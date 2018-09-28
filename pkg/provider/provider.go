@@ -3,28 +3,28 @@
 package provider
 
 import (
+	"github.com/Azure/azure-k8s-metrics-adapter/pkg/azure/appinsights"
 	"github.com/Azure/azure-k8s-metrics-adapter/pkg/metriccache"
 
 	"github.com/Azure/azure-k8s-metrics-adapter/pkg/azure/monitor"
 
-	"github.com/Azure/azure-k8s-metrics-adapter/pkg/az-metric-client"
 	apimeta "k8s.io/apimachinery/pkg/api/meta"
 
 	"github.com/kubernetes-incubator/custom-metrics-apiserver/pkg/provider"
 )
 
 type AzureProvider struct {
-	azMetricClient        azureMetricClient.AzureMetricClient
+	appinsightsClient     appinsights.AzureAppInsightsClient
 	mapper                apimeta.RESTMapper
 	monitorClient         monitor.AzureMonitorClient
 	metricCache           *metriccache.MetricCache
 	defaultSubscriptionID string
 }
 
-func NewAzureProvider(defaultSubscriptionID string, mapper apimeta.RESTMapper, azMetricClient azureMetricClient.AzureMetricClient, monitorClient monitor.AzureMonitorClient, metricCache *metriccache.MetricCache) provider.MetricsProvider {
+func NewAzureProvider(defaultSubscriptionID string, mapper apimeta.RESTMapper, appinsightsClient appinsights.AzureAppInsightsClient, monitorClient monitor.AzureMonitorClient, metricCache *metriccache.MetricCache) provider.MetricsProvider {
 	return &AzureProvider{
 		defaultSubscriptionID: defaultSubscriptionID,
-		azMetricClient:        azMetricClient,
+		appinsightsClient:     appinsightsClient,
 		monitorClient:         monitorClient,
 		metricCache:           metricCache,
 	}
