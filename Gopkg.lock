@@ -775,7 +775,7 @@
   version = "kubernetes-1.11.2"
 
 [[projects]]
-  digest = "1:d9b7fa8f6a3896e08c89c2d79c3d9854c0b5841bc1cd037af5c93075b43958f7"
+  digest = "1:826229ec7a9f379a29b9f4023e15efa5d934e6cf9866f71304706bcad19341b6"
   name = "k8s.io/client-go"
   packages = [
     "discovery",
@@ -904,6 +904,7 @@
     "util/homedir",
     "util/integer",
     "util/retry",
+    "util/workqueue",
   ]
   pruneopts = "UT"
   revision = "1f13a808da65775f22cbf47862c4e5898d8f4ca1"
@@ -955,11 +956,21 @@
     "k8s.io/apimachinery/pkg/labels",
     "k8s.io/apimachinery/pkg/runtime",
     "k8s.io/apimachinery/pkg/runtime/schema",
+    "k8s.io/apimachinery/pkg/runtime/serializer",
     "k8s.io/apimachinery/pkg/selection",
     "k8s.io/apimachinery/pkg/types",
+    "k8s.io/apimachinery/pkg/util/runtime",
     "k8s.io/apimachinery/pkg/util/wait",
+    "k8s.io/apimachinery/pkg/watch",
     "k8s.io/apiserver/pkg/util/logs",
+    "k8s.io/client-go/discovery",
+    "k8s.io/client-go/discovery/fake",
     "k8s.io/client-go/dynamic",
+    "k8s.io/client-go/rest",
+    "k8s.io/client-go/testing",
+    "k8s.io/client-go/tools/cache",
+    "k8s.io/client-go/util/flowcontrol",
+    "k8s.io/client-go/util/workqueue",
     "k8s.io/metrics/pkg/apis/custom_metrics",
     "k8s.io/metrics/pkg/apis/external_metrics",
   ]
