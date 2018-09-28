@@ -1,136 +1,123 @@
 package monitor
 
-// func TestIfNotValidCallGetError(t *testing.T) {
-// 	monitorClient := newFakeMonitorClient(insights.Response{}, nil)
-// 	metricCache := metriccache.NewMetricCache()
+import (
+	"context"
+	"errors"
+	"testing"
 
-// 	client := NewAzureMetricClient("", metricCache, monitorClient)
+	"github.com/Azure/azure-sdk-for-go/services/preview/monitor/mgmt/2018-03-01/insights"
+)
 
-// 	_, err := client.GetAzureMetric("ns", "name", nil)
+func TestIfEmptyRequestGetError(t *testing.T) {
+	monitorClient := newFakeMonitorClient(insights.Response{}, nil)
 
-// 	if err == nil {
-// 		t.Errorf("error after processing got nil, want non nil")
-// 	}
-// }
+	client := newClient("", monitorClient)
 
-// func TestIfInsufficientDataGetError(t *testing.T) {
-// 	monitorClient := newFakeMonitorClient(insights.Response{}, nil)
+	request := AzureMetricRequest{}
+	_, err := client.GetAzureMetric(request)
 
-// 	client := NewAzureMetricClient("", metricCache, monitorClient)
+	if err == nil {
+		t.Errorf("no error after processing got: %v, want error", nil)
+	}
 
-// 	// This doesn't have the all requeired selectors so should report that it is missing
-// 	selector, _ := labels.Parse("resourceProviderNamespace=Microsoft.Servicebus")
-// 	_, err := client.GetAzureMetric("ns", "name", selector)
+	if !IsInvalidMetricRequestError(err) {
+		t.Errorf("should be InvalidMetricRequest error got %v, want InvalidMetricRequestError", err)
+	}
+}
 
-// 	if !IsInvalidMetricRequestError(err) {
-// 		t.Errorf("should be InvalidMetricRequest error got %v, want InvalidMetricRequestError", err)
-// 	}
-// }
+func TestIfFailedResponseGetError(t *testing.T) {
+	fakeError := errors.New("fake monitor failed")
+	monitorClient := newFakeMonitorClient(insights.Response{}, fakeError)
 
-// func TestIfPassedViaLabelSelectorsItReturns(t *testing.T) {
-// 	response := makeResponse(15)
+	client := newClient("", monitorClient)
 
-// 	monitorClient := newFakeMonitorClient(response, nil)
+	request := newMetricRequest()
+	_, err := client.GetAzureMetric(request)
 
-// 	client := NewAzureMetricClient("1234", metricCache, monitorClient)
+	if err == nil {
+		t.Errorf("no error after processing got: %v, want error", nil)
+	}
 
-// 	selector, _ := labels.Parse("resourceProviderNamespace=Microsoft.Servicebus,resourceType=namespaces,aggregation=Total,filter=EntityName_eq_externalq,resourceGroup=sb-external-example,resourceName=sb-external-ns,metricName=Messages")
+	if err.Error() != fakeError.Error() {
+		t.Errorf("should be InvalidMetricRequest error got: %v, want: %v", err.Error(), fakeError.Error())
+	}
+}
 
-// 	metricValue, err := client.GetAzureMetric("ns", "name", selector)
+func TestIfValidRequestGetResult(t *testing.T) {
+	response := makeResponse(15)
+	monitorClient := newFakeMonitorClient(response, nil)
 
-// 	if err != nil {
-// 		t.Errorf("error after processing got %v, want nil", err)
-// 	}
+	client := newClient("", monitorClient)
 
-// 	if metricValue.MetricName != "Messages" {
-// 		t.Errorf("error after processing got %v, want nil", err)
-// 	}
+	request := newMetricRequest()
+	metricResponse, err := client.GetAzureMetric(request)
 
-// 	valueReturned := metricValue.Value.MilliValue()
-// 	if valueReturned != int64(15000) {
-// 		t.Errorf("MilliValue() got %v, want 15000", valueReturned)
-// 	}
-// }
+	if err != nil {
+		t.Errorf("error after processing got: %v, want nil", err)
+	}
 
-// func TestIfCacheHasItReturn(t *testing.T) {
-// 	monitorClient := newFakeMonitorClient(response, nil)
+	if metricResponse.Total != 15 {
+		t.Errorf("metricResponse.Total = %v, want = %v", metricResponse.Total, 15)
+	}
+}
 
-// 	metricRequest := newMetricRequest()
-// 	metricCache.Update("default/name", metricRequest)
-// 	client := NewAzureMetricClient("", metricCache, monitorClient)
+func makeResponse(value float64) insights.Response {
+	// create metric value
+	mv := insights.MetricValue{
+		Total: &value,
+	}
+	metricValues := []insights.MetricValue{}
+	metricValues = append(metricValues, mv)
 
-// 	metricValue, err := client.GetAzureMetric("default", "name", nil)
+	// create timeseries
+	te := insights.TimeSeriesElement{
+		Data: &metricValues,
+	}
+	timeseries := []insights.TimeSeriesElement{}
+	timeseries = append(timeseries, te)
 
-// 	if err != nil {
-// 		t.Errorf("error after processing got %v, want nil", err)
-// 	}
+	// create metric
+	metric := insights.Metric{
+		Timeseries: &timeseries,
+	}
+	metrics := []insights.Metric{}
+	metrics = append(metrics, metric)
 
-// 	if metricValue.MetricName != metricRequest.MetricName {
-// 		t.Errorf("error after processing got %v, want nil", err)
-// 	}
+	// finish with response
+	response := insights.Response{
+		Value: &metrics,
+	}
+	return response
+}
 
-// 	valueReturned := metricValue.Value.MilliValue()
-// 	if valueReturned != int64(15000) {
-// 		t.Errorf("MilliValue() got %v, want 15000", valueReturned)
-// 	}
-// }
+func newMetricRequest() AzureMetricRequest {
+	return AzureMetricRequest{
+		ResourceGroup:             "ResourceGroup",
+		ResourceName:              "ResourceName",
+		ResourceProviderNamespace: "ResourceProviderNamespace",
+		ResourceType:              "ResourceType",
+		SubscriptionID:            "SubscriptionID",
+		MetricName:                "MetricName",
+		Filter:                    "Filter",
+		Aggregation:               "Aggregation",
+		Timespan:                  "PT10",
+	}
+}
 
-// func makeResponse(value float64) insights.Response {
-// 	// create metric value
-// 	mv := insights.MetricValue{
-// 		Total: &value,
-// 	}
-// 	metricValues := []insights.MetricValue{}
-// 	metricValues = append(metricValues, mv)
+func newFakeMonitorClient(result insights.Response, err error) monitorClient {
+	return fakeMonitorClient{
+		err:    err,
+		result: result,
+	}
+}
 
-// 	// create timeseries
-// 	te := insights.TimeSeriesElement{
-// 		Data: &metricValues,
-// 	}
-// 	timeseries := []insights.TimeSeriesElement{}
-// 	timeseries = append(timeseries, te)
+type fakeMonitorClient struct {
+	result insights.Response
+	err    error
+}
 
-// 	// create metric
-// 	metric := insights.Metric{
-// 		Timeseries: &timeseries,
-// 	}
-// 	metrics := []insights.Metric{}
-// 	metrics = append(metrics, metric)
-
-// 	// finish with response
-// 	response := insights.Response{
-// 		Value: &metrics,
-// 	}
-// 	return response
-// }
-
-// func newMetricRequest() AzureMetricRequest {
-// 	return AzureMetricRequest{
-// 		ResourceGroup:             "ResourceGroup",
-// 		ResourceName:              "ResourceName",
-// 		ResourceProviderNamespace: "ResourceProviderNamespace",
-// 		ResourceType:              "ResourceType",
-// 		SubscriptionID:            "SubscriptionID",
-// 		MetricName:                "MetricName",
-// 		Filter:                    "Filter",
-// 		Aggregation:               "Aggregation",
-// 	}
-// }
-
-// func newFakeMonitorClient(result insights.Response, err error) MonitorClient {
-// 	return fakeMonitorClient{
-// 		err:    err,
-// 		result: result,
-// 	}
-// }
-
-// type fakeMonitorClient struct {
-// 	result insights.Response
-// 	err    error
-// }
-
-// func (f fakeMonitorClient) List(ctx context.Context, resourceURI string, timespan string, interval *string, metricnames string, aggregation string, top *int32, orderby string, filter string, resultType insights.ResultType, metricnamespace string) (result insights.Response, err error) {
-// 	result = f.result
-// 	err = f.err
-// 	return
-// }
+func (f fakeMonitorClient) List(ctx context.Context, resourceURI string, timespan string, interval *string, metricnames string, aggregation string, top *int32, orderby string, filter string, resultType insights.ResultType, metricnamespace string) (result insights.Response, err error) {
+	result = f.result
+	err = f.err
+	return
+}

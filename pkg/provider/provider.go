@@ -28,11 +28,11 @@ import (
 type AzureProvider struct {
 	azMetricClient azureMetricClient.AzureMetricClient
 	mapper         apimeta.RESTMapper
-	monitorClient  monitor.AzureMetricClient
+	monitorClient  monitor.AzureMonitorClient
 	metricCache    *metriccache.MetricCache
 }
 
-func NewAzureProvider(mapper apimeta.RESTMapper, azMetricClient azureMetricClient.AzureMetricClient, monitorClient monitor.AzureMetricClient, metricCache *metriccache.MetricCache) provider.MetricsProvider {
+func NewAzureProvider(mapper apimeta.RESTMapper, azMetricClient azureMetricClient.AzureMetricClient, monitorClient monitor.AzureMonitorClient, metricCache *metriccache.MetricCache) provider.MetricsProvider {
 	return &AzureProvider{
 		azMetricClient: azMetricClient,
 		monitorClient:  monitorClient,
