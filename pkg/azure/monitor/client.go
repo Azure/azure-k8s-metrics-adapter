@@ -8,46 +8,46 @@ import (
 	"github.com/golang/glog"
 )
 
-// type AzureMonitorClient interface {
-// 	GetAzureMetric(azMetricRequest AzureMetricRequest) (AzureMetricResponse, error)
-// }
-
-// AzureMonitorClient provides a way to make requests to Azure Monitor
-type AzureMonitorClient struct {
-	monitorClient         monitorClient
-	DefaultSubscriptionID string
+// AzureMonitorClient provides an interface to make requests to Azure Monitor
+type AzureMonitorClient interface {
+	GetAzureMetric(azMetricRequest AzureMetricRequest) (AzureMetricResponse, error)
 }
 
 type AzureMetricResponse struct {
 	Total float64
 }
 
-func NewClient(defaultsubscriptionID string) AzureMonitorClient {
-	monitorClient := insights.NewMetricsClient(defaultsubscriptionID)
-	authorizer, err := auth.NewAuthorizerFromEnvironment()
-	if err == nil {
-		monitorClient.Authorizer = authorizer
-	}
-
-	return AzureMonitorClient{
-		monitorClient:         monitorClient,
-		DefaultSubscriptionID: defaultsubscriptionID,
-	}
-}
-
-type monitorClient interface {
+type insightsmonitorClient interface {
 	List(ctx context.Context, resourceURI string, timespan string, interval *string, metricnames string, aggregation string, top *int32, orderby string, filter string, resultType insights.ResultType, metricnamespace string) (result insights.Response, err error)
 }
 
-func newClient(defaultsubscriptionID string, monitorClient monitorClient) AzureMonitorClient {
-	return AzureMonitorClient{
-		monitorClient:         monitorClient,
+type monitorClient struct {
+	client                insightsmonitorClient
+	DefaultSubscriptionID string
+}
+
+func NewClient(defaultsubscriptionID string) AzureMonitorClient {
+	client := insights.NewMetricsClient(defaultsubscriptionID)
+	authorizer, err := auth.NewAuthorizerFromEnvironment()
+	if err == nil {
+		client.Authorizer = authorizer
+	}
+
+	return &monitorClient{
+		client:                client,
 		DefaultSubscriptionID: defaultsubscriptionID,
 	}
 }
 
-// GetAzureMetric calls Azure Monitor endpoint and returns a metric based on label selectors
-func (c *AzureMonitorClient) GetAzureMetric(azMetricRequest AzureMetricRequest) (AzureMetricResponse, error) {
+func newClient(defaultsubscriptionID string, client insightsmonitorClient) monitorClient {
+	return monitorClient{
+		client:                client,
+		DefaultSubscriptionID: defaultsubscriptionID,
+	}
+}
+
+// GetAzureMetric calls Azure Monitor endpoint and returns a metric
+func (c *monitorClient) GetAzureMetric(azMetricRequest AzureMetricRequest) (AzureMetricResponse, error) {
 	err := azMetricRequest.Validate()
 	if err != nil {
 		return AzureMetricResponse{}, err
@@ -56,7 +56,7 @@ func (c *AzureMonitorClient) GetAzureMetric(azMetricRequest AzureMetricRequest) 
 	metricResourceURI := azMetricRequest.MetricResourceURI()
 	glog.V(2).Infof("resource uri: %s", metricResourceURI)
 
-	metricResult, err := c.monitorClient.List(context.Background(), metricResourceURI,
+	metricResult, err := c.client.List(context.Background(), metricResourceURI,
 		azMetricRequest.Timespan, nil,
 		azMetricRequest.MetricName, azMetricRequest.Aggregation, nil,
 		"", azMetricRequest.Filter, "", "")
