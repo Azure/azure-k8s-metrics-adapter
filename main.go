@@ -62,7 +62,7 @@ func setupAzureProvider(cmd *basecmd.AdapterBase, metricsCache *metriccache.Metr
 
 	defaultSubscriptionID := getDefaultSubscriptionID()
 
-	client := monitor.NewMetricClient(defaultSubscriptionID)
+	client := monitor.NewClient(defaultSubscriptionID)
 
 	azureProvider := azureprovider.NewAzureProvider(mapper, azureMetricClient.NewAzureMetricClient(defaultSubscriptionID), client, metricsCache)
 	cmd.WithCustomMetrics(azureProvider)

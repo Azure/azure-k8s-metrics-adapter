@@ -8,30 +8,46 @@ import (
 	"github.com/golang/glog"
 )
 
-type MonitorClient interface {
-	List(ctx context.Context, resourceURI string, timespan string, interval *string, metricnames string, aggregation string, top *int32, orderby string, filter string, resultType insights.ResultType, metricnamespace string) (result insights.Response, err error)
-}
+// type AzureMonitorClient interface {
+// 	GetAzureMetric(azMetricRequest AzureMetricRequest) (AzureMetricResponse, error)
+// }
 
-type AzureMetricClient struct {
-	monitorClient         MonitorClient
+// AzureMonitorClient provides a way to make requests to Azure Monitor
+type AzureMonitorClient struct {
+	monitorClient         monitorClient
 	DefaultSubscriptionID string
 }
 
-func NewMetricClient(defaultsubscriptionID string) AzureMetricClient {
+type AzureMetricResponse struct {
+	Total float64
+}
+
+func NewClient(defaultsubscriptionID string) AzureMonitorClient {
 	monitorClient := insights.NewMetricsClient(defaultsubscriptionID)
 	authorizer, err := auth.NewAuthorizerFromEnvironment()
 	if err == nil {
 		monitorClient.Authorizer = authorizer
 	}
 
-	return AzureMetricClient{
+	return AzureMonitorClient{
+		monitorClient:         monitorClient,
+		DefaultSubscriptionID: defaultsubscriptionID,
+	}
+}
+
+type monitorClient interface {
+	List(ctx context.Context, resourceURI string, timespan string, interval *string, metricnames string, aggregation string, top *int32, orderby string, filter string, resultType insights.ResultType, metricnamespace string) (result insights.Response, err error)
+}
+
+func newClient(defaultsubscriptionID string, monitorClient monitorClient) AzureMonitorClient {
+	return AzureMonitorClient{
 		monitorClient:         monitorClient,
 		DefaultSubscriptionID: defaultsubscriptionID,
 	}
 }
 
 // GetAzureMetric calls Azure Monitor endpoint and returns a metric based on label selectors
-func (c *AzureMetricClient) GetAzureMetric(azMetricRequest AzureMetricRequest) (AzureMetricResponse, error) {
+func (c *AzureMonitorClient) GetAzureMetric(azMetricRequest AzureMetricRequest) (AzureMetricResponse, error) {
 	err := azMetricRequest.Validate()
 	if err != nil {
 		return AzureMetricResponse{}, err
