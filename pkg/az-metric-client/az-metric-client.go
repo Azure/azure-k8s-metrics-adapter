@@ -6,8 +6,8 @@ import (
 	"fmt"
 	"strings"
 
-	"github.com/Azure/azure-k8s-metrics-adapter/pkg/aiapiclient"
-	"github.com/Azure/azure-k8s-metrics-adapter/pkg/azmetricrequest"
+	"github.com/Azure/azure-k8s-metrics-adapter/pkg/azure/appinsights"
+	"github.com/Azure/azure-k8s-metrics-adapter/pkg/azure/monitor"
 	"github.com/Azure/azure-k8s-metrics-adapter/pkg/metriccache"
 
 	"github.com/golang/glog"
@@ -27,14 +27,14 @@ type MonitorClient interface {
 // AzureMetricClient is used to make requests to Azure Monitor
 type AzureMetricClient struct {
 	monitorClient         MonitorClient
-	appinsightsclient     aiapiclient.AiAPIClient
+	appinsightsclient     appinsights.AiAPIClient
 	defaultSubscriptionID string
 	metriccache           *metriccache.MetricCache
 }
 
 // NewAzureMetricClient creates a client for making requests to Azure Monitor
 func NewAzureMetricClient(defaultSubscriptionID string, metricCache *metriccache.MetricCache, monitorClient MonitorClient) AzureMetricClient {
-	appInsightsClient := aiapiclient.NewAiAPIClient()
+	appInsightsClient := appinsights.NewAiAPIClient()
 
 	return AzureMetricClient{
 		monitorClient:         monitorClient,
@@ -80,21 +80,21 @@ func (c *AzureMetricClient) GetAzureMetric(namespace string, metricName string, 
 	}, nil
 }
 
-func (c AzureMetricClient) getMetricRequest(namespace string, metricName string, metricSelector labels.Selector) (azmetricrequest.AzureMetricRequest, error) {
+func (c AzureMetricClient) getMetricRequest(namespace string, metricName string, metricSelector labels.Selector) (monitor.AzureMetricRequest, error) {
 	key := metricKey(namespace, metricName)
 
 	azMetricRequest, found := c.metriccache.Get(key)
 	if found {
-		azMetricRequest.Timespan = azmetricrequest.TimeSpan()
+		azMetricRequest.Timespan = monitor.TimeSpan()
 		if azMetricRequest.SubscriptionID == "" {
 			azMetricRequest.SubscriptionID = c.defaultSubscriptionID
 		}
 		return azMetricRequest, nil
 	}
 
-	azMetricRequest, err := azmetricrequest.ParseAzureMetric(metricSelector, c.defaultSubscriptionID)
+	azMetricRequest, err := monitor.ParseAzureMetric(metricSelector, c.defaultSubscriptionID)
 	if err != nil {
-		return azmetricrequest.AzureMetricRequest{}, err
+		return monitor.AzureMetricRequest{}, err
 	}
 
 	return azMetricRequest, nil
@@ -110,7 +110,7 @@ func (c AzureMetricClient) GetCustomMetric(groupResource schema.GroupResource, n
 	// get the last 5 mins and chunking into 30 seconds
 	// this seems to be the best way to get the closest average rate at time of request
 	// any smaller time intervals and the values come back null
-	metricRequestInfo := aiapiclient.NewMetricRequest(convertedMetricName)
+	metricRequestInfo := appinsights.NewMetricRequest(convertedMetricName)
 	metricRequestInfo.Timespan = "PT5M"
 	metricRequestInfo.Interval = "PT30S"
 

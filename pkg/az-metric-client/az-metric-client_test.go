@@ -8,8 +8,7 @@ import (
 
 	"k8s.io/apimachinery/pkg/labels"
 
-	"github.com/Azure/azure-k8s-metrics-adapter/pkg/azmetricrequest"
-
+	"github.com/Azure/azure-k8s-metrics-adapter/pkg/azure/monitor"
 	"github.com/Azure/azure-k8s-metrics-adapter/pkg/metriccache"
 )
 
@@ -90,7 +89,7 @@ func TestIfInsufficientDataGetError(t *testing.T) {
 	selector, _ := labels.Parse("resourceProviderNamespace=Microsoft.Servicebus")
 	_, err := client.GetAzureMetric("ns", "name", selector)
 
-	if !azmetricrequest.IsInvalidMetricRequestError(err) {
+	if !monitor.IsInvalidMetricRequestError(err) {
 		t.Errorf("should be InvalidMetricRequest error got %v, want InvalidMetricRequestError", err)
 	}
 }
@@ -176,8 +175,8 @@ func makeResponse(value float64) insights.Response {
 	return response
 }
 
-func newMetricRequest() azmetricrequest.AzureMetricRequest {
-	return azmetricrequest.AzureMetricRequest{
+func newMetricRequest() monitor.AzureMetricRequest {
+	return monitor.AzureMetricRequest{
 		ResourceGroup:             "ResourceGroup",
 		ResourceName:              "ResourceName",
 		ResourceProviderNamespace: "ResourceProviderNamespace",

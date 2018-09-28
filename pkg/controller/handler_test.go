@@ -4,9 +4,8 @@ import (
 	"fmt"
 	"testing"
 
-	"github.com/Azure/azure-k8s-metrics-adapter/pkg/azmetricrequest"
-
 	api "github.com/Azure/azure-k8s-metrics-adapter/pkg/apis/metrics/v1alpha1"
+	"github.com/Azure/azure-k8s-metrics-adapter/pkg/azure/monitor"
 	"github.com/Azure/azure-k8s-metrics-adapter/pkg/metriccache"
 	metav1 "k8s.io/apimachinery/pkg/apis/meta/v1"
 	"k8s.io/apimachinery/pkg/runtime"
@@ -80,7 +79,7 @@ func TestWhenItemHasBeenDeleted(t *testing.T) {
 
 	// add the item to the cache then test if it gets deleted
 	key := getKey(externalMetric)
-	metriccache.Update(key, azmetricrequest.AzureMetricRequest{})
+	metriccache.Update(key, monitor.AzureMetricRequest{})
 
 	err := handler.Process(key)
 
@@ -111,7 +110,7 @@ func newHandler(storeObjects []runtime.Object, externalMetricsListerCache []*api
 	return handler, metriccache
 }
 
-func validateMetricResult(metricRequest azmetricrequest.AzureMetricRequest, externalMetricInfo *api.ExternalMetric, t *testing.T) {
+func validateMetricResult(metricRequest monitor.AzureMetricRequest, externalMetricInfo *api.ExternalMetric, t *testing.T) {
 
 	// Metric Config
 	if metricRequest.MetricName != externalMetricInfo.Spec.MetricConfig.MetricName {

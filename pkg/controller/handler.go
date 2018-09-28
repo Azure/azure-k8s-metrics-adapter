@@ -3,7 +3,7 @@ package controller
 import (
 	"fmt"
 
-	"github.com/Azure/azure-k8s-metrics-adapter/pkg/azmetricrequest"
+	"github.com/Azure/azure-k8s-metrics-adapter/pkg/azure/monitor"
 	listers "github.com/Azure/azure-k8s-metrics-adapter/pkg/client/listers/metrics/v1alpha1"
 	"github.com/Azure/azure-k8s-metrics-adapter/pkg/metriccache"
 	"github.com/golang/glog"
@@ -53,7 +53,7 @@ func (h *Handler) Process(namespaceNameKey string) error {
 		return err
 	}
 
-	azureMetricRequest := azmetricrequest.AzureMetricRequest{
+	azureMetricRequest := monitor.AzureMetricRequest{
 		ResourceGroup:             externalMetricInfo.Spec.AzureConfig.ResourceGroup,
 		ResourceName:              externalMetricInfo.Spec.AzureConfig.ResourceName,
 		ResourceProviderNamespace: externalMetricInfo.Spec.AzureConfig.ResourceProviderNamespace,

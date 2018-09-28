@@ -1,4 +1,4 @@
-package azmetricrequest
+package monitor
 
 import (
 	"fmt"
