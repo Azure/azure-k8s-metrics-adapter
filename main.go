@@ -12,9 +12,8 @@ import (
 	"time"
 
 	"github.com/Azure/azure-k8s-metrics-adapter/pkg/azure/instancemetadata"
+	"github.com/Azure/azure-k8s-metrics-adapter/pkg/azure/monitor"
 	"github.com/Azure/azure-k8s-metrics-adapter/pkg/metriccache"
-	"github.com/Azure/azure-sdk-for-go/services/preview/monitor/mgmt/2018-03-01/insights"
-	"github.com/Azure/go-autorest/autorest/azure/auth"
 
 	"github.com/Azure/azure-k8s-metrics-adapter/pkg/az-metric-client"
 	clientset "github.com/Azure/azure-k8s-metrics-adapter/pkg/client/clientset/versioned"
@@ -56,24 +55,16 @@ func main() {
 }
 
 func setupAzureProvider(cmd *basecmd.AdapterBase, metricsCache *metriccache.MetricCache) {
-	client, err := cmd.DynamicClient()
-	if err != nil {
-		glog.Fatalf("unable to construct dynamic client: %v", err)
-	}
-
 	mapper, err := cmd.RESTMapper()
 	if err != nil {
 		glog.Fatalf("unable to construct discovery REST mapper: %v", err)
 	}
 
 	defaultSubscriptionID := getDefaultSubscriptionID()
-	monitorClient := insights.NewMetricsClient(defaultSubscriptionID)
-	authorizer, err := auth.NewAuthorizerFromEnvironment()
-	if err == nil {
-		monitorClient.Authorizer = authorizer
-	}
 
-	azureProvider := azureprovider.NewAzureProvider(client, mapper, azureMetricClient.NewAzureMetricClient(defaultSubscriptionID, metricsCache, monitorClient))
+	client := monitor.NewMetricClient(defaultSubscriptionID)
+
+	azureProvider := azureprovider.NewAzureProvider(mapper, azureMetricClient.NewAzureMetricClient(defaultSubscriptionID), client, metricsCache)
 	cmd.WithCustomMetrics(azureProvider)
 	cmd.WithExternalMetrics(azureProvider)
 }

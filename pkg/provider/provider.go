@@ -1,7 +1,14 @@
+// Package provider is the implementation of custom metric and external metric apis
+// see https://github.com/kubernetes/community/blob/master/contributors/design-proposals/instrumentation/custom-metrics-api.md#api-paths
 package provider
 
 import (
+	"fmt"
 	"time"
+
+	"github.com/Azure/azure-k8s-metrics-adapter/pkg/metriccache"
+
+	"github.com/Azure/azure-k8s-metrics-adapter/pkg/azure/monitor"
 
 	"github.com/Azure/azure-k8s-metrics-adapter/pkg/az-metric-client"
 	"github.com/golang/glog"
@@ -12,7 +19,6 @@ import (
 	"k8s.io/apimachinery/pkg/labels"
 	"k8s.io/apimachinery/pkg/runtime"
 	"k8s.io/apimachinery/pkg/types"
-	"k8s.io/client-go/dynamic"
 	"k8s.io/metrics/pkg/apis/custom_metrics"
 
 	"github.com/kubernetes-incubator/custom-metrics-apiserver/pkg/provider"
@@ -20,22 +26,19 @@ import (
 )
 
 type AzureProvider struct {
-	client         dynamic.Interface
-	mapper         apimeta.RESTMapper
 	azMetricClient azureMetricClient.AzureMetricClient
+	mapper         apimeta.RESTMapper
+	monitorClient  monitor.AzureMetricClient
+	metricCache    *metriccache.MetricCache
 }
 
-func NewAzureProvider(client dynamic.Interface, mapper apimeta.RESTMapper, azMetricClient azureMetricClient.AzureMetricClient) provider.MetricsProvider {
+func NewAzureProvider(mapper apimeta.RESTMapper, azMetricClient azureMetricClient.AzureMetricClient, monitorClient monitor.AzureMetricClient, metricCache *metriccache.MetricCache) provider.MetricsProvider {
 	return &AzureProvider{
-		client:         client,
-		mapper:         mapper,
 		azMetricClient: azMetricClient,
+		monitorClient:  monitorClient,
+		metricCache:    metricCache,
 	}
 }
-
-/* Custom metric interface methods
-see https://github.com/kubernetes/community/blob/master/contributors/design-proposals/instrumentation/custom-metrics-api.md#api-paths
-*/
 
 // GetMetricByName fetches a particular metric for a particular object.
 // The namespace will be empty if the metric is root-scoped.
@@ -113,14 +116,25 @@ func (p *AzureProvider) GetExternalMetric(namespace string, metricSelector label
 		return nil, errors.NewBadRequest("label is set to not selectable. this should not happen")
 	}
 
-	metricValue, err := p.azMetricClient.GetAzureMetric(namespace, info.Metric, metricSelector)
+	azMetricRequest, err := p.getMetricRequest(namespace, info.Metric, metricSelector)
+	if err != nil {
+		return nil, errors.NewBadRequest(err.Error())
+	}
+
+	metricValue, err := p.monitorClient.GetAzureMetric(azMetricRequest)
 	if err != nil {
 		glog.Errorf("bad request: %v", err)
 		return nil, errors.NewBadRequest(err.Error())
 	}
 
+	externalmetric := external_metrics.ExternalMetricValue{
+		MetricName: azMetricRequest.MetricName,
+		Value:      *resource.NewQuantity(int64(metricValue.Total), resource.DecimalSI),
+		Timestamp:  metav1.Now(),
+	}
+
 	matchingMetrics := []external_metrics.ExternalMetricValue{}
-	matchingMetrics = append(matchingMetrics, metricValue)
+	matchingMetrics = append(matchingMetrics, externalmetric)
 
 	return &external_metrics.ExternalMetricValueList{
 		Items: matchingMetrics,
@@ -139,4 +153,28 @@ func (p *AzureProvider) ListAllExternalMetrics() []provider.ExternalMetricInfo {
 	// important to remember to cache this and only get it at given interval
 
 	return externalMetricsInfo
+}
+
+func (p *AzureProvider) getMetricRequest(namespace string, metricName string, metricSelector labels.Selector) (monitor.AzureMetricRequest, error) {
+	key := metricKey(namespace, metricName)
+
+	azMetricRequest, found := p.metricCache.Get(key)
+	if found {
+		azMetricRequest.Timespan = monitor.TimeSpan()
+		if azMetricRequest.SubscriptionID == "" {
+			azMetricRequest.SubscriptionID = p.monitorClient.DefaultSubscriptionID
+		}
+		return azMetricRequest, nil
+	}
+
+	azMetricRequest, err := monitor.ParseAzureMetric(metricSelector, p.monitorClient.DefaultSubscriptionID)
+	if err != nil {
+		return monitor.AzureMetricRequest{}, err
+	}
+
+	return azMetricRequest, nil
+}
+
+func metricKey(namespace string, name string) string {
+	return fmt.Sprintf("%s/%s", namespace, name)
 }
