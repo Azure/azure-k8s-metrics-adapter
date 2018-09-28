@@ -70,7 +70,7 @@ func (c AzureMetricClient) GetAzureMetric(metricSelector labels.Selector) (exter
 
 	total := extractValue(metricResult)
 
-	glog.V(2).Infof("found metric value: %s", total)
+	glog.V(2).Infof("found metric value: %f", total)
 
 	// TODO set Value based on aggregations type
 	return external_metrics.ExternalMetricValue{
@@ -115,7 +115,7 @@ func (c AzureMetricClient) GetCustomMetric(groupResource schema.GroupResource, n
 	value := metricMap["avg"]
 	normalizedValue := normalizeValue(value)
 
-	glog.V(2).Infof("found metric value: %s", normalizedValue)
+	glog.V(2).Infof("found metric value: %f", normalizedValue)
 	return normalizedValue, nil
 }
 
