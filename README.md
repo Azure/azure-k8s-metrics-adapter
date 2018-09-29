@@ -7,11 +7,16 @@ An implementation of the Kubernetes [Custom Metrics API and External Metrics API
 
 This adapter enables you to scale your [application deployment pods](https://kubernetes.io/docs/concepts/workloads/controllers/deployment/) running on [AKS](https://docs.microsoft.com/en-us/azure/aks/) using the [Horizontal Pod Autoscaler](https://kubernetes.io/docs/tasks/run-application/horizontal-pod-autoscale/) (HPA) with [External Metrics](#external-metrics) from Azure Resources (such as [Service Bus Queues](https://docs.microsoft.com/en-us/azure/service-bus-messaging/service-bus-dotnet-get-started-with-queues)) and [Custom Metrics](#custom-metrics) stored in Application Insights. 
 
-Learn more about [using an HPA to autoscale with external and custom metrics](https://kubernetes.io/docs/tasks/run-application/horizontal-pod-autoscale-walkthrough/#autoscaling-on-metrics-not-related-to-kubernetes-objects).
 
-Checkout a [video showing how scaling works with the adapter](https://www.youtube.com/watch?v=5pNpzwLLzW4&feature=youtu.be), [deploy the adapter](#deploy) or [learn by going through the walkthrough](samples/servicebus-queue/readme.md).
+Try it out:
 
-This was build using the [Custom Metric Adapter Server Boilerplate project.](https://github.com/kubernetes-incubator/custom-metrics-apiserver) 
+- [external metric scaling video](https://www.youtube.com/watch?v=5pNpzwLLzW4&feature=youtu.be)
+- [custom metric scaling video](https://www.youtube.com/watch?v=XcKcxh3oHxA)
+- [deploy the adapter](#deploy)
+- [servicebus queue walkthrough](samples/servicebus-queue/readme.md)
+- [Request Per Second (RPS) walkthrough](samples/request-per-second/readme.md)
+
+This was build using the [Custom Metric Adapter Server Boilerplate project](https://github.com/kubernetes-incubator/custom-metrics-apiserver). Learn more about [using an HPA to autoscale with external and custom metrics](https://kubernetes.io/docs/tasks/run-application/horizontal-pod-autoscale-walkthrough/#autoscaling-on-metrics-not-related-to-kubernetes-objects).
 
 ## Project Status: Alpha
 
@@ -27,9 +32,15 @@ Requires some [set up on your AKS Cluster](#azure-setup) and [Metric Server depl
 kubectl apply -f https://raw.githubusercontent.com/Azure/azure-k8s-metrics-adapter/master/deploy/adapter.yaml
 ```
 
+Deploy a metric configuration:
+
+```
+kubectl apply -f https://raw.githubusercontent.com/Azure/azure-k8s-metrics-adapter/master/samples/resources/externalmetric-example.yaml
+```
+
 There is also a [Helm chart](https://github.com/Azure/azure-k8s-metrics-adapter/charts/azure-k8s-metrics-adapter) available for deployment for those using Helm in their cluster.
 
-After deployment you can create an Horizontal Pod Auto Scaler (HPA) to scale of your [external metric](#external-metrics) of choice:
+Deploy a Horizontal Pod Auto Scaler (HPA) to scale of your [external metric](#external-metrics) of choice:
 
 ```yaml
 apiVersion: autoscaling/v2beta1
@@ -47,15 +58,6 @@ spec:
   - type: External
     external:
       metricName: queuemessages
-      metricSelector:
-        matchLabels:
-          metricName: Messages
-          resourceGroup: sb-external-example
-          resourceName: sb-external-ns
-          resourceProviderNamespace: Microsoft.Servicebus
-          resourceType: namespaces
-          aggregation: Total
-          filter: EntityName_eq_externalq
       targetValue: 30
 ```
 
