@@ -10,10 +10,10 @@ This adapter enables you to scale your [application deployment pods](https://kub
 
 Try it out:
 
-- [external metric scaling video](https://www.youtube.com/watch?v=5pNpzwLLzW4&feature=youtu.be)
-- [custom metric scaling video](https://www.youtube.com/watch?v=XcKcxh3oHxA)
-- [deploy the adapter](#deploy)
-- [servicebus queue walkthrough](samples/servicebus-queue/readme.md)
+- [External metric scaling video](https://www.youtube.com/watch?v=5pNpzwLLzW4&feature=youtu.be)
+- [Custom metric scaling video](https://www.youtube.com/watch?v=XcKcxh3oHxA)
+- [Deploy the adapter](#deploy)
+- [Azure Service Bus queue walkthrough](samples/servicebus-queue/readme.md)
 - [Request Per Second (RPS) walkthrough](samples/request-per-second/readme.md)
 
 This was build using the [Custom Metric Adapter Server Boilerplate project](https://github.com/kubernetes-incubator/custom-metrics-apiserver). Learn more about [using an HPA to autoscale with external and custom metrics](https://kubernetes.io/docs/tasks/run-application/horizontal-pod-autoscale-walkthrough/#autoscaling-on-metrics-not-related-to-kubernetes-objects).
