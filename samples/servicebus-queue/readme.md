@@ -164,6 +164,8 @@ sed -i 's|sb-external-ns|'${SERVICEBUS_NS}'|g' deploy/externalmetric.yaml
 kubectl apply -f deploy/externalmetric.yaml
 ```
 
+> note: the ExternalMetric configuration is deployed per namespace.
+
 You can list of the configured external metrics via:
 
 ```
@@ -178,7 +180,7 @@ Deploy the HPA:
 kubectl apply -f deploy/hpa.yaml
 ```
 
-> note: the `external.metricName` defined on the HPA must match the `metadata.name` on the ExternalMetric HPA, in this case `queuemessages`.
+> note: the `external.metricName` defined on the HPA must match the `metadata.name` on the ExternalMetric declaration, in this case `queuemessages`
 
 After a few seconds, validate that the HPA is configured.  If the `targets` shows `<unknown>` wait longer and try again.
 
