@@ -20,6 +20,7 @@ type controllerConfig struct {
 	// process to the store
 	store                      []runtime.Object
 	externalMetricsListerCache []*api.ExternalMetric
+	customMetricsListerCache   []*api.CustomMetric
 	syncedFunction             cache.InformerSynced
 	enqueuer                   func(c *Controller) func(obj interface{})
 	handler                    ContollerHandler
@@ -40,15 +41,7 @@ type testConfig struct {
 	want             wanted
 }
 
-func testStore() []runtime.Object {
-	var storeObjects []runtime.Object
-
-	externalMetric := newExternalMetric()
-	storeObjects = append(storeObjects, externalMetric)
-	return storeObjects
-}
-
-func testListerCache() []*api.ExternalMetric {
+func testExternalListerCache() []*api.ExternalMetric {
 	var externalMetricsListerCache []*api.ExternalMetric
 
 	externalMetric := newExternalMetric()
@@ -56,11 +49,14 @@ func testListerCache() []*api.ExternalMetric {
 	return externalMetricsListerCache
 }
 
-func TestProcessRunsToCompletion(t *testing.T) {
+func TestProcessRunsToCompletionWithExternalMetric(t *testing.T) {
+	var storeObjects []runtime.Object
+	externalMetric := newExternalMetric()
+	storeObjects = append(storeObjects, externalMetric)
 
 	testConfig := testConfig{
 		controllerConfig: controllerConfig{
-			store:          testStore(),
+			store:          storeObjects,
 			syncedFunction: alwaysSynced,
 			handler:        succesFakeHandler{},
 			runtimes:       1,
@@ -74,11 +70,57 @@ func TestProcessRunsToCompletion(t *testing.T) {
 	runControllerTests(testConfig, t)
 }
 
-func TestFailedProcessorReEnqueues(t *testing.T) {
+func TestProcessRunsToCompletionWithCustomMetrics(t *testing.T) {
+	var storeObjects []runtime.Object
+	customMetric := newCustomMetric()
+	storeObjects = append(storeObjects, customMetric)
 
 	testConfig := testConfig{
 		controllerConfig: controllerConfig{
-			store:          testStore(),
+			store:          storeObjects,
+			syncedFunction: alwaysSynced,
+			handler:        succesFakeHandler{},
+			runtimes:       1,
+		},
+		want: wanted{
+			itemsRemaing: 0,
+			keepRunning:  true,
+		},
+	}
+
+	runControllerTests(testConfig, t)
+}
+
+func TestProcessRunsToCompletionWithCustomAndExternalMetrics(t *testing.T) {
+	var storeObjects []runtime.Object
+	externalMetric := newExternalMetric()
+	customMetric := newCustomMetric()
+	storeObjects = append(storeObjects, customMetric, externalMetric)
+
+	testConfig := testConfig{
+		controllerConfig: controllerConfig{
+			store:          storeObjects,
+			syncedFunction: alwaysSynced,
+			handler:        succesFakeHandler{},
+			runtimes:       2,
+		},
+		want: wanted{
+			itemsRemaing: 0,
+			keepRunning:  true,
+		},
+	}
+
+	runControllerTests(testConfig, t)
+}
+
+func TestFailedProcessorReEnqueuesWithExternalMetrics(t *testing.T) {
+	var storeObjects []runtime.Object
+	externalMetric := newExternalMetric()
+	storeObjects = append(storeObjects, externalMetric)
+
+	testConfig := testConfig{
+		controllerConfig: controllerConfig{
+			store:          storeObjects,
 			syncedFunction: alwaysSynced,
 			handler:        failedFakeHandler{},
 			runtimes:       1,
@@ -93,11 +135,58 @@ func TestFailedProcessorReEnqueues(t *testing.T) {
 	runControllerTests(testConfig, t)
 }
 
-func TestRetryThenRemoveAfter5Attempts(t *testing.T) {
+func TestFailedProcessorReEnqueuesWithCustomMetric(t *testing.T) {
+	var storeObjects []runtime.Object
+	customMetric := newCustomMetric()
+	storeObjects = append(storeObjects, customMetric)
 
 	testConfig := testConfig{
 		controllerConfig: controllerConfig{
-			store:          testStore(),
+			store:          storeObjects,
+			syncedFunction: alwaysSynced,
+			handler:        failedFakeHandler{},
+			runtimes:       1,
+		},
+		want: wanted{
+			itemsRemaing: 1,
+			keepRunning:  true,
+			enqueCount:   2, // should be two because it got added two second time on failure
+		},
+	}
+
+	runControllerTests(testConfig, t)
+}
+
+func TestRetryThenRemoveAfter5AttemptsWithExternalMetric(t *testing.T) {
+	var storeObjects []runtime.Object
+	externalMetric := newExternalMetric()
+	storeObjects = append(storeObjects, externalMetric)
+
+	testConfig := testConfig{
+		controllerConfig: controllerConfig{
+			store:          storeObjects,
+			syncedFunction: alwaysSynced,
+			handler:        failedFakeHandler{},
+			runtimes:       5,
+		},
+		want: wanted{
+			itemsRemaing: 0,
+			keepRunning:  true,
+			enqueCount:   0, // will be zero after it gets removed
+		},
+	}
+
+	runControllerTests(testConfig, t)
+}
+
+func TestRetryThenRemoveAfter5AttemptsWithCustomMetric(t *testing.T) {
+	var storeObjects []runtime.Object
+	customMetric := newCustomMetric()
+	storeObjects = append(storeObjects, customMetric)
+
+	testConfig := testConfig{
+		controllerConfig: controllerConfig{
+			store:          storeObjects,
 			syncedFunction: alwaysSynced,
 			handler:        failedFakeHandler{},
 			runtimes:       5,
@@ -120,20 +209,24 @@ func TestInvalidItemOnQueue(t *testing.T) {
 
 			// this pushes the object on instead of the key which
 			// will cause an error
-			c.externalMetricqueue.AddRateLimited(obj)
+			c.metricQueue.AddRateLimited(obj)
 		}
 
 		return enquer
 	}
 
+	var storeObjects []runtime.Object
+	externalMetric := newExternalMetric()
+	storeObjects = append(storeObjects, externalMetric)
+
 	testConfig := testConfig{
 		controllerConfig: controllerConfig{
-			store:                      testStore(),
+			store:                      storeObjects,
 			syncedFunction:             alwaysSynced,
 			enqueuer:                   badenquer,
 			handler:                    succesFakeHandler{},
 			runtimes:                   1,
-			externalMetricsListerCache: testListerCache(),
+			externalMetricsListerCache: testExternalListerCache(),
 		},
 		want: wanted{
 			itemsRemaing: 0,
@@ -166,13 +259,13 @@ func runControllerTests(testConfig testConfig, t *testing.T) {
 		t.Errorf("should continue processing = %v, want %v", keepRunning, testConfig.want.keepRunning)
 	}
 
-	items := c.externalMetricqueue.Len()
+	items := c.metricQueue.Len()
 
 	if items != testConfig.want.itemsRemaing {
 		t.Errorf("Items still on queue = %v, want %v", items, testConfig.want.itemsRemaing)
 	}
 
-	retrys := c.externalMetricqueue.NumRequeues("default/test")
+	retrys := c.metricQueue.NumRequeues("default/test")
 	if retrys != testConfig.want.enqueCount {
 		t.Errorf("Items enqueued times = %v, want %v", retrys, testConfig.want.enqueCount)
 	}
@@ -182,10 +275,11 @@ func newController(config controllerConfig) (*Controller, informers.SharedInform
 	fakeClient := fake.NewSimpleClientset(config.store...)
 	i := informers.NewSharedInformerFactory(fakeClient, 0)
 
-	c := NewController(i.Azure().V1alpha1().ExternalMetrics(), config.handler)
+	c := NewController(i.Azure().V1alpha1().ExternalMetrics(), i.Azure().V1alpha1().CustomMetrics(), config.handler)
 
 	// override for testing
 	c.externalMetricSynced = config.syncedFunction
+	c.customMetricSynced = config.syncedFunction
 
 	if config.enqueuer != nil {
 		// override for testings
@@ -193,11 +287,16 @@ func newController(config controllerConfig) (*Controller, informers.SharedInform
 	}
 
 	// override so the item gets added right away for testing with no delay
-	c.externalMetricqueue = workqueue.NewNamedRateLimitingQueue(NoDelyRateLimiter(), "nodelay")
+	c.metricQueue = workqueue.NewNamedRateLimitingQueue(NoDelyRateLimiter(), "nodelay")
 
 	for _, em := range config.externalMetricsListerCache {
 		// this will force the enqueuer to reload
 		i.Azure().V1alpha1().ExternalMetrics().Informer().GetIndexer().Add(em)
+	}
+
+	for _, cm := range config.customMetricsListerCache {
+		// this will force the enqueuer to reload
+		i.Azure().V1alpha1().CustomMetrics().Informer().GetIndexer().Add(cm)
 	}
 
 	return c, i
@@ -213,6 +312,19 @@ func newExternalMetric() *api.ExternalMetric {
 		Spec: api.ExternalMetricSpec{
 			AzureConfig:  api.AzureConfig{},
 			MetricConfig: api.ExternalMetricConfig{},
+		},
+	}
+}
+
+func newCustomMetric() *api.CustomMetric {
+	return &api.CustomMetric{
+		TypeMeta: metav1.TypeMeta{APIVersion: api.SchemeGroupVersion.String()},
+		ObjectMeta: metav1.ObjectMeta{
+			Name:      "test",
+			Namespace: metav1.NamespaceDefault,
+		},
+		Spec: api.CustomMetricSpec{
+			MetricConfig: api.CustomMetricConfig{},
 		},
 	}
 }

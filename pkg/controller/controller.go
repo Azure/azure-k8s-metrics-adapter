@@ -16,22 +16,26 @@ import (
 
 // Controller will do the work of syncing the external metrics the metric adapter knows about.
 type Controller struct {
-	externalMetricqueue  workqueue.RateLimitingInterface
+	metricQueue          workqueue.RateLimitingInterface
 	externalMetricSynced cache.InformerSynced
-	handler              ContollerHandler
+	customMetricSynced   cache.InformerSynced
 	enqueuer             func(obj interface{})
+	metricHandler        ContollerHandler
 }
 
 // NewController returns a new controller for handling external and custom metric types
-func NewController(externalMetricInformer informers.ExternalMetricInformer, handler ContollerHandler) *Controller {
+func NewController(externalMetricInformer informers.ExternalMetricInformer, customMetricInformer informers.CustomMetricInformer, metricHandler ContollerHandler) *Controller {
 	controller := &Controller{
 		externalMetricSynced: externalMetricInformer.Informer().HasSynced,
-		externalMetricqueue:  workqueue.NewNamedRateLimitingQueue(workqueue.DefaultControllerRateLimiter(), "externalmetrics"),
-		handler:              handler,
+		metricQueue:          workqueue.NewNamedRateLimitingQueue(workqueue.DefaultControllerRateLimiter(), "metrics"),
+		metricHandler:        metricHandler,
+		customMetricSynced:   customMetricInformer.Informer().HasSynced,
 	}
 
-	glog.Info("Setting up external metric event handlers")
+	// wire up enque step.  This provides a hook for testing enqueue step
 	controller.enqueuer = controller.enqueueExternalMetric
+
+	glog.Info("Setting up external metric event handlers")
 	externalMetricInformer.Informer().AddEventHandler(cache.ResourceEventHandlerFuncs{
 		AddFunc: controller.enqueuer,
 		UpdateFunc: func(old, new interface{}) {
@@ -43,18 +47,27 @@ func NewController(externalMetricInformer informers.ExternalMetricInformer, hand
 		DeleteFunc: controller.enqueuer,
 	})
 
+	glog.Info("Setting up custom metric event handlers")
+	customMetricInformer.Informer().AddEventHandler(cache.ResourceEventHandlerFuncs{
+		AddFunc: controller.enqueuer,
+		UpdateFunc: func(old, new interface{}) {
+			controller.enqueuer(new)
+		},
+		DeleteFunc: controller.enqueuer,
+	})
+
 	return controller
 }
 
 // Run is the main path of execution for the controller loop
 func (c *Controller) Run(numberOfWorkers int, interval time.Duration, stopCh <-chan struct{}) {
 	defer utilruntime.HandleCrash()
-	defer c.externalMetricqueue.ShutDown()
+	defer c.metricQueue.ShutDown()
 
 	glog.V(2).Info("initializing controller")
 
 	// do the initial synchronization (one time) to populate resources
-	if !cache.WaitForCacheSync(stopCh, c.externalMetricSynced) {
+	if !cache.WaitForCacheSync(stopCh, c.externalMetricSynced, c.customMetricSynced) {
 		runtime.HandleError(fmt.Errorf("Error syncing controller cache"))
 		return
 	}
@@ -82,42 +95,42 @@ func (c *Controller) runWorker() {
 func (c *Controller) processNextItem() bool {
 	glog.V(2).Info("processing item")
 
-	key, quit := c.externalMetricqueue.Get()
+	key, quit := c.metricQueue.Get()
 	if quit {
 		glog.V(2).Info("recieved quit signal")
 		return false
 	}
 
-	defer c.externalMetricqueue.Done(key)
+	defer c.metricQueue.Done(key)
 
 	var namespaceNameKey string
 	var ok bool
 	if namespaceNameKey, ok = key.(string); !ok {
 		// not valid key do not put back on queue
-		c.externalMetricqueue.Forget(key)
+		c.metricQueue.Forget(key)
 		runtime.HandleError(fmt.Errorf("expected string in workqueue but got %#v", key))
 		return true
 	}
 
-	err := c.handler.Process(namespaceNameKey)
+	err := c.metricHandler.Process(namespaceNameKey)
 	if err != nil {
-		retrys := c.externalMetricqueue.NumRequeues(key)
+		retrys := c.metricQueue.NumRequeues(key)
 		if retrys < 5 {
 			glog.Errorf("Transient error with %d retrys for key %s: %s", retrys, key, err)
-			c.externalMetricqueue.AddRateLimited(key)
+			c.metricQueue.AddRateLimited(key)
 			return true
 		}
 
 		// something was wrong with the item on queue
 		glog.Errorf("Max retries hit for key %s: %s", key, err)
-		c.externalMetricqueue.Forget(key)
+		c.metricQueue.Forget(key)
 		utilruntime.HandleError(err)
 		return true
 	}
 
 	//if here success for get item
 	glog.V(2).Infof("succesfully proccessed item '%s'", namespaceNameKey)
-	c.externalMetricqueue.Forget(key)
+	c.metricQueue.Forget(key)
 	return true
 }
 
@@ -130,5 +143,5 @@ func (c *Controller) enqueueExternalMetric(obj interface{}) {
 	}
 
 	glog.V(2).Infof("adding item to queue for '%s'", key)
-	c.externalMetricqueue.AddRateLimited(key)
+	c.metricQueue.AddRateLimited(key)
 }
