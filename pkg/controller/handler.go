@@ -26,7 +26,7 @@ func NewHandler(externalmetricLister listers.ExternalMetricLister, metricCache *
 	}
 }
 
-type ContollerHandler interface {
+type ControllerHandler interface {
 	Process(namespaceNameKey string) error
 }
 

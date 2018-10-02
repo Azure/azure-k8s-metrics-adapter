@@ -20,11 +20,11 @@ type Controller struct {
 	externalMetricSynced cache.InformerSynced
 	customMetricSynced   cache.InformerSynced
 	enqueuer             func(obj interface{})
-	metricHandler        ContollerHandler
+	metricHandler        ControllerHandler
 }
 
 // NewController returns a new controller for handling external and custom metric types
-func NewController(externalMetricInformer informers.ExternalMetricInformer, customMetricInformer informers.CustomMetricInformer, metricHandler ContollerHandler) *Controller {
+func NewController(externalMetricInformer informers.ExternalMetricInformer, customMetricInformer informers.CustomMetricInformer, metricHandler ControllerHandler) *Controller {
 	controller := &Controller{
 		externalMetricSynced: externalMetricInformer.Informer().HasSynced,
 		metricQueue:          workqueue.NewNamedRateLimitingQueue(workqueue.DefaultControllerRateLimiter(), "metrics"),

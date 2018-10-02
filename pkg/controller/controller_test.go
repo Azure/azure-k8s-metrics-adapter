@@ -23,7 +23,7 @@ type controllerConfig struct {
 	customMetricsListerCache   []*api.CustomMetric
 	syncedFunction             cache.InformerSynced
 	enqueuer                   func(c *Controller) func(obj interface{})
-	handler                    ContollerHandler
+	handler                    ControllerHandler
 	runtimes                   int
 }
 
