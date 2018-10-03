@@ -36,11 +36,7 @@ func (p *AzureProvider) GetMetricBySelector(namespace string, selector labels.Se
 		return nil, errors.NewBadRequest("label is set to not selectable. this should not happen")
 	}
 
-	// because metrics names are multipart in AI and we can not pass an extra /
-	// through k8s api we convert - to / to get around that
-	convertedMetricName := strings.Replace(info.Metric, "-", "/", -1)
-	glog.V(2).Infof("New call to GetCustomMetric: %s", convertedMetricName)
-	metricRequestInfo := appinsights.NewMetricRequest(convertedMetricName)
+	metricRequestInfo := p.getCustomMetricRequest(namespace, selector, info)
 
 	// TODO use selector info to restric metric query to specific app.
 	val, err := p.appinsightsClient.GetCustomMetric(metricRequestInfo)
@@ -59,10 +55,10 @@ func (p *AzureProvider) GetMetricBySelector(namespace string, selector labels.Se
 		DescribedObject: custom_metrics.ObjectReference{
 			APIVersion: info.GroupResource.Group + "/" + runtime.APIVersionInternal,
 			Kind:       kind.Kind,
-			Name:       info.Metric,
+			Name:       metricRequestInfo.MetricName,
 			Namespace:  namespace,
 		},
-		MetricName: info.Metric,
+		MetricName: metricRequestInfo.MetricName,
 		Timestamp:  metav1.Time{time.Now()},
 		Value:      *resource.NewMilliQuantity(int64(val*1000), resource.DecimalSI),
 	}
@@ -82,4 +78,20 @@ func (p *AzureProvider) GetMetricBySelector(namespace string, selector labels.Se
 func (p *AzureProvider) ListAllMetrics() []provider.CustomMetricInfo {
 	// not implemented yet
 	return []provider.CustomMetricInfo{}
+}
+
+func (p *AzureProvider) getCustomMetricRequest(namespace string, selector labels.Selector, info provider.CustomMetricInfo) appinsights.MetricRequest {
+
+	cachedRequest, found := p.metricCache.GetAppInsightsRequest(namespace, info.Metric)
+	if found {
+		return cachedRequest
+	}
+
+	// because metrics names are multipart in AI and we can not pass an extra /
+	// through k8s api we convert - to / to get around that
+	convertedMetricName := strings.Replace(info.Metric, "-", "/", -1)
+	glog.V(2).Infof("New call to GetCustomMetric: %s", convertedMetricName)
+	metricRequestInfo := appinsights.NewMetricRequest(convertedMetricName)
+
+	return metricRequestInfo
 }
