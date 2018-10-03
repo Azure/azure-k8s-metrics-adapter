@@ -1,6 +1,7 @@
 package metriccache
 
 import (
+	"fmt"
 	"sync"
 
 	"github.com/Azure/azure-k8s-metrics-adapter/pkg/azure/appinsights"
@@ -31,10 +32,11 @@ func (mc *MetricCache) Update(key string, metricRequest interface{}) {
 }
 
 // GetAzureMonitorRequest retrieves a metric request from the cache
-func (mc *MetricCache) GetAzureMonitorRequest(key string) (monitor.AzureMetricRequest, bool) {
+func (mc *MetricCache) GetAzureMonitorRequest(namepace, name string) (monitor.AzureMetricRequest, bool) {
 	mc.metricMutext.RLock()
 	defer mc.metricMutext.RUnlock()
 
+	key := externalMetricKey(namepace, name)
 	metricRequest, exists := mc.metricRequests[key]
 	if !exists {
 		glog.V(2).Infof("metric not found %s", key)
@@ -45,10 +47,11 @@ func (mc *MetricCache) GetAzureMonitorRequest(key string) (monitor.AzureMetricRe
 }
 
 // GetAppInsightsRequest retrieves a metric request from the cache
-func (mc *MetricCache) GetAppInsightsRequest(key string) (appinsights.MetricRequest, bool) {
+func (mc *MetricCache) GetAppInsightsRequest(namespace, name string) (appinsights.MetricRequest, bool) {
 	mc.metricMutext.RLock()
 	defer mc.metricMutext.RUnlock()
 
+	key := customMetricKey(namespace, name)
 	metricRequest, exists := mc.metricRequests[key]
 	if !exists {
 		glog.V(2).Infof("metric not found %s", key)
@@ -64,4 +67,12 @@ func (mc *MetricCache) Remove(key string) {
 	defer mc.metricMutext.Unlock()
 
 	delete(mc.metricRequests, key)
+}
+
+func externalMetricKey(namespace string, name string) string {
+	return fmt.Sprintf("%s/%s/ExternalMetric", namespace, name)
+}
+
+func customMetricKey(namespace string, name string) string {
+	return fmt.Sprintf("%s/%s/CustomMetric", namespace, name)
 }

@@ -53,7 +53,7 @@ func (h *Handler) Process(queueItem namespacedQueueItem) error {
 	return nil
 }
 
-func (h *Handler) handleCustomMetric(ns, name string, namespaceNameKey namespacedQueueItem) error {
+func (h *Handler) handleCustomMetric(ns, name string, queueItem namespacedQueueItem) error {
 	// check if item exists
 	glog.V(2).Infof("processing item '%s' in namespace '%s'", name, ns)
 	customMetricInfo, err := h.customMetricLister.CustomMetrics(ns).Get(name)
@@ -61,7 +61,7 @@ func (h *Handler) handleCustomMetric(ns, name string, namespaceNameKey namespace
 		if errors.IsNotFound(err) {
 			// Then this we should remove
 			glog.V(2).Infof("removing item from cache '%s' in namespace '%s'", name, ns)
-			h.metriccache.Remove(namespaceNameKey.Key())
+			h.metriccache.Remove(queueItem.Key())
 			return nil
 		}
 
@@ -73,12 +73,12 @@ func (h *Handler) handleCustomMetric(ns, name string, namespaceNameKey namespace
 	}
 
 	glog.V(2).Infof("adding to cache item '%s' in namespace '%s'", name, ns)
-	h.metriccache.Update(namespaceNameKey.Key(), metric)
+	h.metriccache.Update(queueItem.Key(), metric)
 
 	return nil
 }
 
-func (h *Handler) handleExternalMetric(ns, name string, namespaceNameKey namespacedQueueItem) error {
+func (h *Handler) handleExternalMetric(ns, name string, queueItem namespacedQueueItem) error {
 	// check if item exists
 	glog.V(2).Infof("processing item '%s' in namespace '%s'", name, ns)
 	externalMetricInfo, err := h.externalmetricLister.ExternalMetrics(ns).Get(name)
@@ -86,7 +86,7 @@ func (h *Handler) handleExternalMetric(ns, name string, namespaceNameKey namespa
 		if errors.IsNotFound(err) {
 			// Then this we should remove
 			glog.V(2).Infof("removing item from cache '%s' in namespace '%s'", name, ns)
-			h.metriccache.Remove(namespaceNameKey.Key())
+			h.metriccache.Remove(queueItem.Key())
 			return nil
 		}
 
@@ -105,7 +105,7 @@ func (h *Handler) handleExternalMetric(ns, name string, namespaceNameKey namespa
 	}
 
 	glog.V(2).Infof("adding to cache item '%s' in namespace '%s'", name, ns)
-	h.metriccache.Update(namespaceNameKey.Key(), azureMetricRequest)
+	h.metriccache.Update(queueItem.Key(), azureMetricRequest)
 
 	return nil
 }

@@ -3,8 +3,6 @@
 package provider
 
 import (
-	"fmt"
-
 	"github.com/Azure/azure-k8s-metrics-adapter/pkg/azure/monitor"
 	"github.com/golang/glog"
 	"github.com/kubernetes-incubator/custom-metrics-apiserver/pkg/provider"
@@ -70,9 +68,8 @@ func (p *AzureProvider) ListAllExternalMetrics() []provider.ExternalMetricInfo {
 }
 
 func (p *AzureProvider) getMetricRequest(namespace string, metricName string, metricSelector labels.Selector) (monitor.AzureMetricRequest, error) {
-	key := metricKey(namespace, metricName)
 
-	azMetricRequest, found := p.metricCache.GetAzureMonitorRequest(key)
+	azMetricRequest, found := p.metricCache.GetAzureMonitorRequest(namespace, metricName)
 	if found {
 		azMetricRequest.Timespan = monitor.TimeSpan()
 		if azMetricRequest.SubscriptionID == "" {
@@ -87,8 +84,4 @@ func (p *AzureProvider) getMetricRequest(namespace string, metricName string, me
 	}
 
 	return azMetricRequest, nil
-}
-
-func metricKey(namespace string, name string) string {
-	return fmt.Sprintf("%s/%s/ExternalMetric", namespace, name)
 }
