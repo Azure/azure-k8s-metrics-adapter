@@ -15,7 +15,7 @@ jobs:
           echo 'export REGISTRY_PATH="public/k8s/metrics"' >> $BASH_ENV
       - run: 
           name: install helm
-          command: .circleci/install-helm.sh
+          command: hack/install-helm.sh
             
       - run: make build
       - run:
@@ -34,7 +34,7 @@ jobs:
       - setup_remote_docker
       - run: 
           name: install helm
-          command: .circleci/install-helm.sh
+          command: hack/install-helm.sh
       - run: make build
   deploy:
     docker:
