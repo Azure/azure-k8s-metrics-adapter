@@ -72,7 +72,7 @@ func (p *AzureProvider) ListAllExternalMetrics() []provider.ExternalMetricInfo {
 func (p *AzureProvider) getMetricRequest(namespace string, metricName string, metricSelector labels.Selector) (monitor.AzureMetricRequest, error) {
 	key := metricKey(namespace, metricName)
 
-	azMetricRequest, found := p.metricCache.Get(key)
+	azMetricRequest, found := p.metricCache.GetAzureMonitorRequest(key)
 	if found {
 		azMetricRequest.Timespan = monitor.TimeSpan()
 		if azMetricRequest.SubscriptionID == "" {
@@ -90,5 +90,5 @@ func (p *AzureProvider) getMetricRequest(namespace string, metricName string, me
 }
 
 func metricKey(namespace string, name string) string {
-	return fmt.Sprintf("%s/%s", namespace, name)
+	return fmt.Sprintf("%s/%s/ExternalMetric", namespace, name)
 }

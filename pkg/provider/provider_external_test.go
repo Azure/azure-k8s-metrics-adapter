@@ -36,7 +36,7 @@ func TestFindMetricInCache(t *testing.T) {
 	request := monitor.AzureMetricRequest{
 		MetricName: "MessageCount",
 	}
-	metricCache.Update("default/metricname", request)
+	metricCache.Update("default/metricname/ExternalMetric", request)
 
 	provider := AzureProvider{
 		metricCache:           metricCache,
@@ -70,7 +70,7 @@ func TestFindMetricInCacheUsesOverrideSubscriptionId(t *testing.T) {
 		MetricName:     "MessageCount",
 		SubscriptionID: "9876",
 	}
-	metricCache.Update("default/metricname", request)
+	metricCache.Update("default/metricname/ExternalMetric", request)
 
 	provider := AzureProvider{
 		metricCache:           metricCache,

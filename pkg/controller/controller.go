@@ -4,6 +4,8 @@ import (
 	"fmt"
 	"time"
 
+	"k8s.io/apimachinery/pkg/api/meta"
+
 	"github.com/golang/glog"
 	"k8s.io/apimachinery/pkg/util/runtime"
 	utilruntime "k8s.io/apimachinery/pkg/util/runtime"
@@ -95,42 +97,42 @@ func (c *Controller) runWorker() {
 func (c *Controller) processNextItem() bool {
 	glog.V(2).Info("processing item")
 
-	key, quit := c.metricQueue.Get()
+	rawItem, quit := c.metricQueue.Get()
 	if quit {
 		glog.V(2).Info("recieved quit signal")
 		return false
 	}
 
-	defer c.metricQueue.Done(key)
+	defer c.metricQueue.Done(rawItem)
 
-	var namespaceNameKey string
+	var queueItem namespacedQueueItem
 	var ok bool
-	if namespaceNameKey, ok = key.(string); !ok {
+	if queueItem, ok = rawItem.(namespacedQueueItem); !ok {
 		// not valid key do not put back on queue
-		c.metricQueue.Forget(key)
-		runtime.HandleError(fmt.Errorf("expected string in workqueue but got %#v", key))
+		c.metricQueue.Forget(rawItem)
+		runtime.HandleError(fmt.Errorf("expected string in workqueue but got %#v", rawItem))
 		return true
 	}
 
-	err := c.metricHandler.Process(namespaceNameKey)
+	err := c.metricHandler.Process(queueItem)
 	if err != nil {
-		retrys := c.metricQueue.NumRequeues(key)
+		retrys := c.metricQueue.NumRequeues(rawItem)
 		if retrys < 5 {
-			glog.Errorf("Transient error with %d retrys for key %s: %s", retrys, key, err)
-			c.metricQueue.AddRateLimited(key)
+			glog.Errorf("Transient error with %d retrys for key %s: %s", retrys, rawItem, err)
+			c.metricQueue.AddRateLimited(rawItem)
 			return true
 		}
 
 		// something was wrong with the item on queue
-		glog.Errorf("Max retries hit for key %s: %s", key, err)
-		c.metricQueue.Forget(key)
+		glog.Errorf("Max retries hit for key %s: %s", rawItem, err)
+		c.metricQueue.Forget(rawItem)
 		utilruntime.HandleError(err)
 		return true
 	}
 
 	//if here success for get item
-	glog.V(2).Infof("succesfully proccessed item '%s'", namespaceNameKey)
-	c.metricQueue.Forget(key)
+	glog.V(2).Infof("succesfully proccessed item '%s'", queueItem)
+	c.metricQueue.Forget(rawItem)
 	return true
 }
 
@@ -142,6 +144,26 @@ func (c *Controller) enqueueExternalMetric(obj interface{}) {
 		return
 	}
 
-	glog.V(2).Infof("adding item to queue for '%s'", key)
-	c.metricQueue.AddRateLimited(key)
+	t, err := meta.TypeAccessor(obj)
+	if err != nil {
+		runtime.HandleError(err)
+		return
+	}
+
+	kind := t.GetKind()
+
+	glog.V(2).Infof("adding item to queue for '%s' with kind '%s'", key, kind)
+	c.metricQueue.AddRateLimited(namespacedQueueItem{
+		namespaceKey: key,
+		kind:         kind,
+	})
+}
+
+type namespacedQueueItem struct {
+	namespaceKey string
+	kind         string
+}
+
+func (q namespacedQueueItem) Key() string {
+	return fmt.Sprintf("%s/%s", q.namespaceKey, q.kind)
 }

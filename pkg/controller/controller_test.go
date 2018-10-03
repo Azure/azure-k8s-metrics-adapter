@@ -34,6 +34,7 @@ type wanted struct {
 	// number of times added two queue
 	// will be zero if the item was forgeten
 	enqueCount int
+	enquedItem namespacedQueueItem
 }
 
 type testConfig struct {
@@ -129,6 +130,10 @@ func TestFailedProcessorReEnqueuesWithExternalMetrics(t *testing.T) {
 			itemsRemaing: 1,
 			keepRunning:  true,
 			enqueCount:   2, // should be two because it got added two second time on failure
+			enquedItem: namespacedQueueItem{
+				namespaceKey: "default/test",
+				kind:         "ExternalMetric",
+			},
 		},
 	}
 
@@ -151,6 +156,10 @@ func TestFailedProcessorReEnqueuesWithCustomMetric(t *testing.T) {
 			itemsRemaing: 1,
 			keepRunning:  true,
 			enqueCount:   2, // should be two because it got added two second time on failure
+			enquedItem: namespacedQueueItem{
+				namespaceKey: "default/test",
+				kind:         "CustomMetric",
+			},
 		},
 	}
 
@@ -173,6 +182,10 @@ func TestRetryThenRemoveAfter5AttemptsWithExternalMetric(t *testing.T) {
 			itemsRemaing: 0,
 			keepRunning:  true,
 			enqueCount:   0, // will be zero after it gets removed
+			enquedItem: namespacedQueueItem{
+				namespaceKey: "default/test",
+				kind:         "ExternalMetric",
+			},
 		},
 	}
 
@@ -195,6 +208,10 @@ func TestRetryThenRemoveAfter5AttemptsWithCustomMetric(t *testing.T) {
 			itemsRemaing: 0,
 			keepRunning:  true,
 			enqueCount:   0, // will be zero after it gets removed
+			enquedItem: namespacedQueueItem{
+				namespaceKey: "default/test",
+				kind:         "CustomMetric",
+			},
 		},
 	}
 
@@ -265,7 +282,7 @@ func runControllerTests(testConfig testConfig, t *testing.T) {
 		t.Errorf("Items still on queue = %v, want %v", items, testConfig.want.itemsRemaing)
 	}
 
-	retrys := c.metricQueue.NumRequeues("default/test")
+	retrys := c.metricQueue.NumRequeues(testConfig.want.enquedItem)
 	if retrys != testConfig.want.enqueCount {
 		t.Errorf("Items enqueued times = %v, want %v", retrys, testConfig.want.enqueCount)
 	}
@@ -304,7 +321,7 @@ func newController(config controllerConfig) (*Controller, informers.SharedInform
 
 func newExternalMetric() *api.ExternalMetric {
 	return &api.ExternalMetric{
-		TypeMeta: metav1.TypeMeta{APIVersion: api.SchemeGroupVersion.String()},
+		TypeMeta: metav1.TypeMeta{APIVersion: api.SchemeGroupVersion.String(), Kind: "ExternalMetric"},
 		ObjectMeta: metav1.ObjectMeta{
 			Name:      "test",
 			Namespace: metav1.NamespaceDefault,
@@ -318,7 +335,7 @@ func newExternalMetric() *api.ExternalMetric {
 
 func newCustomMetric() *api.CustomMetric {
 	return &api.CustomMetric{
-		TypeMeta: metav1.TypeMeta{APIVersion: api.SchemeGroupVersion.String()},
+		TypeMeta: metav1.TypeMeta{APIVersion: api.SchemeGroupVersion.String(), Kind: "CustomMetric"},
 		ObjectMeta: metav1.ObjectMeta{
 			Name:      "test",
 			Namespace: metav1.NamespaceDefault,
@@ -331,13 +348,13 @@ func newCustomMetric() *api.CustomMetric {
 
 type succesFakeHandler struct{}
 
-func (h succesFakeHandler) Process(key string) error {
+func (h succesFakeHandler) Process(key namespacedQueueItem) error {
 	return nil
 }
 
 type failedFakeHandler struct{}
 
-func (h failedFakeHandler) Process(key string) error {
+func (h failedFakeHandler) Process(key namespacedQueueItem) error {
 	return errors.New("this fake always fails")
 }
 
