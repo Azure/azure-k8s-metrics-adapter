@@ -5,6 +5,8 @@ import (
 	"testing"
 	"time"
 
+	"github.com/Azure/azure-k8s-metrics-adapter/pkg/azure/appinsights"
+
 	"github.com/Azure/azure-k8s-metrics-adapter/pkg/metriccache"
 	"github.com/kubernetes-incubator/custom-metrics-apiserver/pkg/dynamicmapper"
 	k8sprovider "github.com/kubernetes-incubator/custom-metrics-apiserver/pkg/provider"
@@ -107,6 +109,6 @@ type fakeAppInsightsClient struct {
 	err    error
 }
 
-func (f fakeAppInsightsClient) GetCustomMetric(namespace string, metricName string) (float64, error) {
+func (f fakeAppInsightsClient) GetCustomMetric(request appinsights.MetricRequest) (float64, error) {
 	return f.result, f.err
 }

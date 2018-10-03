@@ -3,8 +3,10 @@
 package provider
 
 import (
+	"strings"
 	"time"
 
+	"github.com/Azure/azure-k8s-metrics-adapter/pkg/azure/appinsights"
 	"github.com/golang/glog"
 	"k8s.io/apimachinery/pkg/api/errors"
 	"k8s.io/apimachinery/pkg/api/resource"
@@ -34,8 +36,14 @@ func (p *AzureProvider) GetMetricBySelector(namespace string, selector labels.Se
 		return nil, errors.NewBadRequest("label is set to not selectable. this should not happen")
 	}
 
+	// because metrics names are multipart in AI and we can not pass an extra /
+	// through k8s api we convert - to / to get around that
+	convertedMetricName := strings.Replace(info.Metric, "-", "/", -1)
+	glog.V(2).Infof("New call to GetCustomMetric: %s", convertedMetricName)
+	metricRequestInfo := appinsights.NewMetricRequest(convertedMetricName)
+
 	// TODO use selector info to restric metric query to specific app.
-	val, err := p.appinsightsClient.GetCustomMetric(namespace, info.Metric)
+	val, err := p.appinsightsClient.GetCustomMetric(metricRequestInfo)
 	if err != nil {
 		glog.Errorf("bad request: %v", err)
 		return nil, errors.NewBadRequest(err.Error())

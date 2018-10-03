@@ -11,7 +11,6 @@ import (
 	"log"
 	"net/http"
 	"os"
-	"strings"
 
 	"github.com/Azure/azure-sdk-for-go/services/appinsights/v1/insights"
 	"github.com/Azure/go-autorest/autorest/azure/auth"
@@ -26,7 +25,7 @@ const (
 
 // AzureAppInsightsClient provides methods for accessing App Insights via AD auth or App API Key
 type AzureAppInsightsClient interface {
-	GetCustomMetric(namespace string, metricName string) (float64, error)
+	GetCustomMetric(request MetricRequest) (float64, error)
 }
 
 // appinsightsClient is used to call Application Insights Api
@@ -51,20 +50,16 @@ func NewClient() AzureAppInsightsClient {
 }
 
 // GetCustomMetric calls to Application Insights to retrieve the value of the metric requested
-func (c appinsightsClient) GetCustomMetric(namespace string, metricName string) (float64, error) {
-	// because metrics names are multipart in AI and we can not pass an extra /
-	// through k8s api we convert - to / to get around that
-	convertedMetricName := strings.Replace(metricName, "-", "/", -1)
-	glog.V(2).Infof("New call to GetCustomMetric: %s", convertedMetricName)
+func (c appinsightsClient) GetCustomMetric(request MetricRequest) (float64, error) {
 
 	// get the last 5 mins and chunking into 30 seconds
 	// this seems to be the best way to get the closest average rate at time of request
 	// any smaller time intervals and the values come back null
-	metricRequestInfo := NewMetricRequest(convertedMetricName)
-	metricRequestInfo.Timespan = "PT5M"
-	metricRequestInfo.Interval = "PT30S"
+	// TODO make this configurable?
+	request.Timespan = "PT5M"
+	request.Interval = "PT30S"
 
-	metricsResult, err := c.getMetric(metricRequestInfo)
+	metricsResult, err := c.getMetric(request)
 	if err != nil {
 		return 0, err
 	}
@@ -80,7 +75,7 @@ func (c appinsightsClient) GetCustomMetric(namespace string, metricName string) 
 	}
 
 	// grab just the last value which will be the latest value of the metric
-	metric := segments[len(segments)-1].AdditionalProperties[convertedMetricName]
+	metric := segments[len(segments)-1].AdditionalProperties[request.MetricName]
 	metricMap := metric.(map[string]interface{})
 	value := metricMap["avg"]
 	normalizedValue := normalizeValue(value)
