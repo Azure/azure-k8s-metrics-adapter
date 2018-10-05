@@ -243,7 +243,7 @@ Switch `method` to `aadPodIdentity` a give the value for the Azure Identity reso
 helm install ./charts/azure-k8s-metrics-adapter --set azureAuthentication.method="aadPodIdentity" \
   --set azureAuthentication.azureIdentityResourceId="/subscriptions/{SubID}/resourceGroups/{ResourceGroup1}/providers/Microsoft.ManagedIdentity/userAssignedIdentities/{IdentityName}" \
   --set azureAuthentication.azureIdentityClientId="{ClientId}" \
-  --name "custom-metrics-adapter" --dry-run --debug
+  --name "custom-metrics-adapter"
 ```
 
 #### Using Azure AD Application ID and Secret
