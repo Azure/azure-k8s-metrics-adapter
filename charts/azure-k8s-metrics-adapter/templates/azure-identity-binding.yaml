@@ -1,0 +1,9 @@
+{{- if eq "aadPodIdentity" .Values.azureAuthentication.method }}
+apiVersion: "aadpodidentity.k8s.io/v1"
+kind: AzureIdentityBinding
+metadata:
+  name: {{ .Values.azureAuthentication.azureIdentityBindingName }}
+spec:
+  AzureIdentity: {{ .Values.azureAuthentication.azureIdentityName }}
+  Selector: {{ .Values.azureAuthentication.azureIdentityName }}
+{{- end }}

@@ -1,0 +1,10 @@
+{{- if eq "aadPodIdentity" .Values.azureAuthentication.method }}
+apiVersion: "aadpodidentity.k8s.io/v1"
+kind: AzureIdentity
+metadata:
+  name: {{ .Values.azureAuthentication.azureIdentityName }}
+spec:
+  type: 0
+  ResourceID: {{ .Values.azureAuthentication.azureIdentityResourceId }}
+  ClientID: {{ .Values.azureAuthentication.azureIdentityClientId }}
+{{- end }}
