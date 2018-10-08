@@ -92,8 +92,6 @@ See a full [list of hundreds of available azure external metrics](https://docs.m
 Common external metrics to use for autoscaling are:
 
 - [Azure ServiceBus Queue](https://docs.microsoft.com/en-us/azure/monitoring-and-diagnostics/monitoring-supported-metrics#microsoftservicebusnamespaces)  - Message Count - [example](samples/servicebus-queue)
-- [Azure Storage Queue](https://docs.microsoft.com/en-us/azure/monitoring-and-diagnostics/monitoring-supported-metrics#microsoftstoragestorageaccountsqueueservices) - Message Count
-- [Azure Eventhubs](https://docs.microsoft.com/en-us/azure/monitoring-and-diagnostics/monitoring-supported-metrics#microsofteventhubnamespaces)
 
 ## Custom Metrics
 
@@ -251,6 +249,11 @@ The use the adapter your Azure Subscription must be provided.  There are a few w
 - [Azure Instance Metadata](https://docs.microsoft.com/en-us/azure/virtual-machines/windows/instance-metadata-service) - If you are running the adapter on a VM in Azure (for instance in an AKS cluster) there is nothing you need to do.  The Subscription Id will be automatically picked up from the Azure Instance Metadata endpoint
 - Environment Variable - If you are outside of Azure or want full control of the subscription that is used you can set the Environment variable `SUBSCRIPTION_ID`  on the adapter deployment.  This takes precedence over the Azure Instance Metadata.
 - [On each HPA](samples/hpa-examples) - you can work with multiple subscriptions by supplying the metric selector `subscriptionID` on each HPA.  This overrides Environment variables and Azure Instance Metadata settings.
+
+## FAQ
+
+- Can I scale with Azure Storage queues?
+  - No.  The [Azure Storage Queue](https://docs.microsoft.com/en-us/azure/storage/common/storage-metrics-in-azure-monitor?toc=%2fazure%2fstorage%2fqueues%2ftoc.json#capacity-metrics) only reports it's capacity metrics daily.
 
 ## Contributing
 
