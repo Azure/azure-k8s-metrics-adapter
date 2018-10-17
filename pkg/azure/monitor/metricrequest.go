@@ -124,7 +124,7 @@ func (amr AzureMetricRequest) Validate() error {
 		return InvalidMetricRequestError{err: "timespan is required"}
 	}
 	if amr.Filter == "" {
-		return InvalidMetricRequestError{err: "filter is required"}
+		glog.V(2).Infof("filter on request was not set")
 	}
 
 	if amr.SubscriptionID == "" {

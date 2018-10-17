@@ -122,3 +122,43 @@ func TestParseWithNoSubIdPassedIsFails(t *testing.T) {
 		t.Errorf("should be InvalidMetricRequest error got %v, want InvalidMetricRequestError", err)
 	}
 }
+
+func TestValidateWithValidMetric(t *testing.T) {
+	mr := AzureMetricRequest{
+		Aggregation:               "Total",
+		Filter:                    "EntityName eq 'externalq'",
+		MetricName:                "Test",
+		ResourceGroup:             "resource-group",
+		ResourceName:              "name",
+		ResourceProviderNamespace: "Microsoft.ServiceBus",
+		ResourceType:              "namespace",
+		Timespan:                  TimeSpan(),
+		SubscriptionID:            "1234-12-42-24",
+	}
+
+	err := mr.Validate()
+
+	if err != nil {
+		t.Errorf("validate got error %v, want nil", err)
+	}
+}
+
+func TestValidateFilterIsOptional(t *testing.T) {
+	mr := AzureMetricRequest{
+		Aggregation:               "Total",
+		Filter:                    "",
+		MetricName:                "Test",
+		ResourceGroup:             "resource-group",
+		ResourceName:              "name",
+		ResourceProviderNamespace: "Microsoft.ServiceBus",
+		ResourceType:              "namespace",
+		Timespan:                  TimeSpan(),
+		SubscriptionID:            "1234-12-42-24",
+	}
+
+	err := mr.Validate()
+
+	if err != nil {
+		t.Errorf("validate got error %v, want nil", err)
+	}
+}
