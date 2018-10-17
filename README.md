@@ -253,7 +253,7 @@ The use the adapter your Azure Subscription must be provided.  There are a few w
 ## FAQ
 
 - Can I scale with Azure Storage queues?
-  - No.  The [Azure Storage Queue](https://docs.microsoft.com/en-us/azure/storage/common/storage-metrics-in-azure-monitor?toc=%2fazure%2fstorage%2fqueues%2ftoc.json#capacity-metrics) only reports it's capacity metrics daily.
+  - Not currently.  The [Azure Storage Queue](https://docs.microsoft.com/en-us/azure/storage/common/storage-metrics-in-azure-monitor?toc=%2fazure%2fstorage%2fqueues%2ftoc.json#capacity-metrics) only reports it's capacity metrics daily.  Follow this [issue](https://github.com/Azure/azure-k8s-metrics-adapter/issues/39) for updates.
 
 ## Contributing
 
