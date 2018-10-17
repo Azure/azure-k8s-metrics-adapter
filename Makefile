@@ -66,18 +66,16 @@ tag-ci:
 	docker tag $(FULL_IMAGE):$(CIRCLE_WORKFLOW_ID) $(FULL_IMAGE):$(VERSION)
 
 # Code gen helpers
-gen-apis: codegen-fix
+gen-apis: codegen-get
 	hack/update-codegen.sh
 
-verify-apis: codegen-fix
+verify-apis: codegen-get
 	hack/verify-codegen.sh
-
-codegen-fix: codegen-get
-	hack/codegen-repo-fix.sh
 
 codegen-get:
 	go get -u k8s.io/code-generator/...
 
+# Helm deploy generator helpers
 verify-deploy:
 	hack/verify-deploy.sh
 

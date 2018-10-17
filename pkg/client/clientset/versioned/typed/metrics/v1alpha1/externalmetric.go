@@ -22,7 +22,6 @@ import (
 	v1alpha1 "github.com/Azure/azure-k8s-metrics-adapter/pkg/apis/metrics/v1alpha1"
 	scheme "github.com/Azure/azure-k8s-metrics-adapter/pkg/client/clientset/versioned/scheme"
 	v1 "k8s.io/apimachinery/pkg/apis/meta/v1"
-	types "k8s.io/apimachinery/pkg/types"
 	watch "k8s.io/apimachinery/pkg/watch"
 	rest "k8s.io/client-go/rest"
 )
@@ -42,7 +41,6 @@ type ExternalMetricInterface interface {
 	Get(name string, options v1.GetOptions) (*v1alpha1.ExternalMetric, error)
 	List(opts v1.ListOptions) (*v1alpha1.ExternalMetricList, error)
 	Watch(opts v1.ListOptions) (watch.Interface, error)
-	Patch(name string, pt types.PatchType, data []byte, subresources ...string) (result *v1alpha1.ExternalMetric, err error)
 	ExternalMetricExpansion
 }
 
@@ -140,18 +138,4 @@ func (c *externalMetrics) DeleteCollection(options *v1.DeleteOptions, listOption
 		Body(options).
 		Do().
 		Error()
-}
-
-// Patch applies the patch and returns the patched externalMetric.
-func (c *externalMetrics) Patch(name string, pt types.PatchType, data []byte, subresources ...string) (result *v1alpha1.ExternalMetric, err error) {
-	result = &v1alpha1.ExternalMetric{}
-	err = c.client.Patch(pt).
-		Namespace(c.ns).
-		Resource("externalmetrics").
-		SubResource(subresources...).
-		Name(name).
-		Body(data).
-		Do().
-		Into(result)
-	return
 }

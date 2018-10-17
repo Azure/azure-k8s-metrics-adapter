@@ -6,6 +6,7 @@ import (
 
 // +genclient
 // +genclient:noStatus
+// +genclient:skipVerbs=patch
 // +k8s:deepcopy-gen:interfaces=k8s.io/apimachinery/pkg/runtime.Object
 
 // ExternalMetric describes a ExternalMetric resource
