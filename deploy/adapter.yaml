@@ -130,6 +130,7 @@ rules:
   - azure.com
   resources:
   - "externalmetrics"
+  - "custommetrics"
   verbs:
   - list
   - get
