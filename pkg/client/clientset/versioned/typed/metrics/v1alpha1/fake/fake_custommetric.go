@@ -23,7 +23,6 @@ import (
 	v1 "k8s.io/apimachinery/pkg/apis/meta/v1"
 	labels "k8s.io/apimachinery/pkg/labels"
 	schema "k8s.io/apimachinery/pkg/runtime/schema"
-	types "k8s.io/apimachinery/pkg/types"
 	watch "k8s.io/apimachinery/pkg/watch"
 	testing "k8s.io/client-go/testing"
 )
@@ -114,15 +113,4 @@ func (c *FakeCustomMetrics) DeleteCollection(options *v1.DeleteOptions, listOpti
 
 	_, err := c.Fake.Invokes(action, &v1alpha1.CustomMetricList{})
 	return err
-}
-
-// Patch applies the patch and returns the patched customMetric.
-func (c *FakeCustomMetrics) Patch(name string, pt types.PatchType, data []byte, subresources ...string) (result *v1alpha1.CustomMetric, err error) {
-	obj, err := c.Fake.
-		Invokes(testing.NewPatchSubresourceAction(custommetricsResource, c.ns, name, data, subresources...), &v1alpha1.CustomMetric{})
-
-	if obj == nil {
-		return nil, err
-	}
-	return obj.(*v1alpha1.CustomMetric), err
 }
