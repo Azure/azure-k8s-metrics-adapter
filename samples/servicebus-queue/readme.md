@@ -170,7 +170,6 @@ You can list of the configured external metrics via:
 
 ```
 kubectl get aem #shortcut for externalmetric
-
 ```
 
 ### Deploy the HPA

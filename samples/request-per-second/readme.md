@@ -11,9 +11,12 @@ This is an example on using custom metric from Application insights to scale a d
             - [Using Azure Application Insights API Key](#using-azure-application-insights-api-key)
             - [Using Azure AD Pod Identity](#using-azure-ad-pod-identity)
     - [Deploy the app that will be scaled](#deploy-the-app-that-will-be-scaled)
+- [there is probably a better way to get at that array](#there-is-probably-a-better-way-to-get-at-that-array)
     - [Scale on Requests per Second (RPS)](#scale-on-requests-per-second-rps)
+        - [Deploy the Custom Metric Configuration](#deploy-the-custom-metric-configuration)
         - [Deploy the HPA](#deploy-the-hpa)
         - [Put it under load and scale by RPS](#put-it-under-load-and-scale-by-rps)
+- [100000 requests at 100 RPS](#100000-requests-at-100-rps)
         - [Watch it scale](#watch-it-scale)
     - [Clean up](#clean-up)
 
@@ -44,21 +47,18 @@ After the application instance is created [get your instrumentation key](https:/
 
 ### Get your appid and api key
 
-Get your [appid and key](https://dev.applicationinsights.io/documentation/Authorization/API-key-and-App-ID). Then create a secret for the adapter to use:
+Get your [appid and key](https://dev.applicationinsights.io/documentation/Authorization/API-key-and-App-ID). Then deploy the adapter.
 
 #### Using Azure Application Insights API Key
 
-If you want use an Application Insight API key, create the following secret:
-
 ```bash
-kubectl create secret generic app-insights-api -n custom-metrics --from-literal=app-insights-app-id=<appid> --from-literal=app-insights-key=<key>
+helm install --name sample-release ../../charts/azure-k8s-metrics-adapter --namespace custom-metrics \ 
+    --set appInsights.appId=<your app id> \
+    --set appInsights.key=<your api key> \
+    --set azureAuthentication.createSecret=true
 ```
 
-Deploy the modified [adapter.yaml](https://gist.github.com/jsturtevant/966371df82be922e14438bcbc81f1f65) that uses the secret just created:
-
-```bash
-kubectl apply -f https://gist.githubusercontent.com/jsturtevant/966371df82be922e14438bcbc81f1f65/raw/2ca706bcc18d20af5956c66400df69c3bb83c002/deploy.yaml
-```
+> note: if you plan to use the adapter with External Metrics you may need additional configuration.  See the [Service Bus Queue Example](../servicebus-queue/).
 
 #### Using Azure AD Pod Identity
 
@@ -99,6 +99,20 @@ curl http://$RPS_ENDPOINT
 
 ## Scale on Requests per Second (RPS)
 
+### Deploy the Custom Metric Configuration
+
+```bash
+kubectl apply -f deploy/custom-metric.yaml
+```
+
+> note: the CustomMetric configuration is deployed per namespace.
+
+You can list of the configured custom metrics via:
+
+```
+kubectl get acm #shortcut for custommetric
+```
+
 ### Deploy the HPA
 
 Deploy the HPA:
@@ -106,6 +120,9 @@ Deploy the HPA:
 ```bash
 kubectl apply -f deploy/hpa.yaml
 ```
+
+> note: the `metrics.pods.metricName` defined on the HPA must match the `metadata.name` on the CustomMetric declaration, in this case `rps`
+
 
 ### Put it under load and scale by RPS
 
@@ -152,6 +169,7 @@ Also remove resources created in cluster:
 
 ```bash
 kubectl delete -f deploy/hpa.yaml
+kubectl delete -f deploy/custom-metric.yaml
 kubectl delete -f deploy/rps-deployment.yaml
-kubectl detele -f https://raw.githubusercontent.com/Azure/azure-k8s-metrics-adapter/master/deploy/adapter.yaml
+helm delete --purge sample-release
 ```
