@@ -11,7 +11,6 @@ This is an example on using custom metric from Application insights to scale a d
             - [Using Azure Application Insights API Key](#using-azure-application-insights-api-key)
             - [Using Azure AD Pod Identity](#using-azure-ad-pod-identity)
     - [Deploy the app that will be scaled](#deploy-the-app-that-will-be-scaled)
-- [there is probably a better way to get at that array](#there-is-probably-a-better-way-to-get-at-that-array)
     - [Scale on Requests per Second (RPS)](#scale-on-requests-per-second-rps)
         - [Deploy the Custom Metric Configuration](#deploy-the-custom-metric-configuration)
         - [Deploy the HPA](#deploy-the-hpa)
@@ -91,7 +90,6 @@ kubectl apply -f deploy/rps-deployment.yaml
 Double check you can hit the endpoint:
 
 ```bash
-# there is probably a better way to get at that array
 export RPS_ENDPOINT="$(k get svc rps-sample  -o json | jq .status.loadBalancer.ingress | jq -r '.[0]'.ip)"
 
 curl http://$RPS_ENDPOINT
@@ -129,10 +127,10 @@ kubectl apply -f deploy/hpa.yaml
 [Hey](https://github.com/rakyll/hey) is a simple way to create load on an api from  the command line.
 
 ```bash
-go get -u github.com/rakyll/hey http://$RPS_ENDPOINT
+go get -u github.com/rakyll/hey 
 
 # 100000 requests at 100 RPS
-hey -n 10000 -q 10 -c 10
+hey -n 10000 -q 10 -c 10 http://$RPS_ENDPOINT
 ```
 
 ### Watch it scale
