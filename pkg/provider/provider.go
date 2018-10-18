@@ -24,6 +24,7 @@ type AzureProvider struct {
 func NewAzureProvider(defaultSubscriptionID string, mapper apimeta.RESTMapper, appinsightsClient appinsights.AzureAppInsightsClient, monitorClient monitor.AzureMonitorClient, metricCache *metriccache.MetricCache) provider.MetricsProvider {
 	return &AzureProvider{
 		defaultSubscriptionID: defaultSubscriptionID,
+		mapper:                mapper,
 		appinsightsClient:     appinsightsClient,
 		monitorClient:         monitorClient,
 		metricCache:           metricCache,
