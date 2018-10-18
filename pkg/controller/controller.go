@@ -4,7 +4,7 @@ import (
 	"fmt"
 	"time"
 
-	"k8s.io/apimachinery/pkg/api/meta"
+	"github.com/Azure/azure-k8s-metrics-adapter/pkg/apis/metrics/v1alpha1"
 
 	"github.com/golang/glog"
 	"k8s.io/apimachinery/pkg/util/runtime"
@@ -144,13 +144,7 @@ func (c *Controller) enqueueExternalMetric(obj interface{}) {
 		return
 	}
 
-	t, err := meta.TypeAccessor(obj)
-	if err != nil {
-		runtime.HandleError(err)
-		return
-	}
-
-	kind := t.GetKind()
+	kind := getKind(obj)
 
 	glog.V(2).Infof("adding item to queue for '%s' with kind '%s'", key, kind)
 	c.metricQueue.AddRateLimited(namespacedQueueItem{
@@ -166,4 +160,29 @@ type namespacedQueueItem struct {
 
 func (q namespacedQueueItem) Key() string {
 	return fmt.Sprintf("%s/%s", q.namespaceKey, q.kind)
+}
+
+func getKind(obj interface{}) string {
+	// Due to this issue https://github.com/kubernetes/apiextensions-apiserver/issues/29
+	// metadata is not set on freshly set CRD's
+	// So the following does not work:
+	// 		t, err := meta.TypeAccessor(obj)
+	// 		kind := t.GetKind() // Kind will be blank
+	//
+	// A possible alternative to switching on type would be to use
+	// 		https://github.com/kubernetes/kubernetes/blob/7f23a743e8c23ac6489340bbb34fa6f1d392db9d/pkg/kubectl/cmd/util/conversion.go
+	// 		v := cmdUtil.AsDefaultVersionedOrOriginal(item, nil)
+	// 		k := v.GetObjectKind().GroupVersionKind().Kind
+	//
+	// Instead use type to predict Kind which is good enough for our purposes:
+
+	switch obj.(type) {
+	case *v1alpha1.ExternalMetric:
+		return "ExternalMetric"
+	case *v1alpha1.CustomMetric:
+		return "CustomMetric"
+	default:
+		glog.Error("No known type of object")
+		return ""
+	}
 }
