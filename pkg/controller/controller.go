@@ -159,7 +159,7 @@ type namespacedQueueItem struct {
 }
 
 func (q namespacedQueueItem) Key() string {
-	return fmt.Sprintf("%s/%s", q.namespaceKey, q.kind)
+	return fmt.Sprintf("%s/%s", q.kind, q.namespaceKey)
 }
 
 func getKind(obj interface{}) string {

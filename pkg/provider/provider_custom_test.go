@@ -76,7 +76,7 @@ func TestReturnsCustomMetricWhenInCache(t *testing.T) {
 		MetricName: "cachedName",
 	}
 
-	cache.Update("default/MetricName/CustomMetric", request)
+	cache.Update("CustomMetric/default/MetricName", request)
 
 	returnList, err := provider.GetMetricBySelector("default", selector, info)
 

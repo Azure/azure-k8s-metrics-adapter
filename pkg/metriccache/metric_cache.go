@@ -70,9 +70,9 @@ func (mc *MetricCache) Remove(key string) {
 }
 
 func externalMetricKey(namespace string, name string) string {
-	return fmt.Sprintf("%s/%s/ExternalMetric", namespace, name)
+	return fmt.Sprintf("ExternalMetric/%s/%s", namespace, name)
 }
 
 func customMetricKey(namespace string, name string) string {
-	return fmt.Sprintf("%s/%s/CustomMetric", namespace, name)
+	return fmt.Sprintf("CustomMetric/%s/%s", namespace, name)
 }
