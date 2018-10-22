@@ -14,14 +14,14 @@ import (
 const validLabelSelector = "resourceProviderNamespace=Microsoft.Servicebus,resourceType=namespaces,aggregation=Total,filter=EntityName_eq_externalq,resourceGroup=sb-external-example,resourceName=sb-external-ns,metricName=%s"
 
 func createLabelSelector(metricName, subscriptionID string) labels.Selector {
-	lableSelector := validLabelSelector
+	labelSelector := validLabelSelector
 
 	if subscriptionID != "" {
-		lableSelector = fmt.Sprintf("%s,subscriptionID=%s", lableSelector, subscriptionID)
+		labelSelector = fmt.Sprintf("%s,subscriptionID=%s", labelSelector, subscriptionID)
 	}
 
-	lablel := fmt.Sprintf(lableSelector, metricName)
-	selector, err := labels.Parse(lablel)
+	label := fmt.Sprintf(labelSelector, metricName)
+	selector, err := labels.Parse(label)
 
 	if err != nil {
 		panic("was not able to make label selector")
