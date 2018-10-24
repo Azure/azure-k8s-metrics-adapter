@@ -217,17 +217,7 @@ If you use the Helm Chart to deploy the custom metrics adapter to your Kubernete
 
 ```yaml
 azureAuthentication:
-  # method: {msi,clientSecret,clientCertificate,aadPodIdentity}
-  method: msi
-  # Generate secret file. If false you are responsible for creating secret 
-  # To generate secret file swith to true then fill in values below
-  createSecret: false
-  tenantID: ""
-  clientID: ""
-  clientSecret: ""
-  clientCertificate: ""
-  clientCertificatePath: ""
-  clientCertificatePassword: ""
+  method: aadPodIdentity
   # if you use aadPodIdentity authentication
   azureIdentityName: "custom-metrics-identity"
   azureIdentityBindingName: "custom-metrics-identity-binding"
