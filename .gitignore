@@ -15,8 +15,8 @@
 apiserver.local.config
 
 #build output
-azure-k8-metrics-adapter
-azure-k8s-metrics-adapter
+/azure-k8-metrics-adapter
+/azure-k8s-metrics-adapter
 debug
 _output/
 **/bin/

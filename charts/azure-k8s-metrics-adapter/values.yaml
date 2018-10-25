@@ -35,7 +35,7 @@ service:
 # Azure Configuration
 
 azureAuthentication:
-  # method: {msi,clientSecret,clientCertificate}
+  # method: {msi,clientSecret,clientCertificate,aadPodIdentity}
   method: msi
   # Generate secret file. If false you are responsible for creating secret 
   # To generate secret file swith to true then fill in values below
@@ -46,6 +46,14 @@ azureAuthentication:
   clientCertificate: ""
   clientCertificatePath: ""
   clientCertificatePassword: ""
+  # if you use aadPodIdentity authentication
+  azureIdentityName: "custom-metrics-identity"
+  azureIdentityBindingName: "custom-metrics-identity-binding"
+  # The full Azure resource id of the managed identity (/subscriptions/{SubID}/resourceGroups/{ResourceGroup1}/providers/Microsoft.ManagedIdentity/userAssignedIdentities/{IdentityName})
+  azureIdentityResourceId: ""
+  # The Client Id of the managed identity
+  azureIdentityClientId: ""
+
 
 # Override the subscription if outside of Azure or for full control with `SUBSCRIPTION_ID`
 # See https://github.com/jsturtevant/azure-k8-metrics-adapter#subscription-information

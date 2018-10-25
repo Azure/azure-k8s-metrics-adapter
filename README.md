@@ -211,6 +211,29 @@ spec:
 
 > Note: pay attention to the name of the selector above. You will need to use it to bind the identity to your pod.
 
+If you use the Helm Chart to deploy the custom metrics adapter to your Kubernetes cluster, you can configure Azure AD Pod Identity directly in the config values:
+
+```yaml
+azureAuthentication:
+  method: aadPodIdentity
+  # if you use aadPodIdentity authentication
+  azureIdentityName: "custom-metrics-identity"
+  azureIdentityBindingName: "custom-metrics-identity-binding"
+  # The full Azure resource id of the managed identity (/subscriptions/{SubID}/resourceGroups/{ResourceGroup1}/providers/Microsoft.ManagedIdentity/userAssignedIdentities/{IdentityName})
+  azureIdentityResourceId: ""
+  # The Client Id of the managed identity
+  azureIdentityClientId: ""
+```
+
+Switch `method` to `aadPodIdentity` a give the value for the Azure Identity resource id and client id, for example:
+
+```bash
+helm install ./charts/azure-k8s-metrics-adapter --set azureAuthentication.method="aadPodIdentity" \
+  --set azureAuthentication.azureIdentityResourceId="/subscriptions/{SubID}/resourceGroups/{ResourceGroup1}/providers/Microsoft.ManagedIdentity/userAssignedIdentities/{IdentityName}" \
+  --set azureAuthentication.azureIdentityClientId="{ClientId}" \
+  --name "custom-metrics-adapter"
+```
+
 #### Using Azure AD Application ID and Secret
 
 See how to create an [example deployment](samples/azure-authentication).
