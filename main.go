@@ -61,11 +61,16 @@ func setupAzureProvider(cmd *basecmd.AdapterBase, metricsCache *metriccache.Metr
 		glog.Fatalf("unable to construct discovery REST mapper: %v", err)
 	}
 
+	dynamicClient, err := cmd.DynamicClient()
+	if err != nil {
+		glog.Fatalf("unable to construct dynamic k8s client: %v", err)
+	}
+
 	defaultSubscriptionID := getDefaultSubscriptionID()
 	monitorClient := monitor.NewClient(defaultSubscriptionID)
 	appinsightsClient := appinsights.NewClient()
 
-	azureProvider := azureprovider.NewAzureProvider(defaultSubscriptionID, mapper, appinsightsClient, monitorClient, metricsCache)
+	azureProvider := azureprovider.NewAzureProvider(defaultSubscriptionID, mapper, dynamicClient, appinsightsClient, monitorClient, metricsCache)
 	cmd.WithCustomMetrics(azureProvider)
 	cmd.WithExternalMetrics(azureProvider)
 }

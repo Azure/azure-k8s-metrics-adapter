@@ -309,7 +309,7 @@
   version = "1.1.4"
 
 [[projects]]
-  digest = "1:4c2988e9c7777badccfaf87473ab09dad9935c67811d2b51e143e959a934e5f3"
+  digest = "1:cf71ca07e2ee5914c776d9eaec4a7f63f4ddb013d55e39ffd5689fe4cd2df861"
   name = "github.com/kubernetes-incubator/custom-metrics-apiserver"
   packages = [
     "pkg/apiserver",
@@ -318,11 +318,13 @@
     "pkg/cmd/server",
     "pkg/dynamicmapper",
     "pkg/provider",
+    "pkg/provider/helpers",
     "pkg/registry/custom_metrics",
     "pkg/registry/external_metrics",
   ]
   pruneopts = "UT"
-  revision = "1f1cda41a301080789507a291b999807002ede46"
+  revision = "f54b0d6f31d8e0f0a2d7be372ddd837a2ef15d97"
+  version = "kubernetes-1.11.2"
 
 [[projects]]
   branch = "master"
@@ -948,8 +950,8 @@
     "github.com/Azure/go-autorest/autorest/azure/auth",
     "github.com/golang/glog",
     "github.com/kubernetes-incubator/custom-metrics-apiserver/pkg/cmd",
-    "github.com/kubernetes-incubator/custom-metrics-apiserver/pkg/dynamicmapper",
     "github.com/kubernetes-incubator/custom-metrics-apiserver/pkg/provider",
+    "github.com/kubernetes-incubator/custom-metrics-apiserver/pkg/provider/helpers",
     "k8s.io/apimachinery/pkg/api/errors",
     "k8s.io/apimachinery/pkg/api/meta",
     "k8s.io/apimachinery/pkg/api/resource",
@@ -966,6 +968,7 @@
     "k8s.io/apiserver/pkg/util/logs",
     "k8s.io/client-go/discovery",
     "k8s.io/client-go/discovery/fake",
+    "k8s.io/client-go/dynamic",
     "k8s.io/client-go/rest",
     "k8s.io/client-go/testing",
     "k8s.io/client-go/tools/cache",

@@ -3,6 +3,7 @@
 package provider
 
 import (
+	"fmt"
 	"strings"
 	"time"
 
@@ -12,11 +13,11 @@ import (
 	"k8s.io/apimachinery/pkg/api/resource"
 	metav1 "k8s.io/apimachinery/pkg/apis/meta/v1"
 	"k8s.io/apimachinery/pkg/labels"
-	"k8s.io/apimachinery/pkg/runtime"
 	"k8s.io/apimachinery/pkg/types"
 	"k8s.io/metrics/pkg/apis/custom_metrics"
 
 	"github.com/kubernetes-incubator/custom-metrics-apiserver/pkg/provider"
+	"github.com/kubernetes-incubator/custom-metrics-apiserver/pkg/provider/helpers"
 )
 
 // GetMetricByName fetches a particular metric for a particular object.
@@ -45,26 +46,27 @@ func (p *AzureProvider) GetMetricBySelector(namespace string, selector labels.Se
 		return nil, errors.NewBadRequest(err.Error())
 	}
 
-	// TODO what does version do?
-	kind, err := p.mapper.KindFor(info.GroupResource.WithVersion(""))
+	resourceNames, err := helpers.ListObjectNames(p.mapper, p.kubeClient, namespace, selector, info)
 	if err != nil {
-		return nil, errors.NewBadRequest(err.Error())
-	}
-
-	metricValue := custom_metrics.MetricValue{
-		DescribedObject: custom_metrics.ObjectReference{
-			APIVersion: info.GroupResource.Group + "/" + runtime.APIVersionInternal,
-			Kind:       kind.Kind,
-			Name:       metricRequestInfo.MetricName,
-			Namespace:  namespace,
-		},
-		MetricName: metricRequestInfo.MetricName,
-		Timestamp:  metav1.Time{time.Now()},
-		Value:      *resource.NewMilliQuantity(int64(val*1000), resource.DecimalSI),
+		glog.Errorf("not able to list objects from api server: %v", err)
+		return nil, errors.NewInternalError(fmt.Errorf("not able to list objects from api server for this resource"))
 	}
 
 	metricList := make([]custom_metrics.MetricValue, 0)
-	metricList = append(metricList, metricValue)
+	for _, name := range resourceNames {
+		ref, err := helpers.ReferenceFor(p.mapper, types.NamespacedName{Namespace: namespace, Name: name}, info)
+		if err != nil {
+			return nil, err
+		}
+
+		metricValue := custom_metrics.MetricValue{
+			DescribedObject: ref,
+			MetricName:      info.Metric,
+			Timestamp:       metav1.Time{time.Now()},
+			Value:           *resource.NewMilliQuantity(int64(val*1000), resource.DecimalSI),
+		}
+		metricList = append(metricList, metricValue)
+	}
 
 	return &custom_metrics.MetricValueList{
 		Items: metricList,

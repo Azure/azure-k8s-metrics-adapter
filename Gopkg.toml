@@ -7,8 +7,8 @@ ignored = ["github.com/Azure/azure-service-bus-go"]
 
 # Kubernetes incubator deps
 [[constraint]]
-  revision = "1f1cda41a301080789507a291b999807002ede46" #revision for 1.11.2 release
   name = "github.com/kubernetes-incubator/custom-metrics-apiserver"
+  version = "kubernetes-1.11.2"
 
 [[constraint]]
   name = "github.com/Azure/azure-sdk-for-go"
