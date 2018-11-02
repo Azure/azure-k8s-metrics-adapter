@@ -95,9 +95,7 @@ Common external metrics to use for autoscaling are:
 
 ## Custom Metrics
 
-Custom metrics are currently retrieved from Application Insights.  Currently you will need to use an [AppId and API key](https://dev.applicationinsights.io/documentation/Authorization/API-key-and-App-ID) to authenticate and retrieve metrics from Application Insights.  View a list of basic metrics that come out of the box and see sample values at the [AI api explorer](https://dev.applicationinsights.io/apiexplorer/metrics).  
-
-> note: Metrics that have multi parts currently need will be passed as with a separator of `-` in place of AI separator of `/`.  An example is `performanceCounters/requestsPerSecond` should be specified as `performanceCounters-requestsPerSecond`
+Custom metrics are currently retrieved from Application Insights.  View a list of basic metrics that come out of the box and see sample values at the [AI api explorer](https://dev.applicationinsights.io/apiexplorer/metrics).  
 
 Common Custom Metrics are:
 
