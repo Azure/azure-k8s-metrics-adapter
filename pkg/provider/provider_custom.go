@@ -39,7 +39,7 @@ func (p *AzureProvider) GetMetricBySelector(namespace string, selector labels.Se
 
 	metricRequestInfo := p.getCustomMetricRequest(namespace, selector, info)
 
-	// TODO use selector info to restric metric query to specific app.
+	// TODO use selector info to restrict metric query to specific app.
 	val, err := p.appinsightsClient.GetCustomMetric(metricRequestInfo)
 	if err != nil {
 		glog.Errorf("bad request: %v", err)
@@ -52,6 +52,11 @@ func (p *AzureProvider) GetMetricBySelector(namespace string, selector labels.Se
 		return nil, errors.NewInternalError(fmt.Errorf("not able to list objects from api server for this resource"))
 	}
 
+	// TODO: Add support for app insights where pods are mapped 1 to 1.
+	// Currently App insights does not out of the box support kubernetes pod information
+	// so we are using the value from AI and passing to all instances of the pods.
+	// We should be passing pod level metric info to App insights but there is currently on the developer to wire that up and
+	// maping it here based on pod name.
 	metricList := make([]custom_metrics.MetricValue, 0)
 	for _, name := range resourceNames {
 		ref, err := helpers.ReferenceFor(p.mapper, types.NamespacedName{Namespace: namespace, Name: name}, info)
