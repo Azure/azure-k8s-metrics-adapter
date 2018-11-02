@@ -3,18 +3,21 @@
 package provider
 
 import (
+	"fmt"
+	"strings"
 	"time"
 
+	"github.com/Azure/azure-k8s-metrics-adapter/pkg/azure/appinsights"
 	"github.com/golang/glog"
 	"k8s.io/apimachinery/pkg/api/errors"
 	"k8s.io/apimachinery/pkg/api/resource"
 	metav1 "k8s.io/apimachinery/pkg/apis/meta/v1"
 	"k8s.io/apimachinery/pkg/labels"
-	"k8s.io/apimachinery/pkg/runtime"
 	"k8s.io/apimachinery/pkg/types"
 	"k8s.io/metrics/pkg/apis/custom_metrics"
 
 	"github.com/kubernetes-incubator/custom-metrics-apiserver/pkg/provider"
+	"github.com/kubernetes-incubator/custom-metrics-apiserver/pkg/provider/helpers"
 )
 
 // GetMetricByName fetches a particular metric for a particular object.
@@ -34,33 +37,41 @@ func (p *AzureProvider) GetMetricBySelector(namespace string, selector labels.Se
 		return nil, errors.NewBadRequest("label is set to not selectable. this should not happen")
 	}
 
-	// TODO use selector info to restric metric query to specific app.
-	val, err := p.appinsightsClient.GetCustomMetric(namespace, info.Metric)
+	metricRequestInfo := p.getCustomMetricRequest(namespace, selector, info)
+
+	// TODO use selector info to restrict metric query to specific app.
+	val, err := p.appinsightsClient.GetCustomMetric(metricRequestInfo)
 	if err != nil {
 		glog.Errorf("bad request: %v", err)
 		return nil, errors.NewBadRequest(err.Error())
 	}
 
-	// TODO what does version do?
-	kind, err := p.mapper.KindFor(info.GroupResource.WithVersion(""))
+	resourceNames, err := helpers.ListObjectNames(p.mapper, p.kubeClient, namespace, selector, info)
 	if err != nil {
-		return nil, errors.NewBadRequest(err.Error())
+		glog.Errorf("not able to list objects from api server: %v", err)
+		return nil, errors.NewInternalError(fmt.Errorf("not able to list objects from api server for this resource"))
 	}
 
-	metricValue := custom_metrics.MetricValue{
-		DescribedObject: custom_metrics.ObjectReference{
-			APIVersion: info.GroupResource.Group + "/" + runtime.APIVersionInternal,
-			Kind:       kind.Kind,
-			Name:       info.Metric,
-			Namespace:  namespace,
-		},
-		MetricName: info.Metric,
-		Timestamp:  metav1.Time{time.Now()},
-		Value:      *resource.NewMilliQuantity(int64(val*1000), resource.DecimalSI),
-	}
-
+	// TODO: Add support for app insights where pods are mapped 1 to 1.
+	// Currently App insights does not out of the box support kubernetes pod information
+	// so we are using the value from AI and passing to all instances of the pods.
+	// We should be passing pod level metric info to App insights but there is currently on the developer to wire that up and
+	// maping it here based on pod name.
 	metricList := make([]custom_metrics.MetricValue, 0)
-	metricList = append(metricList, metricValue)
+	for _, name := range resourceNames {
+		ref, err := helpers.ReferenceFor(p.mapper, types.NamespacedName{Namespace: namespace, Name: name}, info)
+		if err != nil {
+			return nil, err
+		}
+
+		metricValue := custom_metrics.MetricValue{
+			DescribedObject: ref,
+			MetricName:      info.Metric,
+			Timestamp:       metav1.Time{time.Now()},
+			Value:           *resource.NewMilliQuantity(int64(val*1000), resource.DecimalSI),
+		}
+		metricList = append(metricList, metricValue)
+	}
 
 	return &custom_metrics.MetricValueList{
 		Items: metricList,
@@ -74,4 +85,20 @@ func (p *AzureProvider) GetMetricBySelector(namespace string, selector labels.Se
 func (p *AzureProvider) ListAllMetrics() []provider.CustomMetricInfo {
 	// not implemented yet
 	return []provider.CustomMetricInfo{}
+}
+
+func (p *AzureProvider) getCustomMetricRequest(namespace string, selector labels.Selector, info provider.CustomMetricInfo) appinsights.MetricRequest {
+
+	cachedRequest, found := p.metricCache.GetAppInsightsRequest(namespace, info.Metric)
+	if found {
+		return cachedRequest
+	}
+
+	// because metrics names are multipart in AI and we can not pass an extra /
+	// through k8s api we convert - to / to get around that
+	convertedMetricName := strings.Replace(info.Metric, "-", "/", -1)
+	glog.V(2).Infof("New call to GetCustomMetric: %s", convertedMetricName)
+	metricRequestInfo := appinsights.NewMetricRequest(convertedMetricName)
+
+	return metricRequestInfo
 }

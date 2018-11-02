@@ -12,5 +12,5 @@ spec:
   metrics:
   - type: Pods
     pods:
-      metricName: performanceCounters-requestsPerSecond
+      metricName: rps
       targetAverageValue: 10

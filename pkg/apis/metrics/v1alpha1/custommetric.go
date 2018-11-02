@@ -28,9 +28,9 @@ type CustomMetricSpec struct {
 
 // CustomMetricConfig holds app insights configuration
 type CustomMetricConfig struct {
-	metricName    string `json:"metricName"`
-	applicationID string `json:"applicationID"`
-	query         string `json:"query"`
+	MetricName    string `json:"metricName"`
+	ApplicationID string `json:"applicationID"`
+	Query         string `json:"query"`
 }
 
 // +k8s:deepcopy-gen:interfaces=k8s.io/apimachinery/pkg/runtime.Object

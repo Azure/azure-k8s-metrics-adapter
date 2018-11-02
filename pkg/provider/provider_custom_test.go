@@ -2,22 +2,117 @@ package provider
 
 import (
 	"errors"
+	"fmt"
 	"testing"
 	"time"
+
+	"github.com/Azure/azure-k8s-metrics-adapter/pkg/azure/appinsights"
+	"github.com/Azure/azure-k8s-metrics-adapter/pkg/client/clientset/versioned/scheme"
 
 	"github.com/Azure/azure-k8s-metrics-adapter/pkg/metriccache"
 	"github.com/kubernetes-incubator/custom-metrics-apiserver/pkg/dynamicmapper"
 	k8sprovider "github.com/kubernetes-incubator/custom-metrics-apiserver/pkg/provider"
+	corev1 "k8s.io/api/core/v1"
 	metav1 "k8s.io/apimachinery/pkg/apis/meta/v1"
 	"k8s.io/apimachinery/pkg/labels"
+	"k8s.io/apimachinery/pkg/runtime"
 	"k8s.io/apimachinery/pkg/runtime/schema"
 
 	k8serrors "k8s.io/apimachinery/pkg/api/errors"
+	k8sclient "k8s.io/client-go/dynamic/fake"
 
 	core "k8s.io/client-go/testing"
 )
 
-func TestReturnsCustomMetric(t *testing.T) {
+func TestReturnsCustomMetricConverted(t *testing.T) {
+
+	fakeClient := fakeAppInsightsClient{
+		result: 15,
+		err:    nil,
+	}
+
+	selector, _ := labels.Parse("")
+	info := k8sprovider.CustomMetricInfo{
+		Namespaced: true,
+		Metric:     "Metric-Name",
+		GroupResource: schema.GroupResource{
+			Resource: "pods",
+		},
+	}
+
+	var storeObjects []runtime.Object
+	pod := newUnstructured("v1", "Pod", "default", "pod1")
+	storeObjects = append(storeObjects, pod)
+
+	provider, _ := newFakeCustomProvider(fakeClient, storeObjects)
+	returnList, err := provider.GetMetricBySelector("default", selector, info)
+
+	if err != nil {
+		t.Errorf("error after processing got: %v, want nil", err)
+	}
+
+	if len(returnList.Items) != 1 {
+		t.Errorf("returnList.Items length = %v, want there 1", len(returnList.Items))
+	}
+
+	customMetric := returnList.Items[0]
+	if customMetric.MetricName != "Metric-Name" {
+		t.Errorf("customMetric.MetricName = %v, want there %v", customMetric.MetricName, "Metric/Name")
+	}
+
+	if customMetric.Value.MilliValue() != int64(15000) {
+		t.Errorf("customMetric.Value.MilliValue() = %v, want there %v", customMetric.Value.MilliValue(), int64(15000))
+	}
+}
+
+func TestReturnsCustomMetricConvertedWithMultiplePods(t *testing.T) {
+	fakeClient := fakeAppInsightsClient{
+		result: 15,
+		err:    nil,
+	}
+
+	selector, _ := labels.Parse("")
+	info := k8sprovider.CustomMetricInfo{
+		Namespaced: true,
+		Metric:     "Metric-Name",
+		GroupResource: schema.GroupResource{
+			Resource: "pods",
+		},
+	}
+
+	var storeObjects []runtime.Object
+	pod := newUnstructured("v1", "Pod", "default", "pod0")
+	pod2 := newUnstructured("v1", "Pod", "default", "pod1")
+	pod3 := newUnstructured("v1", "Pod", "default", "pod2")
+	storeObjects = append(storeObjects, pod, pod2, pod3)
+
+	provider, _ := newFakeCustomProvider(fakeClient, storeObjects)
+	returnList, err := provider.GetMetricBySelector("default", selector, info)
+
+	if err != nil {
+		t.Errorf("error after processing got: %v, want nil", err)
+	}
+
+	if len(returnList.Items) != 3 {
+		t.Errorf("returnList.Items length = %v, want there 3", len(returnList.Items))
+	}
+
+	for i, customMetric := range returnList.Items {
+		if customMetric.MetricName != "Metric-Name" {
+			t.Errorf("customMetric.MetricName = %v, want there %v", customMetric.MetricName, "Metric/Name")
+		}
+
+		if customMetric.Value.MilliValue() != int64(15000) {
+			t.Errorf("customMetric.Value.MilliValue() = %v, want there %v", customMetric.Value.MilliValue(), int64(15000))
+		}
+
+		if customMetric.DescribedObject.Name != fmt.Sprintf("pod%d", i) {
+			t.Errorf("customMetric.Value.MilliValue() = %v, want there %v", customMetric.Value.MilliValue(), int64(15000))
+		}
+	}
+}
+
+func TestReturnsCustomMetricWhenInCache(t *testing.T) {
 
 	fakeClient := fakeAppInsightsClient{
 		result: 15,
@@ -32,7 +127,18 @@ func TestReturnsCustomMetric(t *testing.T) {
 		},
 	}
 
-	provider := newFakeCustomProvider(fakeClient)
+	var storeObjects []runtime.Object
+	pod := newUnstructured("v1", "Pod", "default", "pod1")
+	storeObjects = append(storeObjects, pod)
+
+	provider, cache := newFakeCustomProvider(fakeClient, storeObjects)
+
+	request := appinsights.MetricRequest{
+		MetricName: "cachedName",
+	}
+
+	cache.Update("CustomMetric/default/MetricName", request)
+
 	returnList, err := provider.GetMetricBySelector("default", selector, info)
 
 	if err != nil {
@@ -44,12 +150,12 @@ func TestReturnsCustomMetric(t *testing.T) {
 	}
 
 	customMetric := returnList.Items[0]
-	if customMetric.MetricName != info.Metric {
-		t.Errorf("externalMetric.MetricName = %v, want there %v", customMetric.MetricName, info.Metric)
+	if customMetric.MetricName != "MetricName" {
+		t.Errorf("customMetric.MetricName = %v, want there %v", customMetric.MetricName, request.MetricName)
 	}
 
 	if customMetric.Value.MilliValue() != int64(15000) {
-		t.Errorf("externalMetric.Value.MilliValue() = %v, want there %v", customMetric.Value.MilliValue(), int64(15000))
+		t.Errorf("customMetric.Value.MilliValue() = %v, want there %v", customMetric.Value.MilliValue(), int64(15000))
 	}
 }
 
@@ -67,7 +173,11 @@ func TestReturnsErrorIfAppInsightsFails(t *testing.T) {
 		},
 	}
 
-	provider := newFakeCustomProvider(fakeClient)
+	var storeObjects []runtime.Object
+	pod := newUnstructured("v1", "Pod", "default", "pod1")
+	storeObjects = append(storeObjects, pod)
+
+	provider, _ := newFakeCustomProvider(fakeClient, storeObjects)
 	_, err := provider.GetMetricBySelector("default", selector, info)
 
 	if !k8serrors.IsBadRequest(err) {
@@ -75,7 +185,7 @@ func TestReturnsErrorIfAppInsightsFails(t *testing.T) {
 	}
 }
 
-func newFakeCustomProvider(fakeclient fakeAppInsightsClient) AzureProvider {
+func newFakeCustomProvider(fakeclient fakeAppInsightsClient, store []runtime.Object) (AzureProvider, *metriccache.MetricCache) {
 	metricCache := metriccache.NewMetricCache()
 
 	// set up a fake mapper
@@ -93,13 +203,20 @@ func newFakeCustomProvider(fakeclient fakeAppInsightsClient) AzureProvider {
 
 	mapper.RegenerateMappings()
 
+	// set up fake dynamic client
+	s := scheme.Scheme
+	corev1.SchemeBuilder.AddToScheme(s)
+
+	fakeK8sClient := k8sclient.NewSimpleDynamicClient(s, store...)
+
 	provider := AzureProvider{
 		metricCache:       metricCache,
 		appinsightsClient: fakeclient,
 		mapper:            mapper,
+		kubeClient:        fakeK8sClient,
 	}
 
-	return provider
+	return provider, metricCache
 }
 
 type fakeAppInsightsClient struct {
@@ -107,6 +224,6 @@ type fakeAppInsightsClient struct {
 	err    error
 }
 
-func (f fakeAppInsightsClient) GetCustomMetric(namespace string, metricName string) (float64, error) {
+func (f fakeAppInsightsClient) GetCustomMetric(request appinsights.MetricRequest) (float64, error) {
 	return f.result, f.err
 }
