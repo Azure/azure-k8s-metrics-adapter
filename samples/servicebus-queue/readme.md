@@ -23,7 +23,7 @@ Prerequisites:
 - provisioned an [AKS Cluster](https://docs.microsoft.com/en-us/azure/aks/kubernetes-walkthrough)
 - your `kubeconfig` points to your cluster.  
 - [Metric Server deployed](https://github.com/kubernetes-incubator/metrics-server#deployment) to your cluster ([aks does not come with it deployed](https://github.com/Azure/AKS/issues/318)). Validate by running `kubectl get --raw "/apis/metrics.k8s.io/v1beta1/nodes" | jq .`
-- [helm](https://docs.helm.sh/using_helm/#quickstart-guide) or install on [helm on aks](https://docs.microsoft.com/en-us/azure/aks/kubernetes-helm)
+- install [helm on aks](https://docs.microsoft.com/en-us/azure/aks/kubernetes-helm)
 
 Get this repository and cd to this folder (on your GOPATH):
 
@@ -133,7 +133,7 @@ helm install --name sample-release ../../charts/azure-k8s-metrics-adapter --name
 >Note: if you used a Service Principal you will need the deployment with a service principal configured and a secret deployed with the service principal values 
 >
 >```
->helm install --name sample-release ../../charts/azure-k8s-metrics-adapter --namespace custom-metrics --set >azureAuthentication.method=clientSecret --set azureAuthentication.tenantID=<your tenantid> --set >azureAuthentication.clientID=<your clientID> --set azureAuthentication.clientSecret=<your clientSecret> --set >azureAuthentication.createSecret=true`
+>helm install --name sample-release ../../charts/azure-k8s-metrics-adapter --namespace custom-metrics --set azureAuthentication.method=clientSecret --set azureAuthentication.tenantID=<your tenantid> --set azureAuthentication.clientID=<your clientID> --set azureAuthentication.clientSecret=<your clientSecret> --set azureAuthentication.createSecret=true`
 >```
 
 > Note: if you used [Azure AD Pod Identity](../../README.md#using-azure-ad-pod-identity) you need to use the specific adapter template file that declares the Azure Identity Binding on [Line 49](../../deploy/adapter-aad-pod-identity.yaml#L49) and [Line 61](../../deploy/adapter-aad-pod-identity.yaml#L61).
