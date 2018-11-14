@@ -23,7 +23,7 @@ Prerequisites:
 - provisioned an [AKS Cluster](https://docs.microsoft.com/en-us/azure/aks/kubernetes-walkthrough)
 - your `kubeconfig` points to your cluster.  
 - [Metric Server deployed](https://github.com/kubernetes-incubator/metrics-server#deployment) to your cluster ([aks does not come with it deployed](https://github.com/Azure/AKS/issues/318)). Validate by running `kubectl get --raw "/apis/metrics.k8s.io/v1beta1/nodes" | jq .`
-- install [helm on aks](https://docs.microsoft.com/en-us/azure/aks/kubernetes-helm)
+- [helm](https://docs.helm.sh/using_helm/#quickstart-guide) or install [helm on aks](https://docs.microsoft.com/en-us/azure/aks/kubernetes-helm) (If you have RBAC enabled, you will need to configure permissions as outlined in the second link)
 
 Get this repository and cd to this folder (on your GOPATH):
 
