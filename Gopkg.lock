@@ -10,11 +10,12 @@
   revision = "75cd24fc2f2c2a2088577d12123ddee5f54e0675"
 
 [[projects]]
-  digest = "1:beb1ef131d100d1c6926743673a0f248cffb5741cc68858a18602076f12173dd"
+  digest = "1:7798129b37c4132f5b1d87964f070b120124eedfc7d670719805e644796251f5"
   name = "github.com/Azure/azure-sdk-for-go"
   packages = [
     "services/appinsights/v1/insights",
     "services/preview/monitor/mgmt/2018-03-01/insights",
+    "services/servicebus/mgmt/2017-04-01/servicebus",
     "version",
   ]
   pruneopts = "UT"
@@ -948,6 +949,7 @@
   input-imports = [
     "github.com/Azure/azure-sdk-for-go/services/appinsights/v1/insights",
     "github.com/Azure/azure-sdk-for-go/services/preview/monitor/mgmt/2018-03-01/insights",
+    "github.com/Azure/azure-sdk-for-go/services/servicebus/mgmt/2017-04-01/servicebus",
     "github.com/Azure/go-autorest/autorest/azure/auth",
     "github.com/golang/glog",
     "github.com/kubernetes-incubator/custom-metrics-apiserver/pkg/cmd",
