@@ -5,22 +5,23 @@ import (
 	"errors"
 	"testing"
 
+	"github.com/Azure/azure-k8s-metrics-adapter/pkg/azure/external_metric_types"
 	"github.com/Azure/azure-sdk-for-go/services/servicebus/mgmt/2017-04-01/servicebus"
 )
 
 func TestIfEmptyRequestGetError(t *testing.T) {
-	monitorClient := newFakeServicebusClient(servicebus.SBSubscription{}, nil)
+	servicebusClient := newFakeServicebusClient(servicebus.SBSubscription{}, nil)
 
-	client := newClient("", monitorClient)
+	client := newClient("", servicebusClient)
 
-	request := AzureMetricRequest{}
+	request := externalmetrictypes.AzureExternalMetricRequest{}
 	_, err := client.GetAzureMetric(request)
 
 	if err == nil {
 		t.Errorf("no error after processing got: %v, want error", nil)
 	}
 
-	if !IsInvalidMetricRequestError(err) {
+	if !externalmetrictypes.IsInvalidMetricRequestError(err) {
 		t.Errorf("should be InvalidMetricRequest error got %v, want InvalidMetricRequestError", err)
 	}
 }
@@ -77,8 +78,8 @@ func makeResponse(value int64) servicebus.SBSubscription {
 	return response
 }
 
-func newMetricRequest() AzureMetricRequest {
-	return AzureMetricRequest{
+func newMetricRequest() externalmetrictypes.AzureExternalMetricRequest {
+	return externalmetrictypes.AzureExternalMetricRequest{
 		ResourceGroup:  "ResourceGroup",
 		SubscriptionID: "SubscriptionID",
 		MetricName:     "MetricName",
