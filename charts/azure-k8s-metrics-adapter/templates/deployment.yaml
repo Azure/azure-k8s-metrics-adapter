@@ -79,6 +79,20 @@ spec:
                   name: {{ template "azure-k8s-metrics-adapter.fullname" . }}
                   key: azure-subscription-id
           {{- end }}
+          {{- if .Values.applicationInsightsAppID }}
+            - name: APP_INSIGHTS_APP_ID
+              valueFrom:
+                secretKeyRef:
+                  name: {{ template "azure-k8s-metrics-adapter.fullname" . }}
+                  key: app-insights-app-id
+          {{- end }}
+          {{- if .Values.applicationInsightsAPIKey }}
+            - name: APP_INSIGHTS_KEY
+              valueFrom:
+                secretKeyRef:
+                  name: {{ template "azure-k8s-metrics-adapter.fullname" . }}
+                  key: app-insights-key
+          {{- end }}
           {{- range $key, $value := .Values.extraEnv }}
             - name: {{ $key }}
               value: "{{ $value }}"
