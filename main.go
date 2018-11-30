@@ -61,11 +61,16 @@ func setupAzureProvider(cmd *basecmd.AdapterBase, metricsCache *metriccache.Metr
 		glog.Fatalf("unable to construct discovery REST mapper: %v", err)
 	}
 
+	dynamicClient, err := cmd.DynamicClient()
+	if err != nil {
+		glog.Fatalf("unable to construct dynamic k8s client: %v", err)
+	}
+
 	defaultSubscriptionID := getDefaultSubscriptionID()
 	monitorClient := monitor.NewClient(defaultSubscriptionID)
 	appinsightsClient := appinsights.NewClient()
 
-	azureProvider := azureprovider.NewAzureProvider(defaultSubscriptionID, mapper, appinsightsClient, monitorClient, metricsCache)
+	azureProvider := azureprovider.NewAzureProvider(defaultSubscriptionID, mapper, dynamicClient, appinsightsClient, monitorClient, metricsCache)
 	cmd.WithCustomMetrics(azureProvider)
 	cmd.WithExternalMetrics(azureProvider)
 }
@@ -81,9 +86,12 @@ func newController(cmd *basecmd.AdapterBase, metricsCache *metriccache.MetricCac
 	}
 
 	adapterInformerFactory := informers.NewSharedInformerFactory(adapterClientSet, time.Second*30)
+	handler := controller.NewHandler(adapterInformerFactory.Azure().V1alpha1().ExternalMetrics().Lister(),
+		adapterInformerFactory.Azure().V1alpha1().CustomMetrics().Lister(),
+		metricsCache)
 
-	handler := controller.NewHandler(adapterInformerFactory.Azure().V1alpha1().ExternalMetrics().Lister(), metricsCache)
-	controller := controller.NewController(adapterInformerFactory.Azure().V1alpha1().ExternalMetrics(), &handler)
+	controller := controller.NewController(adapterInformerFactory.Azure().V1alpha1().ExternalMetrics(),
+		adapterInformerFactory.Azure().V1alpha1().CustomMetrics(), &handler)
 
 	return controller, adapterInformerFactory
 }

@@ -55,6 +55,12 @@ azureAuthentication:
   azureIdentityClientId: ""
 
 
+# It is possible to pass app insights app id and key instead of using service principle
+# if no application insights key has been specified, then we will use AD authentication
+appInsights:
+  appId: ""
+  key: ""
+
 # Override the subscription if outside of Azure or for full control with `SUBSCRIPTION_ID`
 # See https://github.com/jsturtevant/azure-k8-metrics-adapter#subscription-information
 defaultSubscriptionId: ""

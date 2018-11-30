@@ -4,6 +4,8 @@ import (
 	"fmt"
 	"testing"
 
+	"github.com/Azure/azure-k8s-metrics-adapter/pkg/azure/appinsights"
+
 	api "github.com/Azure/azure-k8s-metrics-adapter/pkg/apis/metrics/v1alpha1"
 	"github.com/Azure/azure-k8s-metrics-adapter/pkg/azure/monitor"
 	"github.com/Azure/azure-k8s-metrics-adapter/pkg/metriccache"
@@ -14,103 +16,249 @@ import (
 	informers "github.com/Azure/azure-k8s-metrics-adapter/pkg/client/informers/externalversions"
 )
 
-func getKey(externalMetric *api.ExternalMetric) string {
-	return fmt.Sprintf("%s/%s", externalMetric.Namespace, externalMetric.Name)
+func getExternalKey(externalMetric *api.ExternalMetric) namespacedQueueItem {
+	return namespacedQueueItem{
+		namespaceKey: fmt.Sprintf("%s/%s", externalMetric.Namespace, externalMetric.Name),
+		kind:         externalMetric.TypeMeta.Kind,
+	}
 }
 
-func TestMetricValueIsStored(t *testing.T) {
+func getCustomKey(customMetric *api.CustomMetric) namespacedQueueItem {
+	return namespacedQueueItem{
+		namespaceKey: fmt.Sprintf("%s/%s", customMetric.Namespace, customMetric.Name),
+		kind:         customMetric.TypeMeta.Kind,
+	}
+}
+
+func TestExternalMetricValueIsStored(t *testing.T) {
 	var storeObjects []runtime.Object
 	var externalMetricsListerCache []*api.ExternalMetric
+	var customMetricsListerCache []*api.CustomMetric
 
 	externalMetric := newFullExternalMetric("test")
 	storeObjects = append(storeObjects, externalMetric)
 	externalMetricsListerCache = append(externalMetricsListerCache, externalMetric)
 
-	handler, metriccache := newHandler(storeObjects, externalMetricsListerCache)
+	handler, metriccache := newHandler(storeObjects, externalMetricsListerCache, customMetricsListerCache)
 
-	key := getKey(externalMetric)
-	err := handler.Process(key)
+	queueItem := getExternalKey(externalMetric)
+	err := handler.Process(queueItem)
 
 	if err != nil {
 		t.Errorf("error after processing = %v, want %v", err, nil)
 	}
 
-	metricRequest, exists := metriccache.Get(key)
+	metricRequest, exists := metriccache.GetAzureMonitorRequest(externalMetric.Namespace, externalMetric.Name)
 
 	if exists == false {
 		t.Errorf("exist = %v, want %v", exists, true)
 	}
 
-	validateMetricResult(metricRequest, externalMetric, t)
+	validateExternalMetricResult(metricRequest, externalMetric, t)
+}
+
+func TestShouldBeAbleToStoreCustomAndExternalWithSameNameAndNamespace(t *testing.T) {
+	var storeObjects []runtime.Object
+	var externalMetricsListerCache []*api.ExternalMetric
+	var customMetricsListerCache []*api.CustomMetric
+
+	externalMetric := newFullExternalMetric("test")
+	customMetric := newFullCustomMetric("test")
+	storeObjects = append(storeObjects, externalMetric, customMetric)
+	externalMetricsListerCache = append(externalMetricsListerCache, externalMetric)
+	customMetricsListerCache = append(customMetricsListerCache, customMetric)
+
+	handler, metriccache := newHandler(storeObjects, externalMetricsListerCache, customMetricsListerCache)
+
+	externalItem := getExternalKey(externalMetric)
+	err := handler.Process(externalItem)
+
+	if err != nil {
+		t.Errorf("error after processing = %v, want %v", err, nil)
+	}
+
+	customItem := getCustomKey(customMetric)
+	err = handler.Process(customItem)
+
+	if err != nil {
+		t.Errorf("error after processing = %v, want %v", err, nil)
+	}
+
+	externalRequest, exists := metriccache.GetAzureMonitorRequest(externalMetric.Namespace, externalMetric.Name)
+
+	if exists == false {
+		t.Errorf("exist = %v, want %v", exists, true)
+	}
+
+	validateExternalMetricResult(externalRequest, externalMetric, t)
+
+	metricRequest, exists := metriccache.GetAppInsightsRequest(customMetric.Namespace, customMetric.Name)
+
+	if exists == false {
+		t.Errorf("exist = %v, want %v", exists, true)
+	}
+
+	validateCustomMetricResult(metricRequest, customMetric, t)
+}
+
+func TestCustomMetricValueIsStored(t *testing.T) {
+	var storeObjects []runtime.Object
+	var externalMetricsListerCache []*api.ExternalMetric
+	var customMetricsListerCache []*api.CustomMetric
+
+	customMetric := newFullCustomMetric("test")
+	storeObjects = append(storeObjects, customMetric)
+	customMetricsListerCache = append(customMetricsListerCache, customMetric)
+
+	handler, metriccache := newHandler(storeObjects, externalMetricsListerCache, customMetricsListerCache)
+
+	queueItem := getCustomKey(customMetric)
+	err := handler.Process(queueItem)
+
+	if err != nil {
+		t.Errorf("error after processing = %v, want %v", err, nil)
+	}
+
+	metricRequest, exists := metriccache.GetAppInsightsRequest(customMetric.Namespace, customMetric.Name)
+
+	if exists == false {
+		t.Errorf("exist = %v, want %v", exists, true)
+	}
+
+	validateCustomMetricResult(metricRequest, customMetric, t)
 }
 
 func TestShouldFailOnInvalidCacheKey(t *testing.T) {
 	var storeObjects []runtime.Object
 	var externalMetricsListerCache []*api.ExternalMetric
+	var customMetricsListerCache []*api.CustomMetric
 
 	externalMetric := newFullExternalMetric("test")
 	storeObjects = append(storeObjects, externalMetric)
 	externalMetricsListerCache = append(externalMetricsListerCache, externalMetric)
 
-	handler, metriccache := newHandler(storeObjects, externalMetricsListerCache)
+	handler, metriccache := newHandler(storeObjects, externalMetricsListerCache, customMetricsListerCache)
 
-	key := "invalidkey/with/extrainfo"
-	err := handler.Process(key)
+	queueItem := namespacedQueueItem{
+		namespaceKey: "invalidkey/with/extrainfo",
+		kind:         "somethingwrong",
+	}
+	err := handler.Process(queueItem)
 
 	if err == nil {
 		t.Errorf("error after processing nil, want non nil")
 	}
 
-	_, exists := metriccache.Get(key)
+	_, exists := metriccache.GetAzureMonitorRequest(externalMetric.Namespace, externalMetric.Name)
 
 	if exists == true {
 		t.Errorf("exist = %v, want %v", exists, false)
 	}
 }
 
-func TestWhenItemHasBeenDeleted(t *testing.T) {
+func TestWhenExternalItemHasBeenDeleted(t *testing.T) {
 	var storeObjects []runtime.Object
 	var externalMetricsListerCache []*api.ExternalMetric
+	var customMetricsListerCache []*api.CustomMetric
 
 	externalMetric := newFullExternalMetric("test")
 
 	// don't put anything in the stores
-	handler, metriccache := newHandler(storeObjects, externalMetricsListerCache)
+	handler, metriccache := newHandler(storeObjects, externalMetricsListerCache, customMetricsListerCache)
 
 	// add the item to the cache then test if it gets deleted
-	key := getKey(externalMetric)
-	metriccache.Update(key, monitor.AzureMetricRequest{})
+	queueItem := getExternalKey(externalMetric)
+	metriccache.Update(queueItem.Key(), monitor.AzureMetricRequest{})
 
-	err := handler.Process(key)
+	err := handler.Process(queueItem)
 
 	if err != nil {
 		t.Errorf("error == %v, want nil", err)
 	}
 
-	_, exists := metriccache.Get(key)
+	_, exists := metriccache.GetAzureMonitorRequest(externalMetric.Namespace, externalMetric.Name)
 
 	if exists == true {
 		t.Errorf("exist = %v, want %v", exists, false)
 	}
 }
 
-func newHandler(storeObjects []runtime.Object, externalMetricsListerCache []*api.ExternalMetric) (Handler, *metriccache.MetricCache) {
+func TestWhenCustomItemHasBeenDeleted(t *testing.T) {
+	var storeObjects []runtime.Object
+	var externalMetricsListerCache []*api.ExternalMetric
+	var customMetricsListerCache []*api.CustomMetric
+
+	customMetric := newFullCustomMetric("test")
+
+	// don't put anything in the stores
+	handler, metriccache := newHandler(storeObjects, externalMetricsListerCache, customMetricsListerCache)
+
+	// add the item to the cache then test if it gets deleted
+	queueItem := getCustomKey(customMetric)
+	metriccache.Update(queueItem.Key(), appinsights.MetricRequest{})
+
+	err := handler.Process(queueItem)
+
+	if err != nil {
+		t.Errorf("error == %v, want nil", err)
+	}
+
+	_, exists := metriccache.GetAppInsightsRequest(customMetric.Namespace, customMetric.Name)
+
+	if exists == true {
+		t.Errorf("exist = %v, want %v", exists, false)
+	}
+}
+
+func TestWhenItemKindIsUnknown(t *testing.T) {
+	var storeObjects []runtime.Object
+	var externalMetricsListerCache []*api.ExternalMetric
+	var customMetricsListerCache []*api.CustomMetric
+
+	// don't put anything in the stores, as we are not looking anything up
+	handler, metriccache := newHandler(storeObjects, externalMetricsListerCache, customMetricsListerCache)
+
+	// add the item to the cache then test if it gets deleted
+	queueItem := namespacedQueueItem{
+		namespaceKey: "default/unknown",
+		kind:         "Unknown",
+	}
+
+	err := handler.Process(queueItem)
+
+	if err != nil {
+		t.Errorf("error == %v, want nil", err)
+	}
+
+	_, exists := metriccache.GetAppInsightsRequest("default", "unkown")
+
+	if exists == true {
+		t.Errorf("exist = %v, want %v", exists, false)
+	}
+}
+
+func newHandler(storeObjects []runtime.Object, externalMetricsListerCache []*api.ExternalMetric, customMetricsListerCache []*api.CustomMetric) (Handler, *metriccache.MetricCache) {
 	fakeClient := fake.NewSimpleClientset(storeObjects...)
 	i := informers.NewSharedInformerFactory(fakeClient, 0)
 
-	lister := i.Azure().V1alpha1().ExternalMetrics().Lister()
+	externalMetricLister := i.Azure().V1alpha1().ExternalMetrics().Lister()
+	customMetricLister := i.Azure().V1alpha1().CustomMetrics().Lister()
 
 	for _, em := range externalMetricsListerCache {
 		i.Azure().V1alpha1().ExternalMetrics().Informer().GetIndexer().Add(em)
 	}
 
+	for _, cm := range customMetricsListerCache {
+		i.Azure().V1alpha1().CustomMetrics().Informer().GetIndexer().Add(cm)
+	}
+
 	metriccache := metriccache.NewMetricCache()
-	handler := NewHandler(lister, metriccache)
+	handler := NewHandler(externalMetricLister, customMetricLister, metriccache)
 
 	return handler, metriccache
 }
 
-func validateMetricResult(metricRequest monitor.AzureMetricRequest, externalMetricInfo *api.ExternalMetric, t *testing.T) {
+func validateExternalMetricResult(metricRequest monitor.AzureMetricRequest, externalMetricInfo *api.ExternalMetric, t *testing.T) {
 
 	// Metric Config
 	if metricRequest.MetricName != externalMetricInfo.Spec.MetricConfig.MetricName {
@@ -148,10 +296,18 @@ func validateMetricResult(metricRequest monitor.AzureMetricRequest, externalMetr
 
 }
 
+func validateCustomMetricResult(metricRequest appinsights.MetricRequest, customMetricInfo *api.CustomMetric, t *testing.T) {
+	// Metric Config
+	if metricRequest.MetricName != customMetricInfo.Spec.MetricConfig.MetricName {
+		t.Errorf("metricRequest MetricName = %v, want %v", metricRequest.MetricName, customMetricInfo.Spec.MetricConfig.MetricName)
+	}
+
+}
+
 func newFullExternalMetric(name string) *api.ExternalMetric {
 	// must preserve upper casing for azure api
 	return &api.ExternalMetric{
-		TypeMeta: metav1.TypeMeta{APIVersion: api.SchemeGroupVersion.String()},
+		TypeMeta: metav1.TypeMeta{APIVersion: api.SchemeGroupVersion.String(), Kind: "ExternalMetric"},
 		ObjectMeta: metav1.ObjectMeta{
 			Name:      name,
 			Namespace: metav1.NamespaceDefault,
@@ -167,6 +323,22 @@ func newFullExternalMetric(name string) *api.ExternalMetric {
 				Aggregation: "Total",
 				MetricName:  "Name",
 				Filter:      "EntityName eq 'externalq'",
+			},
+		},
+	}
+}
+
+func newFullCustomMetric(name string) *api.CustomMetric {
+	// must preserve upper casing for azure api
+	return &api.CustomMetric{
+		TypeMeta: metav1.TypeMeta{APIVersion: api.SchemeGroupVersion.String(), Kind: "CustomMetric"},
+		ObjectMeta: metav1.ObjectMeta{
+			Name:      name,
+			Namespace: metav1.NamespaceDefault,
+		},
+		Spec: api.CustomMetricSpec{
+			MetricConfig: api.CustomMetricConfig{
+				MetricName: "performance/requestpersecond",
 			},
 		},
 	}

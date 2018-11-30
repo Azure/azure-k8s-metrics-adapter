@@ -7,13 +7,19 @@ ignored = ["github.com/Azure/azure-service-bus-go"]
 
 # Kubernetes incubator deps
 [[constraint]]
-  revision = "1f1cda41a301080789507a291b999807002ede46" #revision for 1.11.2 release
   name = "github.com/kubernetes-incubator/custom-metrics-apiserver"
+  version = "kubernetes-1.11.2"
 
 [[constraint]]
   name = "github.com/Azure/azure-sdk-for-go"
   version = "21.0.0"
-  
+
+# temp till Kubernetes incubator deps gets update 
+# https://github.com/kubernetes/kubernetes/pull/66078
+[[constraint]]
+  name = "k8s.io/client-go"
+  version = "kubernetes-1.11.4"
+
 [prune]
   go-tests = true
   unused-packages = true
