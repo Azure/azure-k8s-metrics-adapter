@@ -5,6 +5,16 @@ An implementation of the Kubernetes [Custom Metrics API and External Metrics API
 This adapter enables you to scale your [application deployment pods](https://kubernetes.io/docs/concepts/workloads/controllers/deployment/) running on [AKS](https://docs.microsoft.com/en-us/azure/aks/) using the [Horizontal Pod Autoscaler](https://kubernetes.io/docs/tasks/run-application/horizontal-pod-autoscale/) (HPA) with metrics from Azure Resources (such as [Service Bus Queues](https://docs.microsoft.com/en-us/azure/service-bus-messaging/service-bus-dotnet-get-started-with-queues)) and custom metrics stored in Application Insights. Learn more about [using an HPA to autoscale with with external and custom metrics](https://kubernetes.io/docs/tasks/run-application/horizontal-pod-autoscale-walkthrough/#autoscaling-on-metrics-not-related-to-kubernetes-objects).
 
 ## Installing the Chart
+Clone this repository and cd to the root folder:  
+
+```
+go get -u github.com/Azure/azure-k8s-metrics-adapter
+cd $GOPATH/src/github.com/Azure/azure-k8s-metrics-adapter/
+```
+
+> If you are not planning on modify the project and don't have Go installed, you can clone this via the `git clone https://github.com/Azure/azure-k8s-metrics-adapter.git` and `cd` to the root of the project.
+
+Next create a namespace and install:
 
 ```sh
 kubectl create namespace custom-metrics

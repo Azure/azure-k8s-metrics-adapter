@@ -38,7 +38,7 @@ Deploy a metric configuration:
 kubectl apply -f https://raw.githubusercontent.com/Azure/azure-k8s-metrics-adapter/master/samples/resources/externalmetric-example.yaml
 ```
 
-There is also a [Helm chart](https://github.com/Azure/azure-k8s-metrics-adapter/charts/azure-k8s-metrics-adapter) available for deployment for those using Helm in their cluster.
+There is also a [Helm chart](https://github.com/Azure/azure-k8s-metrics-adapter/tree/master/charts/azure-k8s-metrics-adapter) available for deployment for those using Helm in their cluster.
 
 Deploy a Horizontal Pod Auto Scaler (HPA) to scale of your [external metric](#external-metrics) of choice:
 
