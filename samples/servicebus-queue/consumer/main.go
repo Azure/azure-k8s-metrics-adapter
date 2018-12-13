@@ -29,7 +29,7 @@ func main() {
 	}
 
 	fmt.Println("setting up listener")
-	var messageHandler servicebus.HandlerFunc = func(ctx context.Context, msg *servicebus.Message) servicebus.DispositionAction {
+	var messageHandler servicebus.HandlerFunc = func(ctx context.Context, msg *servicebus.Message) error {
 		fmt.Println("received message: ", string(msg.Data))
 
 		ctx, cancel := context.WithTimeout(context.Background(), 20*time.Second)
@@ -40,7 +40,7 @@ func main() {
 			fmt.Println("create manager created error: ", err)
 		}
 		fmt.Println("number message left: ", *qe.MessageCount)
-		return msg.Complete()
+		return msg.Complete(ctx)
 	}
 
 	err = q.Receive(context.Background(), messageHandler)
