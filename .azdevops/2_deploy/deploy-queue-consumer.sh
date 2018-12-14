@@ -1,6 +1,11 @@
 #!/bin/bash
 
-if [[ ! -v SERVICEBUS_CONNECTION_STRING ]] || [[ ! -v SP_TENANT_ID]]; then
+if [[ ! -v GOPATH ]]; then
+	echo "Must set GOPATH (/home/vsts/go on Azure Pipelines)"
+	exit 1
+fi
+
+if [[ ! -v SERVICEBUS_CONNECTION_STRING ]]; then
     echo "Must set SERVICEBUS_CONNECTION_STRING"
     exit 1
 fi

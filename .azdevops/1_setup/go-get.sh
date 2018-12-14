@@ -1,5 +1,10 @@
 #!/bin/bash
 
+if [[ ! -v GOPATH ]]; then
+	echo "Must set GOPATH (/home/vsts/go on Azure Pipelines)"
+	exit 1
+fi
+
 echo "Getting metrics adapter code..."
 go get -d github.com/Azure/azure-k8s-metrics-adapter
 echo "Getting metrics server code..."

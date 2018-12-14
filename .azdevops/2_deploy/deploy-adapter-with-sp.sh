@@ -1,5 +1,10 @@
 #!/bin/bash
 
+if [[ ! -v GOPATH ]]; then
+	echo "Must set GOPATH (/home/vsts/go on Azure Pipelines)"
+	exit 1
+fi
+
 if [[ ! -v SP_TENANT_ID ]] || [[ ! -v SP_CLIENT_ID]] || [[ ! -v SP_CLIENT_SECRET ]]; then
     echo "Must set SP_TENANT_ID, SP"
     exit 1
