@@ -1,16 +1,16 @@
 #!/bin/bash
 
 if [[ ! -v GOPATH ]]; then
-	echo "Must set GOPATH (/home/vsts/go on Azure Pipelines)"
+	echo; echo "Must set GOPATH (/home/vsts/go on Azure Pipelines)"
 	exit 1
 fi
 
 if [[ ! -v SP_TENANT_ID ]] || [[ ! -v SP_CLIENT_ID]] || [[ ! -v SP_CLIENT_SECRET ]]; then
-    echo "Must set SP_TENANT_ID, SP"
+    echo; echo "Must set SP_TENANT_ID, SP"
     exit 1
 fi
 
-echo "Deploying metrics adapter..."
+echo; echo "Deploying metrics adapter..."
 cd $GOPATH/src/github.com/Azure/azure-k8s-metrics-adapter/
 helm install --name adapter \
     ./charts/azure-k8s-metrics-adapter \
