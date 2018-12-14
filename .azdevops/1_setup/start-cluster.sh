@@ -1,13 +1,13 @@
 #!/bin/bash
 if [[ ! -v KUBERNETES_VERSION ]]; then
-	echo "Must set KUBERNETES_VERSION (i.e. 1.12.0)"
+	echo; echo "Must set KUBERNETES_VERSION (i.e. 1.12.0)"
 	exit 1
 fi
 
-echo "Starting minikube..."
+echo; echo "Starting minikube..."
 sudo minikube start --vm-driver=none --bootstrapper=kubeadm --kubernetes-version=v$KUBERNETES_VERSION
 
-echo "Fixing permissions..."
+echo; echo "Fixing permissions..."
 sudo chown -R $USER $HOME/.kube
 sudo chgrp -R $USER $HOME/.kube
 

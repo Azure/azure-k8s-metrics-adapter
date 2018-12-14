@@ -1,6 +1,6 @@
 #!/bin/bash
 
-echo "Waiting for cluster to be usable..."
+echo; echo "Waiting for cluster to be usable..."
 JSONPATH='{range .items[*]}{@.metadata.name}:{range @.status.conditions[*]}{@.type}={@.status};{end}{end}'
 until kubectl get nodes -o jsonpath="$JSONPATH" 2>&1 | grep -q "Ready=True"
     do sleep 1
