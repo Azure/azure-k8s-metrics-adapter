@@ -5,8 +5,8 @@ if [[ ! -v GOPATH ]]; then
 	exit 1
 fi
 
-if [[ ! -v SP_TENANT_ID ]] || [[ ! -v SP_CLIENT_ID]] || [[ ! -v SP_CLIENT_SECRET ]]; then
-    echo; echo "Must set SP_TENANT_ID, SP"
+if [[ ! -v SP_TENANT_ID ]] || [[ ! -v SP_CLIENT_ID ]] || [[ ! -v SP_CLIENT_SECRET ]]; then
+    echo; echo "Must set SP_TENANT_ID, SP_CLIENT_ID, SP_CLIENT_SECRET"
     exit 1
 fi
 
