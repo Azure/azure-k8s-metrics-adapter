@@ -5,4 +5,4 @@ cd $GOPATH/src/github.com/Azure/azure-k8s-metrics-adapter/samples/servicebus-que
 make
 
 echo; echo "Running producer..."
-./bin/producer 0
+./bin/producer 0 > /dev/null
