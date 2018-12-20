@@ -19,3 +19,4 @@ helm install --name adapter \
     --set azureAuthentication.clientID=$SP_CLIENT_ID \
     --set azureAuthentication.clientSecret=$SP_CLIENT_SECRET \
     --set azureAuthentication.createSecret=true
+    
