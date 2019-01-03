@@ -1,7 +1,7 @@
 #!/bin/bash
 
 if [[ ! -v DOCKER_VERSION ]]; then
-	echo; echo "Must set DOCKER_VERSION (i.e. 18.06.1.~ce~3-0~ubuntu)"
+	echo; echo "Must set DOCKER_VERSION (i.e. 18.06.1~ce~3-0~ubuntu)"
 	exit 1
 fi
 

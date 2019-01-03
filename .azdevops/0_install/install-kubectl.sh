@@ -1,7 +1,7 @@
 #!/bin/bash
 
 if [[ ! -v KUBERNETES_VERSION ]]; then
-	echo; echo "Must set KUBERNETES_VERSION (i.e. 1.12.0)"
+	echo; echo "Must set KUBERNETES_VERSION (i.e. 1.12.4)"
 	exit 1
 fi
 
