@@ -6,11 +6,13 @@ COPY . .
 RUN CGO_ENABLED=0 go test $(go list ./... | grep -v -e '/client/' -e '/samples/' -e '/apis/')
 RUN CGO_ENABLED=0 go build -a -tags netgo -o /adapter github.com/Azure/azure-k8s-metrics-adapter
 
-FROM alpine:3.8
+FROM alpine:3.8 as certs
 RUN apk update \
     && apk add ca-certificates \
     && rm -rf /var/cache/apk/* \
     && update-ca-certificates
-    
+
+FROM scratch
 ENTRYPOINT ["/adapter", "--logtostderr=true"]
+COPY --from=certs /etc/ssl/certs/ca-certificates.crt /etc/ssl/certs/ca-certificates.crt
 COPY --from=builder /adapter /
