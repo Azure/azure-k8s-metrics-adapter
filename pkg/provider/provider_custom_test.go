@@ -56,8 +56,8 @@ func TestReturnsCustomMetricConverted(t *testing.T) {
 	}
 
 	customMetric := returnList.Items[0]
-	if customMetric.MetricName != "Metric-Name" {
-		t.Errorf("customMetric.MetricName = %v, want there %v", customMetric.MetricName, "Metric/Name")
+	if customMetric.Metric.Name != "Metric-Name" {
+		t.Errorf("customMetric.Metric.Name = %v, want there %v", customMetric.Metric.Name, "Metric/Name")
 	}
 
 	if customMetric.Value.MilliValue() != int64(15000) {
@@ -98,8 +98,8 @@ func TestReturnsCustomMetricConvertedWithMultiplePods(t *testing.T) {
 	}
 
 	for i, customMetric := range returnList.Items {
-		if customMetric.MetricName != "Metric-Name" {
-			t.Errorf("customMetric.MetricName = %v, want there %v", customMetric.MetricName, "Metric/Name")
+		if customMetric.Metric.Name != "Metric-Name" {
+			t.Errorf("customMetric.Metric.Name = %v, want there %v", customMetric.Metric.Name, "Metric/Name")
 		}
 
 		if customMetric.Value.MilliValue() != int64(15000) {
@@ -150,8 +150,8 @@ func TestReturnsCustomMetricWhenInCache(t *testing.T) {
 	}
 
 	customMetric := returnList.Items[0]
-	if customMetric.MetricName != "MetricName" {
-		t.Errorf("customMetric.MetricName = %v, want there %v", customMetric.MetricName, request.MetricName)
+	if customMetric.Metric.Name != "MetricName" {
+		t.Errorf("customMetric.Metric.Name = %v, want there %v", customMetric.Metric.Name, request.MetricName)
 	}
 
 	if customMetric.Value.MilliValue() != int64(15000) {

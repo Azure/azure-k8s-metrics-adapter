@@ -66,10 +66,22 @@ func (p *AzureProvider) GetMetricBySelector(namespace string, selector labels.Se
 
 		metricValue := custom_metrics.MetricValue{
 			DescribedObject: ref,
-			MetricName:      info.Metric,
-			Timestamp:       metav1.Time{time.Now()},
-			Value:           *resource.NewMilliQuantity(int64(val*1000), resource.DecimalSI),
+			Metric: custom_metrics.MetricIdentifier{
+				Name: info.Metric,
+			},
+			Timestamp: metav1.Time{time.Now()},
+			Value:     *resource.NewMilliQuantity(int64(val*1000), resource.DecimalSI),
 		}
+
+		// add back the meta data about the request selectors
+		if len(selector.String()) > 0 {
+			labelSelector, err := metav1.ParseToLabelSelector(selector.String())
+			if err != nil {
+				return nil, err
+			}
+			metricValue.Metric.Selector = labelSelector
+		}
+
 		metricList = append(metricList, metricValue)
 	}
 
