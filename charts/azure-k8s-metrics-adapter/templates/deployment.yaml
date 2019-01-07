@@ -44,7 +44,7 @@ spec:
               containerPort: {{ .Values.adapterSecurePort }}
               protocol: TCP
           env:
-          {{- if not (eq "msi" .Values.azureAuthentication.method) }}
+          {{- if or (eq "clientSecret" .Values.azureAuthentication.method) (eq "clientCertificate" .Values.azureAuthentication.method) }}
             - name: AZURE_TENANT_ID
               valueFrom:
                 secretKeyRef:
