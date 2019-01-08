@@ -1,6 +1,6 @@
 #!/bin/bash
 
-cd $GOPATH/src/github.com/Azure/azure-k8s-metrics-adapter/samples/servicebus-queue/
+cd $HOME/go/src/github.com/Azure/azure-k8s-metrics-adapter/samples/servicebus-queue/
 
 echo; echo "Creating random number for producer script..."
 NUM=$(( ($RANDOM % 30 )  + 1 ))
