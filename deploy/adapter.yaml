@@ -315,6 +315,11 @@ spec:
               containerPort: 6443
               protocol: TCP
           env:
+            - name: SUBSCRIPTION_ID
+              valueFrom:
+                secretKeyRef:
+                  name: subscriptionid
+                  key: subscription_id
           volumeMounts:
             - mountPath: /tmp
               name: temp-vol
