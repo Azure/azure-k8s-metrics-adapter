@@ -7,11 +7,11 @@
 
 echo; echo "Deploying metrics adapter..."
 cd $HOME/go/src/github.com/Azure/azure-k8s-metrics-adapter/
-kubectl create secret generic subscriptionid --from-literal=subscription_id=$SUBSCRIPTION_ID
 helm install --name adapter \
     ./charts/azure-k8s-metrics-adapter \
     --set azureAuthentication.method=clientSecret \
     --set azureAuthentication.tenantID=$SP_TENANT_ID \
     --set azureAuthentication.clientID=$SP_CLIENT_ID \
     --set azureAuthentication.clientSecret=$SP_CLIENT_SECRET \
-    --set azureAuthentication.createSecret=true
+    --set azureAuthentication.createSecret=true \
+    --set defaultSubscriptionID=$SUBSCRIPTION_ID

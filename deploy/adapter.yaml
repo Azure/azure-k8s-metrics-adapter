@@ -315,6 +315,7 @@ spec:
               containerPort: 6443
               protocol: TCP
           env:
+<<<<<<< HEAD
             - name: AZURE_TENANT_ID
               valueFrom:
                 secretKeyRef:
@@ -330,6 +331,8 @@ spec:
                 secretKeyRef:
                   name: azure-k8s-metrics-adapter
                   key: azure-client-secret
+=======
+>>>>>>> Fix secrets for helm deployment
           volumeMounts:
             - mountPath: /tmp
               name: temp-vol
