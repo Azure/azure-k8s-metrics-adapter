@@ -5,6 +5,11 @@
 : "${SP_CLIENT_SECRET:?Must set SP_CLIENT_SECRET}"
 : "${SUBSCRIPTION_ID:?Must set SUBSCRIPTION_ID}"
 
+echo; echo "Making image..."
+export REGISTRY="integration"
+export REGISTRY_PATH=""
+make build-simple
+
 echo; echo "Deploying metrics adapter..."
 cd $HOME/go/src/github.com/Azure/azure-k8s-metrics-adapter/
 helm install --name adapter \
@@ -15,3 +20,4 @@ helm install --name adapter \
     --set azureAuthentication.clientSecret=$SP_CLIENT_SECRET \
     --set azureAuthentication.createSecret=true \
     --set defaultSubscriptionID=$SUBSCRIPTION_ID
+    --set image.repository="integration/adapter"
