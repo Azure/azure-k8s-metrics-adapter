@@ -1,7 +1,7 @@
 #!/bin/bash
 
-echo; echo "Getting metrics adapter code..."
-go get -d github.com/Azure/azure-k8s-metrics-adapter
+# echo; echo "Getting metrics adapter code..."
+# go get -d github.com/Azure/azure-k8s-metrics-adapter
 echo; echo "Getting metrics server code..."
 go get -d github.com/kubernetes-incubator/metrics-server/...
 
