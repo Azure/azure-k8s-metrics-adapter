@@ -21,6 +21,6 @@ helm install --name adapter \
     --set azureAuthentication.clientSecret=$SP_CLIENT_SECRET \
     --set azureAuthentication.createSecret=true \
     --set defaultSubscriptionID=$SUBSCRIPTION_ID \
-    --set image.repository="integration/adapter"
-    --set image.tag="local"
+    --set image.repository="integration/adapter" \
+    --set image.tag="local" \
     --set image.pullPolicy="IfNotPresent"
