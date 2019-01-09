@@ -9,6 +9,7 @@ echo; echo "Making image..."
 cd $HOME/go/src/github.com/Azure/azure-k8s-metrics-adapter/
 export REGISTRY="integration"
 export REGISTRY_PATH=""
+export VERSION="local"
 make build-simple
 
 echo; echo "Deploying metrics adapter..."
@@ -21,3 +22,5 @@ helm install --name adapter \
     --set azureAuthentication.createSecret=true \
     --set defaultSubscriptionID=$SUBSCRIPTION_ID \
     --set image.repository="integration/adapter"
+    --set image.tag="local"
+    --set image.pullPolicy="IfNotPresent"
