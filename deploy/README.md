@@ -1,1 +1,1 @@
-Do not modify adapter.yaml. It's generated via make gen-deploy
+Do not modify adapter.yaml. It's generated via `make gen-deploy`

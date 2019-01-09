@@ -26,6 +26,9 @@ build-local: test
 build: vendor verify-deploy verify-apis
 	docker build -t $(FULL_IMAGE):$(VERSION) .
 
+build-simple: 
+	docker build -t $(FULL_IMAGE):$(VERSION) .
+
 vendor: 
 	dep ensure -v
 
