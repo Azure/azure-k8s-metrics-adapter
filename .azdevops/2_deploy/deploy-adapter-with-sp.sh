@@ -6,6 +6,7 @@ if [[ ! -v SP_TENANT_ID ]] || [[ ! -v SP_CLIENT_ID ]] || [[ ! -v SP_CLIENT_SECRE
 fi
 
 echo; echo "Deploying metrics adapter..."
+kubectl create secret generic subscriptionid --from-literal=subscription_id=$SUBSCRIPTION_ID
 cd $HOME/go/src/github.com/Azure/azure-k8s-metrics-adapter/
 helm install --name adapter \
     ./charts/azure-k8s-metrics-adapter \
