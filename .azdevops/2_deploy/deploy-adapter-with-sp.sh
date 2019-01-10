@@ -25,8 +25,8 @@ helm install --name adapter \
     --set image.tag=local \
     --set image.pullPolicy=IfNotPresent
 
-until kubectl get deploy/adapter-azure-k8s-metrics-adapter -o jsonpath="{@.status.availableReplicas}"
-    echo "waiting for deployment to be available"
+echo; echo "Waiting for deployment to be available..."
+until kubectl get deploy/adapter-azure-k8s-metrics-adapter -o jsonpath="{@.status.availableReplicas}"; do 
     kubectl get deploy/adapter-azure-k8s-metrics-adapter
     sleep 15
 done
