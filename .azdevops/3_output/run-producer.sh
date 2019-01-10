@@ -4,7 +4,7 @@ cd $HOME/go/src/github.com/Azure/azure-k8s-metrics-adapter/samples/servicebus-qu
 
 echo; echo "Creating random number for producer script..."
 NUM=$(( ($RANDOM % 30 )  + 1 ))
-sed -i 's|20000|'${NUM}'|g' producer/main.go
+sed -i 's|20000|'${NUM + 1}'|g' producer/main.go
 
 echo; echo "Building producer..."
 make

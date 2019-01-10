@@ -99,8 +99,6 @@ func newController(cmd *basecmd.AdapterBase, metricsCache *metriccache.MetricCac
 func getDefaultSubscriptionID() string {
 	// if the user explicitly sets we should use that
 	subscriptionID := os.Getenv("SUBSCRIPTION_ID")
-	// TODO remove after testing
-	glog.V(0).Infof("Subscription ID is %s", subscriptionID)
 	if subscriptionID == "" {
 		glog.V(2).Info("Looking up subscription ID via instance metadata")
 		//fallback to trying azure instance meta data

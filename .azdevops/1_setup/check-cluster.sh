@@ -1,5 +1,7 @@
 #!/bin/bash
 
+# This snippet is from https://blog.gripdev.xyz/2018/10/19/kubernetes-integration-testing-minikube-azure-pipelines-happy/
+
 echo; echo "Waiting for cluster to be usable..."
 JSONPATH='{range .items[*]}{@.metadata.name}:{range @.status.conditions[*]}{@.type}={@.status};{end}{end}'
 until kubectl get nodes -o jsonpath="$JSONPATH" 2>&1 | grep -q "Ready=True"
