@@ -25,20 +25,34 @@ Try out scaling with [External Metrics](#external-metrics) using the a Azure Ser
 
 Try out scaling with [Custom Metrics](#custom-metrics) using Requests per Second and Application Insights in this [walkthrough](samples/request-per-second) 
 
-## Deploy
-Requires some [set up on your AKS Cluster](#azure-setup) and [Metric Server deployed](https://github.com/kubernetes-incubator/metrics-server#deployment) to your cluster.
+## Quick-Start Deploy
+This describes the basic steps for deploying the metric adapter.  For full deployment details see how to [set up on your AKS Cluster](#azure-setup) and checkout the [samples](samples).  Make sure the [Metric Server is already deployed](https://github.com/kubernetes-incubator/metrics-server#deployment) to your cluster.
+
+Create a Service Principle and Secret:
+
+```
+az ad sp create-for-rbac -n "azure-k8s-metric-adapter-sp" --role "Monitoring Reader" --scopes /subscriptions/{SubID}/resourceGroups/{ResourceGroup1}
+
+#use values from service principle created above to create secret
+kubectl create secret generic azure-k8s-metrics-adapter -n custom-metrics \
+  --from-literal=azure-tenant-id=<tenantid> \
+  --from-literal=azure-client-id=<clientid>  \
+  --from-literal=azure-client-secret=<secret>
+```
+
+Deploy the adapter:
 
 ```
 kubectl apply -f https://raw.githubusercontent.com/Azure/azure-k8s-metrics-adapter/master/deploy/adapter.yaml
 ```
 
-Deploy a metric configuration:
+Deploy a metric configuration (requires you to configure the file below with *your* settings to a Service Bus Queue):
 
 ```
 kubectl apply -f https://raw.githubusercontent.com/Azure/azure-k8s-metrics-adapter/master/samples/resources/externalmetric-example.yaml
 ```
 
-There is also a [Helm chart](https://github.com/Azure/azure-k8s-metrics-adapter/tree/master/charts/azure-k8s-metrics-adapter) available for deployment for those using Helm in their cluster.
+> There is also a [Helm chart](https://github.com/Azure/azure-k8s-metrics-adapter/tree/master/charts/azure-k8s-metrics-adapter) available for deployment for those using Helm in their cluster.
 
 Deploy a Horizontal Pod Auto Scaler (HPA) to scale of your [external metric](#external-metrics) of choice:
 
@@ -61,17 +75,17 @@ spec:
       targetValue: 30
 ```
 
-And your that's it to enable auto scaling on External Metric.  Checkout the [samples](samples) for more examples.
+Checkout the [samples](samples) for more examples and details.
 
 ### Verifying the deployment
-You can also can also query the api to available metrics:
+You can also can query the api to verify it is installed:
 
 ```bash
 kubectl get --raw "/apis/custom.metrics.k8s.io/v1beta1" | jq .
 kubectl get --raw "/apis/external.metrics.k8s.io/v1beta1" | jq .
 ```
 
-To Query for a specific custom metric (*not currently supported*):
+To Query for a specific custom metric:
 
 ```
 kubectl get --raw "/apis/custom.metrics.k8s.io/v1beta1/namespaces/test/pods/*/custom-metric" | jq .
@@ -80,7 +94,7 @@ kubectl get --raw "/apis/custom.metrics.k8s.io/v1beta1/namespaces/test/pods/*/cu
 To query for a specific external metric:
 
 ```bash
-kubectl  get --raw "/apis/external.metrics.k8s.io/v1beta1/namespaces/test/queuemessages?labelSelector=resourceProviderNamespace=Microsoft.Servicebus,resourceType=namespaces,aggregation=Total,filter=EntityName_eq_externalq,resourceGroup=sb-external-example,resourceName=sb-external-ns,metricName=Messages" | jq .
+kubectl  get --raw "/apis/external.metrics.k8s.io/v1beta1/namespaces/test/queuemessages" | jq .
 ```
 
 ## External Metrics
@@ -107,54 +121,13 @@ Common Custom Metrics are:
 
 Authenticating with Azure Monitor can be achieved via a variety of authentication mechanisms. ([full list](https://github.com/Azure/azure-sdk-for-go#more-authentication-details))
 
-We recommend to use one of the following options:
+Use one of the following options:
 
-- [Azure Managed Service Identity](#using-azure-managed-service-identity-msi) (MSI)
 - [Azure AD Pod Identity](#using-azure-ad-pod-identity) (aad-pod-identity)
 - [Azure AD Application ID and Secret](#using-azure-ad-application-id-and-secret)
 - [Azure AD Application ID and X.509 Certificate](#azure-ad-application-id-and-x509-certificate)
 
 The Azure AD entity needs to have `Monitoring Reader` permission on the resource group that will be queried. More information can be found [here](https://docs.microsoft.com/en-us/azure/monitoring-and-diagnostics/monitoring-roles-permissions-security).
-
-#### Using Azure Managed Service Identity (MSI)
-
-Enable [Managed Service Identity](https://docs.microsoft.com/en-us/azure/active-directory/managed-service-identity/tutorial-linux-vm-access-arm) on each of your AKS vms:
-
-> There is a known issue when upgrading a AKS cluster with MSI enabled.  After the AKS upgrade you will lose your MSI setting and need to re-enable it. An alternative may be to use [aad-pod-identity](https://github.com/Azure/aad-pod-identity)
-
-```bash
-export RG=<aks resource group> 
-export CLUSTER=<aks cluster name> 
-
-NODE_RG="$(az aks show -n $CLUSTER -g $RG | jq -r .nodeResourceGroup)"
-az vm list -g $NODE_RG
-VMS="$(az vm list -g $NODE_RG | jq -r '.[] | select(.tags.creationSource | . and contains("aks")) | .name')"
-
-while read -r vm; do
-    echo "updating vm $vm..."
-    msi="$(az vm identity assign -g $NODE_RG -n $vm | jq -r .systemAssignedIdentity)"
-done <<< "$VMS"
-```
-
-Give access to the resource the MSI needs to access for each vm: 
-
-```bash
-export RG=<aks resource group> 
-export CLUSTER=<aks cluster name> 
-export ACCESS_RG=<resource group with metrics>
-
-NODE_RG="$(az aks show -n $CLUSTER -g $RG | jq -r .nodeResourceGroup)"
-az vm list -g $NODE_RG
-VMS="$(az vm list -g $NODE_RG | jq -r '.[] | select(.tags.creationSource | . and contains("aks")) | .name')"
-
-while read -r vm; do
-    echo "getting vm identity $vm..."
-    msi="$(az vm identity show -g $NODE_RG -n $vm | jq -r .principalId)"
-
-    echo "adding access with msi $msi..."
-    az role assignment create --role "Monitoring Reader" --assignee-object-id $msi --resource-group $ACCESS_RG
-done <<< "$VMS"
-```
 
 #### Using Azure AD Pod Identity
 
@@ -275,7 +248,9 @@ The use the adapter your Azure Subscription must be provided.  There are a few w
 
 - Can I scale with Azure Storage queues?
   - Not currently.  The [Azure Storage Queue](https://docs.microsoft.com/en-us/azure/storage/common/storage-metrics-in-azure-monitor?toc=%2fazure%2fstorage%2fqueues%2ftoc.json#capacity-metrics) only reports it's capacity metrics daily.  Follow this [issue](https://github.com/Azure/azure-k8s-metrics-adapter/issues/39) for updates.
-
+- The metrics numbers look slightly off compared to portal or Service Bus Explorer.  Why are the values not exact?
+  - Azure Monitor has a delay (30s - 2 mins) in reported values.  This delay can also be seen in the Azure Monitor dashboard in the portal.  There is also a delay in the values reported when using Application Insights.
+  
 ## Contributing
 
 See [Contributing](CONTRIBUTING.md) for more information.

@@ -315,6 +315,21 @@ spec:
               containerPort: 6443
               protocol: TCP
           env:
+            - name: AZURE_TENANT_ID
+              valueFrom:
+                secretKeyRef:
+                  name: azure-k8s-metrics-adapter
+                  key: azure-tenant-id
+            - name: AZURE_CLIENT_ID
+              valueFrom:
+                secretKeyRef:
+                  name: azure-k8s-metrics-adapter
+                  key: azure-client-id
+            - name: AZURE_CLIENT_SECRET
+              valueFrom:
+                secretKeyRef:
+                  name: azure-k8s-metrics-adapter
+                  key: azure-client-secret
           volumeMounts:
             - mountPath: /tmp
               name: temp-vol
