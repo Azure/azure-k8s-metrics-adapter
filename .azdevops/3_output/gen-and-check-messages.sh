@@ -21,8 +21,7 @@ while [[ "$MSGCOUNT" == "\"0\"" ]]; do
 done
 
 if [[ ! "$MSGCOUNT" == "\"$NUM\"" ]]; then
-    echo "Message count ($MSGCOUNT) not equal to number of messages sent ($NUM)"
-    exit 1
+    echo "Message count ($MSGCOUNT) not equal to number of messages sent ($NUM)" 1>&2
 else
     echo "Message count equal to number of messages sent, metrics adapter working correctly"
 fi
