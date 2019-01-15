@@ -1,5 +1,8 @@
 #!/bin/bash
 
+set -o nounset
+set -o errexit
+
 echo; echo "Showing HPA pod data for 10 min..."
 kubectl get hpa consumer-scaler
 START=`date +%s`

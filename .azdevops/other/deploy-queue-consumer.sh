@@ -1,9 +1,7 @@
 #!/bin/bash
 
-if [[ ! -v SERVICEBUS_CONNECTION_STRING ]]; then
-    echo; echo "Must set SERVICEBUS_CONNECTION_STRING"
-    exit 1
-fi
+set -o nounset
+set -o errexit
 
 echo; echo "Deploying queue consumer..."
 cd $HOME/go/src/github.com/Azure/azure-k8s-metrics-adapter/samples/servicebus-queue/

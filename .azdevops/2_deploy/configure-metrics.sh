@@ -1,9 +1,7 @@
 #!/bin/bash
 
-if [[ ! -v SERVICEBUS_NAMESPACE ]]; then
-    echo; echo "Must set SERVICEBUS_NAMESPACE"
-    exit 1
-fi
+set -o nounset
+set -o errexit
 
 echo; echo "Configuring external metric (queuemessages)..."
 cd $HOME/go/src/github.com/Azure/azure-k8s-metrics-adapter/samples/servicebus-queue/
