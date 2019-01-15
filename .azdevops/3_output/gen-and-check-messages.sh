@@ -25,6 +25,7 @@ MSGCOUNT=$(kubectl get --raw "/apis/external.metrics.k8s.io/v1beta1/namespaces/d
 while [[ "$MSGCOUNT" == "\"0\"" && $(( $(date +%s) - 155 )) -lt $START ]]; do
   sleep 15
   MSGCOUNT=$(kubectl get --raw "/apis/external.metrics.k8s.io/v1beta1/namespaces/default/queuemessages" | jq .items[0].value)
+  echo "Endpoint returned $MSGCOUNT messages"
 done
 
 if [[ ! "$MSGCOUNT" == "\"$NUM\"" ]]; then
