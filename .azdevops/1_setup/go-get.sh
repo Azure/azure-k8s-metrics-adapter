@@ -1,5 +1,8 @@
 #!/bin/bash
 
+set -o nounset
+set -o errexit
+
 GOPATH="${GOPATH:-$HOME/go}"
 
 echo; echo "Getting metrics server code..."
