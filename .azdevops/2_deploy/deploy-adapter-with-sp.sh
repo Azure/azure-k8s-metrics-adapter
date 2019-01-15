@@ -3,8 +3,10 @@
 set -o nounset
 set -o errexit
 
+GOPATH="${GOPATH:-$HOME/go}"
+
 echo; echo "Making image..."
-cd $HOME/go/src/github.com/Azure/azure-k8s-metrics-adapter/
+cd $GOPATH/src/github.com/Azure/azure-k8s-metrics-adapter/
 export REGISTRY="integration"
 export REGISTRY_PATH=""
 export VERSION="local"
