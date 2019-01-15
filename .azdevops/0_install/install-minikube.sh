@@ -1,9 +1,7 @@
 #!/bin/bash
 
-if [[ ! -v MINIKUBE_VERSION ]]; then
-	echo; echo "Must set MINIKUBE VERSION (i.e. 0.32.0)"
-	exit 1
-fi
+set -o nounset
+set -o errexit
 
 echo; echo "Installing minikube..."
 curl -Lo minikube https://storage.googleapis.com/minikube/releases/v$MINIKUBE_VERSION/minikube-linux-amd64

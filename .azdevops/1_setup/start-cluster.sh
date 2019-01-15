@@ -1,8 +1,7 @@
 #!/bin/bash
-if [[ ! -v KUBERNETES_VERSION ]]; then
-	echo; echo "Must set KUBERNETES_VERSION (i.e. 1.12.4)"
-	exit 1
-fi
+
+set -o nounset
+set -o errexit
 
 echo; echo "Starting minikube..."
 sudo minikube start --vm-driver=none --bootstrapper=kubeadm --kubernetes-version=v$KUBERNETES_VERSION

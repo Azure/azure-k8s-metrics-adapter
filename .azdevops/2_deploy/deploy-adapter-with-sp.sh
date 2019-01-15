@@ -1,9 +1,7 @@
 #!/bin/bash
 
-: "${SP_TENANT_ID:?Must set SP_TENANT_ID}"
-: "${SP_CLIENT_ID:?Must set SP_CLIENT_ID}"
-: "${SP_CLIENT_SECRET:?Must set SP_CLIENT_SECRET}"
-: "${SUBSCRIPTION_ID:?Must set SUBSCRIPTION_ID}"
+set -o nounset
+set -o errexit
 
 echo; echo "Making image..."
 cd $HOME/go/src/github.com/Azure/azure-k8s-metrics-adapter/

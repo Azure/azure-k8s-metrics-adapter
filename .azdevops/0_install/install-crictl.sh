@@ -1,5 +1,8 @@
 #!/bin/bash
 
+set -o nounset
+set -o errexit
+
 if [[ ! $KUBERNETES_VERSION == 1.11.* ]]; then
 	echo; echo "Not installing crictl (not needed)"
 	exit 1

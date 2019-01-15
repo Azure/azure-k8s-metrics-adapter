@@ -1,9 +1,7 @@
 #!/bin/bash
 
-if [[ ! -v KUBERNETES_VERSION ]]; then
-	echo; echo "Must set KUBERNETES_VERSION (i.e. 1.12.4)"
-	exit 1
-fi
+set -o nounset
+set -o errexit
 
 echo; echo "Installing kubectl..."
 curl -Lo kubectl https://storage.googleapis.com/kubernetes-release/release/v$KUBERNETES_VERSION/bin/linux/amd64/kubectl

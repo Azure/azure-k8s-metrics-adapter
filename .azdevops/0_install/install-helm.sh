@@ -1,9 +1,7 @@
 #!/bin/bash
 
-if [[ ! -v HELM_VERSION ]]; then
-	echo; echo "Must set HELM_VERSION (i.e. 2.12.0)"
-	exit 1
-fi
+set -o nounset
+set -o errexit
 
 echo; echo "Installing helm..."
 curl -Lo helm.tar.gz https://storage.googleapis.com/kubernetes-helm/helm-v$HELM_VERSION-linux-amd64.tar.gz

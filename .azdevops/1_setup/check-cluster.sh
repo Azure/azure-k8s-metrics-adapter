@@ -1,5 +1,8 @@
 #!/bin/bash
 
+set -o nounset
+set -o errexit
+
 # This snippet is from https://blog.gripdev.xyz/2018/10/19/kubernetes-integration-testing-minikube-azure-pipelines-happy/
 
 echo; echo "Waiting for cluster to be usable..."
