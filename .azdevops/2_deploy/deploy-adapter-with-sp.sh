@@ -6,6 +6,7 @@ set -o errexit
 GOPATH="${GOPATH:-$HOME/go}"
 
 echo; echo "Deploying metrics adapter..."
+cd $GOPATH/src/github.com/Azure/azure-k8s-metrics-adapter
 helm install --name adapter \
     ./charts/azure-k8s-metrics-adapter \
     --set azureAuthentication.method=clientSecret \
