@@ -36,10 +36,11 @@ service:
 
 azureAuthentication:
   # method: {msi,clientSecret,clientCertificate,aadPodIdentity}
-  method: msi
+  method: clientSecret
   # Generate secret file. If false you are responsible for creating secret 
   # To generate secret file swith to true then fill in values below
   createSecret: false
+  # provide values here if you are using helm to create the secret
   tenantID: ""
   clientID: ""
   clientSecret: ""
