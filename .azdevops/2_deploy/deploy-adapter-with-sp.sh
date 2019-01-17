@@ -8,7 +8,7 @@ GOPATH="${GOPATH:-$HOME/go}"
 echo; echo "Deploying metrics adapter..."
 cd $GOPATH/src/github.com/Azure/azure-k8s-metrics-adapter
 helm install --name adapter \
-    -f ./local-values.yaml \
+    -f ./local-dev-values.yaml \
     ./charts/azure-k8s-metrics-adapter
 
 echo; echo "Waiting for deployment to be available..."

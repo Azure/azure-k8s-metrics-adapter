@@ -4,7 +4,7 @@ set -o nounset
 set -o errexit
 
 GOPATH="${GOPATH:-$HOME/go}"
-FNAME="$GOPATH/src/github.com/Azure/azure-k8s-metrics-adapter/local-values.yaml"
+FNAME="$GOPATH/src/github.com/Azure/azure-k8s-metrics-adapter/local-dev-values.yaml"
 
 echo; echo "Creating local values file..."
 
