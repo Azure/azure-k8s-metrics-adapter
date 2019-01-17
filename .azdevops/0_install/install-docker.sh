@@ -1,6 +1,7 @@
 #!/bin/bash
 
 set -o nounset
+# no exit on error because it will fail on something unreasonable...
 
 echo; echo "Removing any previously installed Docker versions..."
 sudo apt-get remove --purge docker*
