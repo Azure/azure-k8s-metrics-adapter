@@ -1,0 +1,89 @@
+steps:
+  - script: |
+      echo "This build uses the following versions:"
+      echo "Kubernetes: $(KUBERNETES_VERSION)"
+      echo "Minikube: $(MINIKUBE_VERSION)"
+      echo "Helm: $(HELM_VERSION)"
+      echo "Docker: $(DOCKER_VERSION)"
+    displayName: 'Print version details'
+
+  - task: DownloadBuildArtifacts@0
+    displayName: 'Download Build Artifacts'
+    inputs:
+      buildType: specific
+      project: '4dc782d5-ca10-459f-911d-2c0a2af030b9'
+      pipeline: 5
+      specificBuildWithTriggering: true
+      downloadType: specific
+
+  - script: |
+      echo $(DOCKER_PWD) | docker login -u $(DOCKER_USER) --password-stdin $(ACR_ADDR)
+      docker pull $(ACR_ADDR)/$(ACR_PATH)/adapter:$(image.BuildNumber)
+    displayName: 'Pull image'
+
+  - script: |
+      mkdir -p '$(GOBIN)'
+      mkdir -p '$(GOPATH)/pkg'
+      mkdir -p '$(modulePath)'
+      shopt -s extglob
+      shopt -s dotglob
+      mv !(go) '$(modulePath)'
+      echo '##vso[task.prependpath]$(GOBIN)'
+      echo '##vso[task.prependpath]$(GOROOT)/bin'  
+      cd $(modulePath) 
+      go get -v -t -d ./... 
+      if [ -f Gopkg.toml ]; then
+        curl https://raw.githubusercontent.com/golang/dep/master/install.sh | sh
+      fi
+    displayName: 'Set up the Go workspace'
+
+  - script: |
+      chmod +x *.sh 
+      ./install-docker.sh
+    workingDirectory: '$(modulePath)/.azdevops/0_install'
+    displayName: 'Install docker (must continue on error)'
+    continueOnError: true
+
+  - script: |
+      ./install-misc.sh
+      ./install-crictl.sh
+      ./install-kubectl.sh
+      ./install-minikube.sh
+      ./install-helm.sh
+    workingDirectory: '$(modulePath)/.azdevops/0_install'
+    displayName: 'Install everything else'
+
+  - script: |
+      chmod +x *.sh
+      ./start-cluster.sh
+      ./go-get.sh
+      ./check-cluster.sh
+      ./init-tiller.sh
+    workingDirectory: '$(modulePath)/.azdevops/1_setup'
+    displayName: 'Cluster set up & Go get'
+
+  - script: |
+      chmod +x *.sh
+      ./deploy-metrics-server.sh
+      ./gen-values-file.sh
+      ./deploy-adapter-with-sp.sh
+      ./configure-metrics.sh
+    workingDirectory: '$(modulePath)/.azdevops/2_deploy'
+    displayName: Deployments
+    env:
+      SP_CLIENT_ID: $(SP_CLIENT_ID)
+      SP_TENANT_ID: $(SP_TENANT_ID)
+      SP_CLIENT_SECRET: $(SP_CLIENT_SECRET)
+      SUBSCRIPTION_ID: $(SUBSCRIPTION_ID)
+      VERSION: $(image.BuildNumber)
+      REGISTRY: $(ACR_ADDR)
+      REGISTRY_PATH: $(ACR_PATH)
+
+  - script: |
+      chmod +x *.sh
+      ./output-details.sh
+      ./gen-and-check-messages.sh
+    workingDirectory: '$(modulePath)/.azdevops/3_output'
+    displayName: 'Run producer and check outputs'
+    env:
+      SERVICEBUS_CONNECTION_STRING: $(SERVICEBUS_CONNECTION_STRING)
