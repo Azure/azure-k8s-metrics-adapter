@@ -11,6 +11,6 @@ cd $GOPATH/src/github.com/Azure/azure-k8s-metrics-adapter/samples/servicebus-que
 timeout 30 ./bin/consumer
 
 # Exit status 124 just means timeout completed, which is what we expect
-if [[ $? == 124 ]]; then 
+if [[ $? = 124 ]]; then 
     exit 0
 fi
