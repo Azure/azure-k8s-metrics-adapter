@@ -4,8 +4,7 @@ import (
 	"fmt"
 
 	"github.com/Azure/azure-k8s-metrics-adapter/pkg/azure/appinsights"
-
-	"github.com/Azure/azure-k8s-metrics-adapter/pkg/azure/monitor"
+	"github.com/Azure/azure-k8s-metrics-adapter/pkg/azure/external_metrics"
 	listers "github.com/Azure/azure-k8s-metrics-adapter/pkg/client/listers/metrics/v1alpha1"
 	"github.com/Azure/azure-k8s-metrics-adapter/pkg/metriccache"
 	"github.com/golang/glog"
@@ -93,7 +92,8 @@ func (h *Handler) handleExternalMetric(ns, name string, queueItem namespacedQueu
 		return err
 	}
 
-	azureMetricRequest := monitor.AzureMetricRequest{
+	// TODO: Map the new fields here for Service Bus
+	azureMetricRequest := azureexternalmetrics.AzureExternalMetricRequest{
 		ResourceGroup:             externalMetricInfo.Spec.AzureConfig.ResourceGroup,
 		ResourceName:              externalMetricInfo.Spec.AzureConfig.ResourceName,
 		ResourceProviderNamespace: externalMetricInfo.Spec.AzureConfig.ResourceProviderNamespace,

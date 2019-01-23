@@ -4,8 +4,7 @@ package provider
 
 import (
 	"github.com/Azure/azure-k8s-metrics-adapter/pkg/azure/appinsights"
-	"github.com/Azure/azure-k8s-metrics-adapter/pkg/azure/external_metric_types"
-	"github.com/Azure/azure-k8s-metrics-adapter/pkg/azure/monitor"
+	"github.com/Azure/azure-k8s-metrics-adapter/pkg/azure/external_metrics"
 	"github.com/Azure/azure-k8s-metrics-adapter/pkg/metriccache"
 	"github.com/kubernetes-incubator/custom-metrics-apiserver/pkg/provider"
 	apimeta "k8s.io/apimachinery/pkg/api/meta"
@@ -13,23 +12,21 @@ import (
 )
 
 type AzureProvider struct {
-	appinsightsClient            appinsights.AzureAppInsightsClient
-	mapper                       apimeta.RESTMapper
-	kubeClient                   dynamic.Interface
-	monitorClient                monitor.AzureMonitorClient
-	metricCache                  *metriccache.MetricCache
-	serviceBusSubscriptionClient externalmetrictypes.AzureExternalMetricClient
-	defaultSubscriptionID        string
+	appinsightsClient     appinsights.AzureAppInsightsClient
+	mapper                apimeta.RESTMapper
+	kubeClient            dynamic.Interface
+	metricCache           *metriccache.MetricCache
+	azureClientFactory    azureexternalmetrics.AzureClientFactory
+	defaultSubscriptionID string
 }
 
-func NewAzureProvider(defaultSubscriptionID string, mapper apimeta.RESTMapper, kubeClient dynamic.Interface, appinsightsClient appinsights.AzureAppInsightsClient, monitorClient monitor.AzureMonitorClient, serviceBusSubscriptionClient externalmetrictypes.AzureExternalMetricClient, metricCache *metriccache.MetricCache) provider.MetricsProvider {
+func NewAzureProvider(defaultSubscriptionID string, mapper apimeta.RESTMapper, kubeClient dynamic.Interface, appinsightsClient appinsights.AzureAppInsightsClient, azureClientFactory azureexternalmetrics.AzureClientFactory, metricCache *metriccache.MetricCache) provider.MetricsProvider {
 	return &AzureProvider{
-		defaultSubscriptionID:        defaultSubscriptionID,
-		mapper:                       mapper,
-		kubeClient:                   kubeClient,
-		appinsightsClient:            appinsightsClient,
-		monitorClient:                monitorClient,
-		metricCache:                  metricCache,
-		serviceBusSubscriptionClient: serviceBusSubscriptionClient,
+		defaultSubscriptionID: defaultSubscriptionID,
+		mapper:                mapper,
+		kubeClient:            kubeClient,
+		appinsightsClient:     appinsightsClient,
+		metricCache:           metricCache,
+		azureClientFactory:    azureClientFactory,
 	}
 }

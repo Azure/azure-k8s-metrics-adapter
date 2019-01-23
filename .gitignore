@@ -97,3 +97,5 @@ typings/
 # Serverless directories
 .serverless
 local-dev-values.yaml
+
+.circleci

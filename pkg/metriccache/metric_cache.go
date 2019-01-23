@@ -5,8 +5,7 @@ import (
 	"sync"
 
 	"github.com/Azure/azure-k8s-metrics-adapter/pkg/azure/appinsights"
-
-	"github.com/Azure/azure-k8s-metrics-adapter/pkg/azure/monitor"
+	"github.com/Azure/azure-k8s-metrics-adapter/pkg/azure/external_metrics"
 	"github.com/golang/glog"
 )
 
@@ -32,7 +31,7 @@ func (mc *MetricCache) Update(key string, metricRequest interface{}) {
 }
 
 // GetAzureMonitorRequest retrieves a metric request from the cache
-func (mc *MetricCache) GetAzureMonitorRequest(namepace, name string) (monitor.AzureMetricRequest, bool) {
+func (mc *MetricCache) GetAzureMonitorRequest(namepace, name string) (azureexternalmetrics.AzureExternalMetricRequest, bool) {
 	mc.metricMutext.RLock()
 	defer mc.metricMutext.RUnlock()
 
@@ -40,10 +39,10 @@ func (mc *MetricCache) GetAzureMonitorRequest(namepace, name string) (monitor.Az
 	metricRequest, exists := mc.metricRequests[key]
 	if !exists {
 		glog.V(2).Infof("metric not found %s", key)
-		return monitor.AzureMetricRequest{}, false
+		return azureexternalmetrics.AzureExternalMetricRequest{}, false
 	}
 
-	return metricRequest.(monitor.AzureMetricRequest), true
+	return metricRequest.(azureexternalmetrics.AzureExternalMetricRequest), true
 }
 
 // GetAppInsightsRequest retrieves a metric request from the cache

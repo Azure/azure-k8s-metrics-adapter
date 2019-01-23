@@ -1,27 +1,26 @@
-package servicebus
+package azureexternalmetrics
 
 import (
 	"context"
 	"errors"
 	"testing"
 
-	"github.com/Azure/azure-k8s-metrics-adapter/pkg/azure/external_metric_types"
 	"github.com/Azure/azure-sdk-for-go/services/servicebus/mgmt/2017-04-01/servicebus"
 )
 
 func TestIfEmptyRequestGetError(t *testing.T) {
 	servicebusClient := newFakeServicebusClient(servicebus.SBSubscription{}, nil)
 
-	client := newClient("", servicebusClient)
+	client := newServiceBusSubscriptionClient("", servicebusClient)
 
-	request := externalmetrictypes.AzureExternalMetricRequest{}
+	request := AzureExternalMetricRequest{}
 	_, err := client.GetAzureMetric(request)
 
 	if err == nil {
 		t.Errorf("no error after processing got: %v, want error", nil)
 	}
 
-	if !externalmetrictypes.IsInvalidMetricRequestError(err) {
+	if !IsInvalidMetricRequestError(err) {
 		t.Errorf("should be InvalidMetricRequest error got %v, want InvalidMetricRequestError", err)
 	}
 }
@@ -30,9 +29,9 @@ func TestIfFailedResponseGetError(t *testing.T) {
 	fakeError := errors.New("fake servicebus failed")
 	serviceBusClient := newFakeServicebusClient(servicebus.SBSubscription{}, fakeError)
 
-	client := newClient("", serviceBusClient)
+	client := newServiceBusSubscriptionClient("", serviceBusClient)
 
-	request := newMetricRequest()
+	request := newServiceBusSubscriptionMetricRequest()
 	_, err := client.GetAzureMetric(request)
 
 	if err == nil {
@@ -45,12 +44,12 @@ func TestIfFailedResponseGetError(t *testing.T) {
 }
 
 func TestIfValidRequestGetResult(t *testing.T) {
-	response := makeResponse(15)
+	response := makeServiceBusSubscriptionResponse(15)
 	serviceBusClient := newFakeServicebusClient(response, nil)
 
-	client := newClient("", serviceBusClient)
+	client := newServiceBusSubscriptionClient("", serviceBusClient)
 
-	request := newMetricRequest()
+	request := newServiceBusSubscriptionMetricRequest()
 	metricResponse, err := client.GetAzureMetric(request)
 
 	if err != nil {
@@ -62,7 +61,7 @@ func TestIfValidRequestGetResult(t *testing.T) {
 	}
 }
 
-func makeResponse(value int64) servicebus.SBSubscription {
+func makeServiceBusSubscriptionResponse(value int64) servicebus.SBSubscription {
 	messageCountDetails := servicebus.MessageCountDetails{
 		ActiveMessageCount: &value,
 	}
@@ -78,8 +77,8 @@ func makeResponse(value int64) servicebus.SBSubscription {
 	return response
 }
 
-func newMetricRequest() externalmetrictypes.AzureExternalMetricRequest {
-	return externalmetrictypes.AzureExternalMetricRequest{
+func newServiceBusSubscriptionMetricRequest() AzureExternalMetricRequest {
+	return AzureExternalMetricRequest{
 		ResourceGroup:  "ResourceGroup",
 		SubscriptionID: "SubscriptionID",
 		MetricName:     "MetricName",

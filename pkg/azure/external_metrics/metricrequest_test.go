@@ -1,4 +1,4 @@
-package monitor
+package azureexternalmetrics
 
 import (
 	"fmt"
@@ -13,12 +13,12 @@ const validLabelSelector = "resourceProviderNamespace=Microsoft.Servicebus,resou
 func TestAzureMetricRequestGeneratesValidMetricResourceURI(t *testing.T) {
 	tests := []struct {
 		name string
-		amr  AzureMetricRequest
+		amr  AzureExternalMetricRequest
 		want string
 	}{
 		{
 			name: "valid metric",
-			amr: AzureMetricRequest{
+			amr: AzureExternalMetricRequest{
 				SubscriptionID:            "1234-1234-234-12414",
 				ResourceGroup:             "test-rg",
 				ResourceProviderNamespace: "Microsoft.Servicebus",
@@ -45,7 +45,7 @@ func TestParseAzureMetric(t *testing.T) {
 	tests := []struct {
 		name    string
 		args    args
-		want    AzureMetricRequest
+		want    AzureExternalMetricRequest
 		wantErr bool
 	}{
 		{
@@ -54,7 +54,7 @@ func TestParseAzureMetric(t *testing.T) {
 				defaultSubscriptionID: "",
 				metricSelector:        nil,
 			},
-			want:    AzureMetricRequest{},
+			want:    AzureExternalMetricRequest{},
 			wantErr: true,
 		},
 	}
@@ -93,7 +93,7 @@ func TestParseWithSubIdPassedIsValid(t *testing.T) {
 	err := metric.Validate()
 
 	if err != nil {
-		t.Errorf("validate got error %v, want nil", err)
+		t.Errorf("validate got error: %v, want nil", err)
 	}
 }
 
@@ -107,7 +107,7 @@ func TestParseWithSubIdOnSelectorPassedIsValid(t *testing.T) {
 	err := metric.Validate()
 
 	if err != nil {
-		t.Errorf("validate got error %v, want nil", err)
+		t.Errorf("validate got error: %v, want nil", err)
 	}
 }
 
@@ -124,7 +124,7 @@ func TestParseWithNoSubIdPassedIsFails(t *testing.T) {
 }
 
 func TestValidateWithValidMetric(t *testing.T) {
-	mr := AzureMetricRequest{
+	mr := AzureExternalMetricRequest{
 		Aggregation:               "Total",
 		Filter:                    "EntityName eq 'externalq'",
 		MetricName:                "Test",
@@ -139,12 +139,12 @@ func TestValidateWithValidMetric(t *testing.T) {
 	err := mr.Validate()
 
 	if err != nil {
-		t.Errorf("validate got error %v, want nil", err)
+		t.Errorf("validate got error: %v, want nil", err)
 	}
 }
 
 func TestValidateFilterIsOptional(t *testing.T) {
-	mr := AzureMetricRequest{
+	mr := AzureExternalMetricRequest{
 		Aggregation:               "Total",
 		Filter:                    "",
 		MetricName:                "Test",
@@ -159,6 +159,6 @@ func TestValidateFilterIsOptional(t *testing.T) {
 	err := mr.Validate()
 
 	if err != nil {
-		t.Errorf("validate got error %v, want nil", err)
+		t.Errorf("validate got error: %v, want nil", err)
 	}
 }

@@ -4,16 +4,14 @@ import (
 	"fmt"
 	"testing"
 
-	"github.com/Azure/azure-k8s-metrics-adapter/pkg/azure/appinsights"
-
 	api "github.com/Azure/azure-k8s-metrics-adapter/pkg/apis/metrics/v1alpha1"
-	"github.com/Azure/azure-k8s-metrics-adapter/pkg/azure/monitor"
+	"github.com/Azure/azure-k8s-metrics-adapter/pkg/azure/appinsights"
+	"github.com/Azure/azure-k8s-metrics-adapter/pkg/azure/external_metrics"
+	"github.com/Azure/azure-k8s-metrics-adapter/pkg/client/clientset/versioned/fake"
+	informers "github.com/Azure/azure-k8s-metrics-adapter/pkg/client/informers/externalversions"
 	"github.com/Azure/azure-k8s-metrics-adapter/pkg/metriccache"
 	metav1 "k8s.io/apimachinery/pkg/apis/meta/v1"
 	"k8s.io/apimachinery/pkg/runtime"
-
-	"github.com/Azure/azure-k8s-metrics-adapter/pkg/client/clientset/versioned/fake"
-	informers "github.com/Azure/azure-k8s-metrics-adapter/pkg/client/informers/externalversions"
 )
 
 func getExternalKey(externalMetric *api.ExternalMetric) namespacedQueueItem {
@@ -168,7 +166,7 @@ func TestWhenExternalItemHasBeenDeleted(t *testing.T) {
 
 	// add the item to the cache then test if it gets deleted
 	queueItem := getExternalKey(externalMetric)
-	metriccache.Update(queueItem.Key(), monitor.AzureMetricRequest{})
+	metriccache.Update(queueItem.Key(), azureexternalmetrics.AzureExternalMetricRequest{})
 
 	err := handler.Process(queueItem)
 
@@ -258,7 +256,7 @@ func newHandler(storeObjects []runtime.Object, externalMetricsListerCache []*api
 	return handler, metriccache
 }
 
-func validateExternalMetricResult(metricRequest monitor.AzureMetricRequest, externalMetricInfo *api.ExternalMetric, t *testing.T) {
+func validateExternalMetricResult(metricRequest azureexternalmetrics.AzureExternalMetricRequest, externalMetricInfo *api.ExternalMetric, t *testing.T) {
 
 	// Metric Config
 	if metricRequest.MetricName != externalMetricInfo.Spec.MetricConfig.MetricName {

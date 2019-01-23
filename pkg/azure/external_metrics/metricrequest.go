@@ -1,4 +1,4 @@
-package monitor
+package azureexternalmetrics
 
 import (
 	"errors"
@@ -11,23 +11,28 @@ import (
 	"k8s.io/apimachinery/pkg/selection"
 )
 
-type AzureMetricRequest struct {
+type AzureExternalMetricRequest struct {
 	MetricName                string
-	ResourceGroup             string
+	SubscriptionID            string
+	Type                      string
 	ResourceName              string
 	ResourceProviderNamespace string
 	ResourceType              string
 	Aggregation               string
 	Timespan                  string
 	Filter                    string
-	SubscriptionID            string
+	ResourceGroup             string
+	Namespace                 string
+	Topic                     string
+	Subscription              string
 }
 
-func ParseAzureMetric(metricSelector labels.Selector, defaultSubscriptionID string) (AzureMetricRequest, error) {
-	glog.V(2).Infof("begin parsing metric")
+func ParseAzureMetric(metricSelector labels.Selector, defaultSubscriptionID string) (AzureExternalMetricRequest, error) {
+	glog.V(4).Infof("Parsing a received AzureMetric")
+	glog.V(6).Infof("%v", metricSelector)
 
 	if metricSelector == nil {
-		return AzureMetricRequest{}, fmt.Errorf("metricSelector cannot be nil")
+		return AzureExternalMetricRequest{}, fmt.Errorf("metricSelector cannot be nil")
 	}
 
 	// Using selectors to pass required values thorugh
@@ -36,25 +41,32 @@ func ParseAzureMetric(metricSelector labels.Selector, defaultSubscriptionID stri
 	// There is are restrictions so using some conversion
 	// restrictions here
 	// note: requirement values are already validated by apiserver
-	merticReq := AzureMetricRequest{
+	merticReq := AzureExternalMetricRequest{
 		Timespan:       TimeSpan(),
 		SubscriptionID: defaultSubscriptionID,
 	}
+
 	requirements, _ := metricSelector.Requirements()
 	for _, request := range requirements {
 		if request.Operator() != selection.Equals {
-			return AzureMetricRequest{}, errors.New("selector type not supported. only equals is supported at this time")
+			return AzureExternalMetricRequest{}, errors.New("selector type not supported. only equals is supported at this time")
 		}
 
 		value := request.Values().List()[0]
 
 		switch request.Key() {
+		// Shared
 		case "metricName":
-			glog.V(2).Infof("metricName: %s", value)
+			glog.V(4).Infof("AzureMetric metricName: %s", value)
 			merticReq.MetricName = value
 		case "resourceGroup":
-			glog.V(2).Infof("resourceGroup: %s", value)
+			glog.V(4).Infof("AzureMetric resourceGroup: %s", value)
 			merticReq.ResourceGroup = value
+		case "subscriptionID":
+			// if sub id is passed via label selectors then it takes precedence
+			glog.V(4).Infof("AzureMetric override azure subscription id with : %s", value)
+			merticReq.SubscriptionID = value
+		// Monitor
 		case "resourceName":
 			glog.V(2).Infof("resourceName: %s", value)
 			merticReq.ResourceName = value
@@ -74,14 +86,22 @@ func ParseAzureMetric(metricSelector labels.Selector, defaultSubscriptionID stri
 			filterStrings := strings.Split(value, "_")
 			merticReq.Filter = fmt.Sprintf("%s %s '%s'", filterStrings[0], filterStrings[1], filterStrings[2])
 			glog.V(2).Infof("filter formatted: %s", merticReq.Filter)
-		case "subscriptionID":
-			// if sub id is passed via label selectors then it takes precedence
-			glog.V(2).Infof("override azure subscription id with : %s", value)
-			merticReq.SubscriptionID = value
+		// Service Bus
+		case "namespace":
+			glog.V(4).Infof("AzureMetric namespace: %s", value)
+			merticReq.Namespace = value
+		case "topic":
+			glog.V(4).Infof("AzureMetric topic: %s", value)
+			merticReq.Topic = value
+		case "subscription":
+			glog.V(4).Infof("AzureMetric subscription: %s", value)
+			merticReq.Subscription = value
 		default:
-			return AzureMetricRequest{}, fmt.Errorf("selector label '%s' not supported", request.Key())
+			return AzureExternalMetricRequest{}, fmt.Errorf("selector label '%s' not supported", request.Key())
 		}
 	}
+
+	glog.V(2).Infof("Successfully parsed AzureMetric %s", merticReq.MetricName)
 
 	return merticReq, nil
 }
@@ -101,47 +121,32 @@ func IsInvalidMetricRequestError(err error) bool {
 	return false
 }
 
-func (amr AzureMetricRequest) Validate() error {
+func (amr AzureExternalMetricRequest) Validate() error {
+	// Shared
 	if amr.MetricName == "" {
 		return InvalidMetricRequestError{err: "metricName is required"}
 	}
 	if amr.ResourceGroup == "" {
 		return InvalidMetricRequestError{err: "resourceGroup is required"}
 	}
-	if amr.ResourceName == "" {
-		return InvalidMetricRequestError{err: "resourceName is required"}
-	}
-	if amr.ResourceProviderNamespace == "" {
-		return InvalidMetricRequestError{err: "resourceProviderNamespace is required"}
-	}
-	if amr.ResourceType == "" {
-		return InvalidMetricRequestError{err: "resourceType is required"}
-	}
-	if amr.Aggregation == "" {
-		return InvalidMetricRequestError{err: "aggregation is required"}
-	}
-	if amr.Timespan == "" {
-		return InvalidMetricRequestError{err: "timespan is required"}
-	}
-	if amr.Filter == "" {
-		glog.V(2).Infof("filter on request was not set")
-	}
-
 	if amr.SubscriptionID == "" {
 		return InvalidMetricRequestError{err: "subscriptionID is required. set a default or pass via label selectors"}
 	}
 
+	// Service Bus
+
+	// if amr.Namespace == "" {
+	// 	return InvalidMetricRequestError{err: "namespace is required"}
+	// }
+	// if amr.Topic == "" {
+	// 	return InvalidMetricRequestError{err: "topic is required"}
+	// }
+	// if amr.Subscription == "" {
+	// 	return InvalidMetricRequestError{err: "subscription is required"}
+	// }
+
 	// if here then valid!
 	return nil
-}
-
-func (amr AzureMetricRequest) MetricResourceURI() string {
-	return fmt.Sprintf("/subscriptions/%s/resourceGroups/%s/providers/%s/%s/%s",
-		amr.SubscriptionID,
-		amr.ResourceGroup,
-		amr.ResourceProviderNamespace,
-		amr.ResourceType,
-		amr.ResourceName)
 }
 
 // TimeSpan sets the default time to aggregate a metric
@@ -151,4 +156,13 @@ func TimeSpan() string {
 	endtime := time.Now().UTC().Format(time.RFC3339)
 	starttime := time.Now().Add(-(5 * time.Minute)).UTC().Format(time.RFC3339)
 	return fmt.Sprintf("%s/%s", starttime, endtime)
+}
+
+func (amr AzureExternalMetricRequest) MetricResourceURI() string {
+	return fmt.Sprintf("/subscriptions/%s/resourceGroups/%s/providers/%s/%s/%s",
+		amr.SubscriptionID,
+		amr.ResourceGroup,
+		amr.ResourceProviderNamespace,
+		amr.ResourceType,
+		amr.ResourceName)
 }

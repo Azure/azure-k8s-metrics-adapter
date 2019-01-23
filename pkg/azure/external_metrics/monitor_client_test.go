@@ -1,4 +1,4 @@
-package monitor
+package azureexternalmetrics
 
 import (
 	"context"
@@ -8,12 +8,12 @@ import (
 	"github.com/Azure/azure-sdk-for-go/services/preview/monitor/mgmt/2018-03-01/insights"
 )
 
-func TestIfEmptyRequestGetError(t *testing.T) {
+func TestAzureMonitorIfEmptyRequestGetError(t *testing.T) {
 	monitorClient := newFakeMonitorClient(insights.Response{}, nil)
 
-	client := newClient("", monitorClient)
+	client := newMonitorClient("", monitorClient)
 
-	request := AzureMetricRequest{}
+	request := AzureExternalMetricRequest{}
 	_, err := client.GetAzureMetric(request)
 
 	if err == nil {
@@ -25,13 +25,13 @@ func TestIfEmptyRequestGetError(t *testing.T) {
 	}
 }
 
-func TestIfFailedResponseGetError(t *testing.T) {
+func TestAzureMonitorIfFailedResponseGetError(t *testing.T) {
 	fakeError := errors.New("fake monitor failed")
 	monitorClient := newFakeMonitorClient(insights.Response{}, fakeError)
 
-	client := newClient("", monitorClient)
+	client := newMonitorClient("", monitorClient)
 
-	request := newMetricRequest()
+	request := newAzureMonitorMetricRequest()
 	_, err := client.GetAzureMetric(request)
 
 	if err == nil {
@@ -43,13 +43,13 @@ func TestIfFailedResponseGetError(t *testing.T) {
 	}
 }
 
-func TestIfValidRequestGetResult(t *testing.T) {
-	response := makeResponse(15)
+func TestAzureMonitorIfValidRequestGetResult(t *testing.T) {
+	response := makeAzureMonitorResponse(15)
 	monitorClient := newFakeMonitorClient(response, nil)
 
-	client := newClient("", monitorClient)
+	client := newMonitorClient("", monitorClient)
 
-	request := newMetricRequest()
+	request := newAzureMonitorMetricRequest()
 	metricResponse, err := client.GetAzureMetric(request)
 
 	if err != nil {
@@ -61,7 +61,7 @@ func TestIfValidRequestGetResult(t *testing.T) {
 	}
 }
 
-func makeResponse(value float64) insights.Response {
+func makeAzureMonitorResponse(value float64) insights.Response {
 	// create metric value
 	mv := insights.MetricValue{
 		Total: &value,
@@ -90,8 +90,8 @@ func makeResponse(value float64) insights.Response {
 	return response
 }
 
-func newMetricRequest() AzureMetricRequest {
-	return AzureMetricRequest{
+func newAzureMonitorMetricRequest() AzureExternalMetricRequest {
+	return AzureExternalMetricRequest{
 		ResourceGroup:             "ResourceGroup",
 		ResourceName:              "ResourceName",
 		ResourceProviderNamespace: "ResourceProviderNamespace",
