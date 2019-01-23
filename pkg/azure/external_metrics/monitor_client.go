@@ -1,4 +1,4 @@
-package monitor
+package azureexternalmetrics
 
 import (
 	"context"
@@ -7,15 +7,6 @@ import (
 	"github.com/Azure/go-autorest/autorest/azure/auth"
 	"github.com/golang/glog"
 )
-
-// AzureMonitorClient provides an interface to make requests to Azure Monitor
-type AzureMonitorClient interface {
-	GetAzureMetric(azMetricRequest AzureMetricRequest) (AzureMetricResponse, error)
-}
-
-type AzureMetricResponse struct {
-	Total float64
-}
 
 type insightsmonitorClient interface {
 	List(ctx context.Context, resourceURI string, timespan string, interval *string, metricnames string, aggregation string, top *int32, orderby string, filter string, resultType insights.ResultType, metricnamespace string) (result insights.Response, err error)
@@ -26,7 +17,7 @@ type monitorClient struct {
 	DefaultSubscriptionID string
 }
 
-func NewClient(defaultsubscriptionID string) AzureMonitorClient {
+func NewMonitorClient(defaultsubscriptionID string) AzureExternalMetricClient {
 	client := insights.NewMetricsClient(defaultsubscriptionID)
 	authorizer, err := auth.NewAuthorizerFromEnvironment()
 	if err == nil {
@@ -39,7 +30,7 @@ func NewClient(defaultsubscriptionID string) AzureMonitorClient {
 	}
 }
 
-func newClient(defaultsubscriptionID string, client insightsmonitorClient) monitorClient {
+func newMonitorClient(defaultsubscriptionID string, client insightsmonitorClient) monitorClient {
 	return monitorClient{
 		client:                client,
 		DefaultSubscriptionID: defaultsubscriptionID,
@@ -47,10 +38,10 @@ func newClient(defaultsubscriptionID string, client insightsmonitorClient) monit
 }
 
 // GetAzureMetric calls Azure Monitor endpoint and returns a metric
-func (c *monitorClient) GetAzureMetric(azMetricRequest AzureMetricRequest) (AzureMetricResponse, error) {
+func (c *monitorClient) GetAzureMetric(azMetricRequest AzureExternalMetricRequest) (AzureExternalMetricResponse, error) {
 	err := azMetricRequest.Validate()
 	if err != nil {
-		return AzureMetricResponse{}, err
+		return AzureExternalMetricResponse{}, err
 	}
 
 	metricResourceURI := azMetricRequest.MetricResourceURI()
@@ -61,7 +52,7 @@ func (c *monitorClient) GetAzureMetric(azMetricRequest AzureMetricRequest) (Azur
 		azMetricRequest.MetricName, azMetricRequest.Aggregation, nil,
 		"", azMetricRequest.Filter, "", "")
 	if err != nil {
-		return AzureMetricResponse{}, err
+		return AzureExternalMetricResponse{}, err
 	}
 
 	total := extractValue(metricResult)
@@ -69,7 +60,7 @@ func (c *monitorClient) GetAzureMetric(azMetricRequest AzureMetricRequest) (Azur
 	glog.V(2).Infof("found metric value: %f", total)
 
 	// TODO set Value based on aggregations type
-	return AzureMetricResponse{
+	return AzureExternalMetricResponse{
 		Total: total,
 	}, nil
 }
