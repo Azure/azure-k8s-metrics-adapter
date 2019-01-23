@@ -30,6 +30,7 @@ done
 
 if [[ ! "$MSGCOUNT" == "\"$NUM\"" ]]; then
     echo "Message count ($MSGCOUNT) not equal to number of messages sent ($NUM)" 1>&2
+    exit 1
 else
     echo "Message count equal to number of messages sent, metrics adapter working correctly"
 fi
