@@ -7,7 +7,7 @@ jobs:
         value: '18.06.1~ce~3-0~ubuntu'
       - name: 'KUBERNETES_VERSION'
         value: '1.10.12'
-      group: 'Metrics Adapter'
+      - group: 'Metrics Adapter'
     steps:
       - template: .azdevops/cluster-test.yaml
 
@@ -19,7 +19,7 @@ jobs:
         value: '17.03.3~ce-0~ubuntu-xenial'
       - name: 'KUBERNETES_VERSION'
         value: '1.11.6'
-      group: 'Metrics Adapter'
+      - group: 'Metrics Adapter'
     steps:
       - template: .azdevops/cluster-test.yaml
 
@@ -31,7 +31,7 @@ jobs:
         value: '18.06.1~ce~3-0~ubuntu'
       - name: 'KUBERNETES_VERSION'
         value: '1.12.4'
-      group: 'Metrics Adapter'
+      - group: 'Metrics Adapter'
     steps:
       - template: .azdevops/cluster-test.yaml
 
@@ -43,6 +43,6 @@ jobs:
         value: '18.06.1~ce~3-0~ubuntu'
       - name: 'KUBERNETES_VERSION'
         value: '1.13.1'
-      group: 'Metrics Adapter'
+      - group: 'Metrics Adapter'
     steps:
       - template: .azdevops/cluster-test.yaml
