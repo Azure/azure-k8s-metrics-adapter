@@ -19,8 +19,6 @@ limitations under the License.
 package v1alpha2
 
 import (
-	"time"
-
 	v1alpha2 "github.com/Azure/azure-k8s-metrics-adapter/pkg/apis/metrics/v1alpha2"
 	scheme "github.com/Azure/azure-k8s-metrics-adapter/pkg/client/clientset/versioned/scheme"
 	v1 "k8s.io/apimachinery/pkg/apis/meta/v1"
@@ -75,16 +73,11 @@ func (c *customMetrics) Get(name string, options v1.GetOptions) (result *v1alpha
 
 // List takes label and field selectors, and returns the list of CustomMetrics that match those selectors.
 func (c *customMetrics) List(opts v1.ListOptions) (result *v1alpha2.CustomMetricList, err error) {
-	var timeout time.Duration
-	if opts.TimeoutSeconds != nil {
-		timeout = time.Duration(*opts.TimeoutSeconds) * time.Second
-	}
 	result = &v1alpha2.CustomMetricList{}
 	err = c.client.Get().
 		Namespace(c.ns).
 		Resource("custommetrics").
 		VersionedParams(&opts, scheme.ParameterCodec).
-		Timeout(timeout).
 		Do().
 		Into(result)
 	return
@@ -92,16 +85,11 @@ func (c *customMetrics) List(opts v1.ListOptions) (result *v1alpha2.CustomMetric
 
 // Watch returns a watch.Interface that watches the requested customMetrics.
 func (c *customMetrics) Watch(opts v1.ListOptions) (watch.Interface, error) {
-	var timeout time.Duration
-	if opts.TimeoutSeconds != nil {
-		timeout = time.Duration(*opts.TimeoutSeconds) * time.Second
-	}
 	opts.Watch = true
 	return c.client.Get().
 		Namespace(c.ns).
 		Resource("custommetrics").
 		VersionedParams(&opts, scheme.ParameterCodec).
-		Timeout(timeout).
 		Watch()
 }
 
@@ -143,15 +131,10 @@ func (c *customMetrics) Delete(name string, options *v1.DeleteOptions) error {
 
 // DeleteCollection deletes a collection of objects.
 func (c *customMetrics) DeleteCollection(options *v1.DeleteOptions, listOptions v1.ListOptions) error {
-	var timeout time.Duration
-	if listOptions.TimeoutSeconds != nil {
-		timeout = time.Duration(*listOptions.TimeoutSeconds) * time.Second
-	}
 	return c.client.Delete().
 		Namespace(c.ns).
 		Resource("custommetrics").
 		VersionedParams(&listOptions, scheme.ParameterCodec).
-		Timeout(timeout).
 		Body(options).
 		Do().
 		Error()
