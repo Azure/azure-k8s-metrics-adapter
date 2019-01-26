@@ -74,7 +74,7 @@ func (p *AzureProvider) ListAllExternalMetrics() []provider.ExternalMetricInfo {
 
 func (p *AzureProvider) getMetricRequest(namespace string, metricName string, metricSelector labels.Selector) (azureexternalmetrics.AzureExternalMetricRequest, error) {
 
-	azMetricRequest, found := p.metricCache.GetAzureMonitorRequest(namespace, metricName)
+	azMetricRequest, found := p.metricCache.GetAzureExternalMetricRequest(namespace, metricName)
 	if found {
 		azMetricRequest.Timespan = azureexternalmetrics.TimeSpan()
 		if azMetricRequest.SubscriptionID == "" {

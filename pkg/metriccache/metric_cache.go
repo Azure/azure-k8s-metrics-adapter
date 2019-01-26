@@ -30,8 +30,8 @@ func (mc *MetricCache) Update(key string, metricRequest interface{}) {
 	mc.metricRequests[key] = metricRequest
 }
 
-// GetAzureMonitorRequest retrieves a metric request from the cache
-func (mc *MetricCache) GetAzureMonitorRequest(namepace, name string) (azureexternalmetrics.AzureExternalMetricRequest, bool) {
+// GetAzureExternalMetricRequest retrieves a metric request from the cache
+func (mc *MetricCache) GetAzureExternalMetricRequest(namepace, name string) (azureexternalmetrics.AzureExternalMetricRequest, bool) {
 	mc.metricMutext.RLock()
 	defer mc.metricMutext.RUnlock()
 

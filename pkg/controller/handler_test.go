@@ -46,7 +46,7 @@ func TestExternalMetricValueIsStored(t *testing.T) {
 		t.Errorf("error after processing = %v, want %v", err, nil)
 	}
 
-	metricRequest, exists := metriccache.GetAzureMonitorRequest(externalMetric.Namespace, externalMetric.Name)
+	metricRequest, exists := metriccache.GetAzureExternalMetricRequest(externalMetric.Namespace, externalMetric.Name)
 
 	if exists == false {
 		t.Errorf("exist = %v, want %v", exists, true)
@@ -82,7 +82,7 @@ func TestShouldBeAbleToStoreCustomAndExternalWithSameNameAndNamespace(t *testing
 		t.Errorf("error after processing = %v, want %v", err, nil)
 	}
 
-	externalRequest, exists := metriccache.GetAzureMonitorRequest(externalMetric.Namespace, externalMetric.Name)
+	externalRequest, exists := metriccache.GetAzureExternalMetricRequest(externalMetric.Namespace, externalMetric.Name)
 
 	if exists == false {
 		t.Errorf("exist = %v, want %v", exists, true)
@@ -147,7 +147,7 @@ func TestShouldFailOnInvalidCacheKey(t *testing.T) {
 		t.Errorf("error after processing nil, want non nil")
 	}
 
-	_, exists := metriccache.GetAzureMonitorRequest(externalMetric.Namespace, externalMetric.Name)
+	_, exists := metriccache.GetAzureExternalMetricRequest(externalMetric.Namespace, externalMetric.Name)
 
 	if exists == true {
 		t.Errorf("exist = %v, want %v", exists, false)
@@ -174,7 +174,7 @@ func TestWhenExternalItemHasBeenDeleted(t *testing.T) {
 		t.Errorf("error == %v, want nil", err)
 	}
 
-	_, exists := metriccache.GetAzureMonitorRequest(externalMetric.Namespace, externalMetric.Name)
+	_, exists := metriccache.GetAzureExternalMetricRequest(externalMetric.Namespace, externalMetric.Name)
 
 	if exists == true {
 		t.Errorf("exist = %v, want %v", exists, false)
