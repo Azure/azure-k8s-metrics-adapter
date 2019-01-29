@@ -1,9 +1,11 @@
 parameters:
-  DOCKER_VERSION: '18.06.1~ce~3-0~ubuntu'
-  KUBERNETES_VERSION: '1.12.4'
+  DOCKER_VERSION: ''
+  KUBERNETES_VERSION: ''
+  displayName: ''
 
 jobs:
 - job:
+  displayName: ${{ parameters.displayName }}
   pool:
     vmImage: 'ubuntu-16.04'
   variables:

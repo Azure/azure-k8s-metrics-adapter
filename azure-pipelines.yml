@@ -3,25 +3,25 @@
 
 jobs:
 - template: .azdevops/cluster-test.yaml
-  displayName: "K8s v1.10"
   parameters:
+    displayName: "K8s v1.10"
     DOCKER_VERSION: '18.06.1~ce~3-0~ubuntu'
     KUBERNETES_VERSION: '1.10.12'
 
 - template: .azdevops/cluster-test.yaml
-  displayName: "K8s v1.11"
   parameters:
+    displayName: "K8s v1.11"
     DOCKER_VERSION: '17.03.3~ce-0~ubuntu-xenial'
     KUBERNETES_VERSION: '1.11.6'
 
 - template: .azdevops/cluster-test.yaml
-  displayName: "K8s v1.12"
   parameters:
+    displayName: "K8s v1.12"
     DOCKER_VERSION: '18.06.1~ce~3-0~ubuntu'
     KUBERNETES_VERSION: '1.12.4'
 
 - template: .azdevops/cluster-test.yaml
-  displayName: "K8s v1.13"
   parameters:
+    displayName: "K8s v1.13"
     DOCKER_VERSION: '18.06.1~ce~3-0~ubuntu'
     KUBERNETES_VERSION: '1.13.1'
