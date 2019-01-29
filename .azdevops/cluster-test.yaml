@@ -1,4 +1,15 @@
-steps:
+parameters:
+  DOCKER_VERSION: '18.06.1~ce~3-0~ubuntu'
+  KUBERNETES_VERSION: '1.12.4'
+
+jobs:
+- job:
+  pool:
+    vmImage: 'ubuntu-16.04'
+  variables:
+  - group: 'Metrics Adapter'
+
+  steps:
   - script: |
       echo "This build uses the following versions:"
       echo "Kubernetes: $(KUBERNETES_VERSION)"
@@ -6,6 +17,9 @@ steps:
       echo "Helm: $(HELM_VERSION)"
       echo "Docker: $(DOCKER_VERSION)"
     displayName: 'Print version details'
+    env: 
+      DOCKER_VERSION: ${{ parameters.DOCKER_VERSION }}
+      KUBERNETES_VERSION: ${{ parameters.KUBERNETES_VERSION }}
 
   - task: DownloadBuildArtifacts@0
     displayName: 'Download Build Artifacts'
@@ -43,6 +57,8 @@ steps:
     workingDirectory: '$(modulePath)/.azdevops/0_install'
     displayName: 'Install docker (must continue on error)'
     continueOnError: true
+    env: 
+      DOCKER_VERSION: ${{ parameters.DOCKER_VERSION }}
 
   - script: |
       ./install-misc.sh
@@ -52,6 +68,8 @@ steps:
       ./install-helm.sh
     workingDirectory: '$(modulePath)/.azdevops/0_install'
     displayName: 'Install everything else'
+    env: 
+      KUBERNETES_VERSION: ${{ parameters.KUBERNETES_VERSION }}
 
   - script: |
       chmod +x *.sh
@@ -61,6 +79,8 @@ steps:
       ./init-tiller.sh
     workingDirectory: '$(modulePath)/.azdevops/1_setup'
     displayName: 'Cluster set up & Go get'
+    env: 
+      KUBERNETES_VERSION: ${{ parameters.KUBERNETES_VERSION }}
 
   - script: |
       chmod +x *.sh

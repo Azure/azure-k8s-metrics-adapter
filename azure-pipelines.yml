@@ -1,48 +1,27 @@
+# This pipeline validates that a PR's already built Metrics Adapter image will
+# succeed with K8s v 1.10-1.13
+
 jobs:
-  - job: K8s 1.10
-    pool:
-      vmImage: Hosted Ubuntu 1604
-    variables:
-      - name: 'DOCKER_VERSION'
-        value: '18.06.1~ce~3-0~ubuntu'
-      - name: 'KUBERNETES_VERSION'
-        value: '1.10.12'
-      - group: 'Metrics Adapter'
-    steps:
-      - template: .azdevops/cluster-test.yaml
+- template: .azdevops/cluster-test.yaml
+  displayName: "K8s v1.10"
+  parameters:
+    DOCKER_VERSION: '18.06.1~ce~3-0~ubuntu'
+    KUBERNETES_VERSION: '1.10.12'
 
-  - job: K8s 1.11
-    pool:
-      vmImage: Hosted Ubuntu 1604
-    variables:
-      - name: 'DOCKER_VERSION'
-        value: '17.03.3~ce-0~ubuntu-xenial'
-      - name: 'KUBERNETES_VERSION'
-        value: '1.11.6'
-      - group: 'Metrics Adapter'
-    steps:
-      - template: .azdevops/cluster-test.yaml
+- template: .azdevops/cluster-test.yaml
+  displayName: "K8s v1.11"
+  parameters:
+    DOCKER_VERSION: '17.03.3~ce-0~ubuntu-xenial'
+    KUBERNETES_VERSION: '1.11.6'
 
-  - job: K8s 1.12
-    pool:
-      vmImage: Hosted Ubuntu 1604
-    variables:
-      - name: 'DOCKER_VERSION'
-        value: '18.06.1~ce~3-0~ubuntu'
-      - name: 'KUBERNETES_VERSION'
-        value: '1.12.4'
-      - group: 'Metrics Adapter'
-    steps:
-      - template: .azdevops/cluster-test.yaml
+- template: .azdevops/cluster-test.yaml
+  displayName: "K8s v1.12"
+  parameters:
+    DOCKER_VERSION: '18.06.1~ce~3-0~ubuntu'
+    KUBERNETES_VERSION: '1.12.4'
 
-  - job: K8s 1.13
-    pool:
-      vmImage: Hosted Ubuntu 1604
-    variables:
-      - name: 'DOCKER_VERSION'
-        value: '18.06.1~ce~3-0~ubuntu'
-      - name: 'KUBERNETES_VERSION'
-        value: '1.13.1'
-      - group: 'Metrics Adapter'
-    steps:
-      - template: .azdevops/cluster-test.yaml
+- template: .azdevops/cluster-test.yaml
+  displayName: "K8s v1.13"
+  parameters:
+    DOCKER_VERSION: '18.06.1~ce~3-0~ubuntu'
+    KUBERNETES_VERSION: '1.13.1'
