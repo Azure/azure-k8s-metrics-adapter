@@ -14,14 +14,11 @@ jobs:
   steps:
   - script: |
       echo "This build uses the following versions:"
-      echo "Kubernetes: $(KUBERNETES_VERSION)"
+      echo "Kubernetes: ${{ parameters.KUBERNETES_VERSION }}"
       echo "Minikube: $(MINIKUBE_VERSION)"
       echo "Helm: $(HELM_VERSION)"
-      echo "Docker: $(DOCKER_VERSION)"
+      echo "Docker: ${{ parameters.DOCKER_VERSION }}"
     displayName: 'Print version details'
-    env: 
-      DOCKER_VERSION: ${{ parameters.DOCKER_VERSION }}
-      KUBERNETES_VERSION: ${{ parameters.KUBERNETES_VERSION }}
 
   - task: DownloadBuildArtifacts@0
     displayName: 'Download Build Artifacts'
