@@ -6,6 +6,11 @@ set -o errexit
 GOPATH="${GOPATH:-$HOME/go}"
 FNAME="$GOPATH/src/github.com/Azure/azure-k8s-metrics-adapter/local-dev-values.yaml"
 
+if [[ -f $FNAME ]]; then
+    echo "local-dev-values.yaml already exists and will not be altered"
+    exit 1
+fi
+
 echo; echo "Creating local values file..."
 
 echo "azureAuthentication:" > $FNAME
@@ -38,7 +43,6 @@ if [[ -v REGISTRY && -v REGISTRY_PATH ]]; then
     fi
 
     echo "  repository: $FULL_IMAGE" >> $FNAME
-    echo "  pullPolicy: IfNotPresent" >> $FNAME
 fi 
 
 if [[ -v VERSION ]]; then
