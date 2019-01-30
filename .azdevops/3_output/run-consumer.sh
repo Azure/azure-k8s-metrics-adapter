@@ -4,6 +4,7 @@ set -o nounset
 set -o errexit
 
 GOPATH="${GOPATH:-$HOME/go}"
+SERVICEBUS_QUEUE_NAME="${SERVICEBUS_QUEUE_NAME:-externalq}"
 
 echo; echo "Running queue consumer..."
 cd $GOPATH/src/github.com/Azure/azure-k8s-metrics-adapter/samples/servicebus-queue/
