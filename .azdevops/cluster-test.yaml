@@ -1,7 +1,8 @@
 parameters:
-  DOCKER_VERSION: ''
-  KUBERNETES_VERSION: ''
+  dockerVersion: ''
+  kubernetesVersion: ''
   displayName: ''
+  queueName: ''
 
 jobs:
 - job:
@@ -14,10 +15,10 @@ jobs:
   steps:
   - script: |
       echo "This build uses the following versions:"
-      echo "Kubernetes: ${{ parameters.KUBERNETES_VERSION }}"
+      echo "Kubernetes: ${{ parameters.kubernetesVersion }}"
       echo "Minikube: $(MINIKUBE_VERSION)"
       echo "Helm: $(HELM_VERSION)"
-      echo "Docker: ${{ parameters.DOCKER_VERSION }}"
+      echo "Docker: ${{ parameters.dockerVersion }}"
     displayName: 'Print version details'
 
   - task: DownloadBuildArtifacts@0
@@ -57,7 +58,7 @@ jobs:
     displayName: 'Install docker (must continue on error)'
     continueOnError: true
     env: 
-      DOCKER_VERSION: ${{ parameters.DOCKER_VERSION }}
+      DOCKER_VERSION: ${{ parameters.dockerVersion }}
 
   - script: |
       ./install-misc.sh
@@ -68,7 +69,7 @@ jobs:
     workingDirectory: '$(modulePath)/.azdevops/0_install'
     displayName: 'Install everything else'
     env: 
-      KUBERNETES_VERSION: ${{ parameters.KUBERNETES_VERSION }}
+      KUBERNETES_VERSION: ${{ parameters.kubernetesVersion }}
 
   - script: |
       chmod +x *.sh
@@ -79,7 +80,7 @@ jobs:
     workingDirectory: '$(modulePath)/.azdevops/1_setup'
     displayName: 'Cluster set up & Go get'
     env: 
-      KUBERNETES_VERSION: ${{ parameters.KUBERNETES_VERSION }}
+      KUBERNETES_VERSION: ${{ parameters.kubernetesVersion }}
 
   - script: |
       chmod +x *.sh
@@ -91,6 +92,7 @@ jobs:
     timeoutInMinutes: 5
     displayName: Deployments
     env:
+      SERVICEBUS_QUEUE_NAME: ${{ parameters.queueName }}
       SP_CLIENT_ID: $(SP_CLIENT_ID)
       SP_TENANT_ID: $(SP_TENANT_ID)
       SP_CLIENT_SECRET: $(SP_CLIENT_SECRET)
@@ -103,7 +105,9 @@ jobs:
       chmod +x *.sh
       ./output-details.sh
       ./gen-and-check-messages.sh
+      ./run-consumer.sh
     workingDirectory: '$(modulePath)/.azdevops/3_output'
     displayName: 'Run producer and check outputs'
     env:
       SERVICEBUS_CONNECTION_STRING: $(SERVICEBUS_CONNECTION_STRING)
+      SERVICEBUS_QUEUE_NAME: ${{ parameters.queueName }}

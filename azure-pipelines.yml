@@ -4,24 +4,28 @@
 jobs:
 - template: .azdevops/cluster-test.yaml
   parameters:
-    displayName: "K8s v1.10"
-    DOCKER_VERSION: '18.06.1~ce~3-0~ubuntu'
-    KUBERNETES_VERSION: '1.10.12'
+    displayName: 'K8s v1.10'
+    queueName: 'externalq-10'
+    dockerVersion: '18.06.1~ce~3-0~ubuntu'
+    kubernetesVersion: '1.10.12'
 
 - template: .azdevops/cluster-test.yaml
   parameters:
-    displayName: "K8s v1.11"
-    DOCKER_VERSION: '17.03.3~ce-0~ubuntu-xenial'
-    KUBERNETES_VERSION: '1.11.6'
+    displayName: 'K8s v1.11'
+    queueName: 'externalq-11'
+    dockerVersion: '17.03.3~ce-0~ubuntu-xenial'
+    kubernetesVersion: '1.11.6'
 
 - template: .azdevops/cluster-test.yaml
   parameters:
-    displayName: "K8s v1.12"
-    DOCKER_VERSION: '18.06.1~ce~3-0~ubuntu'
-    KUBERNETES_VERSION: '1.12.4'
+    displayName: 'K8s v1.12'
+    queueName: 'externalq-12'
+    dockerVersion: '18.06.1~ce~3-0~ubuntu'
+    kubernetesVersion: '1.12.4'
 
 - template: .azdevops/cluster-test.yaml
   parameters:
-    displayName: "K8s v1.13"
-    DOCKER_VERSION: '18.06.1~ce~3-0~ubuntu'
-    KUBERNETES_VERSION: '1.13.1'
+    displayName: 'K8s v1.13'
+    queueName: 'externalq-13'
+    dockerVersion: '18.06.1~ce~3-0~ubuntu'
+    kubernetesVersion: '1.13.1'

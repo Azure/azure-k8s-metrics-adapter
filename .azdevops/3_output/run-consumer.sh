@@ -12,5 +12,5 @@ timeout 30 ./bin/consumer
 
 # Exit status 124 just means timeout completed, which is what we expect
 if [[ $? = 124 ]]; then 
-    exit 0
+    echo "Consumer timed out as expected"
 fi
