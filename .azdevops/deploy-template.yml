@@ -29,7 +29,7 @@ jobs:
     inputs:
       buildType: specific
       project: '4dc782d5-ca10-459f-911d-2c0a2af030b9'
-      pipeline: 5
+      pipeline: 'image-pipeline'
       specificBuildWithTriggering: true
       downloadType: specific
 
