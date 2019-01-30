@@ -1,3 +1,6 @@
+# This pipeline is the template for a deployment test given K8s and Docker
+# verions 
+
 parameters:
   dockerVersion: ''
   kubernetesVersion: ''

@@ -1,10 +1,17 @@
+# This pipeline tests the project and builds an image, which is pushed to a
+# container registry for later use
+
+trigger: 
+- 'master'
+- 'lecattar/pipeline-scripts'
+pr:
+- master
+variables:
+- group: 'Metrics Adapter'
 jobs:
 - job:
   pool:
     vmImage: 'ubuntu-16.04'
-  variables:
-  - group: 'Metrics Adapter'
-
   steps:
   - script: |
       mkdir -p '$(GOBIN)'
