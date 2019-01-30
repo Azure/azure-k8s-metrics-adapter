@@ -31,7 +31,7 @@ jobs:
 
   - script: |
       echo $(DOCKER_PWD) | docker login -u $(DOCKER_USER) --password-stdin $(ACR_ADDR)
-      docker pull $(ACR_ADDR)/$(ACR_PATH)/adapter:$(image.BuildNumber)
+      docker pull $(ACR_ADDR)/$(ACR_PATH)/adapter:223
     displayName: 'Pull image'
 
   - script: |
