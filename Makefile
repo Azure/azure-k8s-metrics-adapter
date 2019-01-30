@@ -26,9 +26,6 @@ build-local: test
 build: vendor verify-deploy verify-apis
 	docker build -t $(FULL_IMAGE):$(VERSION) .
 
-build-simple: 
-	docker build -t $(FULL_IMAGE):$(VERSION) .
-
 vendor: 
 	dep ensure -v
 
@@ -49,7 +46,7 @@ else
 endif	
 
 push:
-	@echo $(DOCKER_PASS) | docker login -u $(DOCKER_USER) --password-stdin csemcr.azurecr.io 
+	@echo $(DOCKER_PASS) | docker login -u $(DOCKER_USER) --password-stdin $(REGISTRY) 
 	docker push $(FULL_IMAGE):$(VERSION)
 ifeq ("$(PUSH_LATEST)", "true")
 	@echo "pushing to latest"
