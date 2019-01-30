@@ -12,8 +12,9 @@ echo; echo "Creating random number for producer script..."
 NUM=$(( ($RANDOM % 30 )  + 1 ))
 sed -i 's|20000|'$(( NUM + 1 ))'|g' producer/main.go
 
-echo; echo "Replacing queue name in consumer..."
+echo; echo "Replacing queue name in consumer and producer..."
 sed -i 's|externalq|'${SERVICEBUS_QUEUE_NAME}'|g' consumer/main.go
+sed -i 's|externalq|'${SERVICEBUS_QUEUE_NAME}'|g' producer/main.go
 
 echo; echo "Building producer and consumer..."
 make
@@ -26,7 +27,7 @@ echo; echo "Checking metrics endpoint..."
 MSGCOUNT=$(kubectl get --raw "/apis/external.metrics.k8s.io/v1beta1/namespaces/default/queuemessages" | jq .items[0].value)
 START=`date +%s`
 
-while [[ "$MSGCOUNT" == "\"0\"" && $(( $(date +%s) - 155 )) -lt $START ]]; do
+while [[ ! "$MSGCOUNT" == "\"$NUM\"" ]] && [[ $(( $(date +%s) - 155 )) -lt $START ]]; do
   sleep 15
   MSGCOUNT=$(kubectl get --raw "/apis/external.metrics.k8s.io/v1beta1/namespaces/default/queuemessages" | jq .items[0].value)
   echo "Endpoint returned $MSGCOUNT messages"
