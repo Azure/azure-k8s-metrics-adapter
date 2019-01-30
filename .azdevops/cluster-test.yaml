@@ -88,13 +88,14 @@ jobs:
       ./deploy-adapter-with-sp.sh
       ./configure-metrics.sh
     workingDirectory: '$(modulePath)/.azdevops/2_deploy'
+    timeoutInMinutes: 5
     displayName: Deployments
     env:
       SP_CLIENT_ID: $(SP_CLIENT_ID)
       SP_TENANT_ID: $(SP_TENANT_ID)
       SP_CLIENT_SECRET: $(SP_CLIENT_SECRET)
       SUBSCRIPTION_ID: $(SUBSCRIPTION_ID)
-      VERSION: $(image.BuildNumber)
+      VERSION: '223'
       REGISTRY: $(ACR_ADDR)
       REGISTRY_PATH: $(ACR_PATH)
 
