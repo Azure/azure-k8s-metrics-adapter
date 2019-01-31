@@ -42,9 +42,11 @@ jobs:
 
   - script: |
       # Should handle logging into docker hub as well as private repository
-      if [[ $(DOCKER_USER) == $(REGISTRY) ]]; then
+      if [[ $(DOCKER_USER) = $(REGISTRY) ]]; then
+        echo "Logging in to docker hub"
         echo $(DOCKER_PWD) | docker login -u $(DOCKER_USER) --password-stdin
       else 
+        echo "Logging in to other registry"
         echo $(DOCKER_PWD) | docker login -u $(DOCKER_USER) --password-stdin $(REGISTRY)
       fi
       # Instead of getting `make build` to build the name correctly, just retag
