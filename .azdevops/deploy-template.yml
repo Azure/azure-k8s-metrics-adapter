@@ -92,8 +92,8 @@ jobs:
       ./deploy-adapter-with-sp.sh
       ./configure-metrics.sh
     workingDirectory: '$(modulePath)/.azdevops/2_deploy'
-    timeoutInMinutes: 5
     displayName: Deployments
+    failOnStderr: true
     env:
       SERVICEBUS_QUEUE_NAME: ${{ parameters.queueName }}
       SP_CLIENT_ID: $(SP_CLIENT_ID)
@@ -111,6 +111,7 @@ jobs:
       ./run-consumer.sh
     workingDirectory: '$(modulePath)/.azdevops/3_output'
     displayName: 'Run producer and check outputs'
+    failOnStderr: true
     env:
       SERVICEBUS_CONNECTION_STRING: $(SERVICEBUS_CONNECTION_STRING)
       SERVICEBUS_QUEUE_NAME: ${{ parameters.queueName }}

@@ -34,7 +34,7 @@ while [[ ! "$MSGCOUNT" == "\"$NUM\"" ]] && [[ $(( $(date +%s) - 225 )) -lt $STAR
 done
 
 if [[ ! "$MSGCOUNT" == "\"$NUM\"" ]]; then
-    echo "Message count ($MSGCOUNT) not equal to number of messages sent ($NUM)" 1>&2
+    echo "Message count ($MSGCOUNT) not equal to number of messages sent ($NUM)"
     exit 1
 else
     echo "Message count equal to number of messages sent, metrics adapter working correctly"
