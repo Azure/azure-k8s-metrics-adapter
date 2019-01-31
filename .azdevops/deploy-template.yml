@@ -95,7 +95,7 @@ jobs:
       SP_TENANT_ID: $(SP_TENANT_ID)
       SP_CLIENT_SECRET: $(SP_CLIENT_SECRET)
       SUBSCRIPTION_ID: $(SUBSCRIPTION_ID)
-      VERSION: $(Build.TriggeredBy.BuildNumber)
+      VERSION: $(Build.TriggeredBy.BuildId)
 
   - script: |
       chmod +x *.sh
