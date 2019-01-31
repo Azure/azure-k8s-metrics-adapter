@@ -27,8 +27,8 @@ echo; echo "Checking metrics endpoint..."
 MSGCOUNT=$(kubectl get --raw "/apis/external.metrics.k8s.io/v1beta1/namespaces/default/queuemessages" | jq .items[0].value)
 START=`date +%s`
 
-while [[ ! "$MSGCOUNT" == "\"$NUM\"" ]] && [[ $(( $(date +%s) - 155 )) -lt $START ]]; do
-  sleep 15
+while [[ ! "$MSGCOUNT" == "\"$NUM\"" ]] && [[ $(( $(date +%s) - 225 )) -lt $START ]]; do
+  sleep 20
   MSGCOUNT=$(kubectl get --raw "/apis/external.metrics.k8s.io/v1beta1/namespaces/default/queuemessages" | jq .items[0].value)
   echo "Endpoint returned $MSGCOUNT messages"
 done

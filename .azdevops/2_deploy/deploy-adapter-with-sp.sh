@@ -12,7 +12,15 @@ helm install --name adapter \
     ./charts/azure-k8s-metrics-adapter
 
 echo; echo "Waiting for deployment to be available..."
-until [[ `kubectl get deploy/adapter-azure-k8s-metrics-adapter -o jsonpath="{@.status.availableReplicas}"` == 1 ]]; do 
+START=`date +%s`
+
+while [[ ! `kubectl get deploy/adapter-azure-k8s-metrics-adapter -o jsonpath="{@.status.availableReplicas}"` == 1 ]] && \
+        [[ $(( $(date +%s) - 105 )) -lt $START ]]; do 
     kubectl get deploy/adapter-azure-k8s-metrics-adapter
     sleep 15
 done
+
+if [[ ! `kubectl get deploy/adapter-azure-k8s-metrics-adapter -o jsonpath="{@.status.availableReplicas}"` == 1 ]]; then
+    kubectl describe deploy/adapter-azure-k8s-metrics-adapter
+    kubectl logs deploy/adapter-azure-k8s-metrics-adapter
+fi
