@@ -13,6 +13,7 @@ fi
 
 echo; echo "Creating local values file..."
 
+# Currently only gens values for SP auth
 echo "azureAuthentication:" > $FNAME
 echo "  method: clientSecret" >> $FNAME
 echo "  createSecret: true" >> $FNAME
@@ -27,24 +28,15 @@ if [[ -v SUBSCRIPTION_ID ]]; then
     echo >> $FNAME
 fi
 
-# Set image address w/ default to 'adapter' as image name
-# If the address is changed, use pullPolicy IfNotPresent to allow use of local images? TODO
-if [[ -v REGISTRY && -v REGISTRY_PATH ]] || [[ -v VERSION ]]; then 
+# Set image address and/or version if either are set
+if [[ -v IMAGE_REPOSITORY ]] || [[ -v VERSION ]]; then 
     echo "image:" >> $FNAME
-fi
-
-if [[ -v REGISTRY && -v REGISTRY_PATH ]]; then
-    IMAGE="${IMAGE:-adapter}"
-
-    if [[ "$REGISTRY_PATH" = "" ]]; then
-        FULL_IMAGE=$REGISTRY/$IMAGE
-    else
-        FULL_IMAGE=$REGISTRY/$REGISTRY_PATH/$IMAGE
+    
+    if [[ -v IMAGE_REPOSITORY ]]; then
+        echo "  repository: $IMAGE_REPOSITORY" >> $FNAME
+    fi 
+    
+    if [[ -v VERSION ]]; then
+        echo "  tag: $VERSION" >> $FNAME
     fi
-
-    echo "  repository: $FULL_IMAGE" >> $FNAME
-fi 
-
-if [[ -v VERSION ]]; then
-    echo "  tag: $VERSION" >> $FNAME
 fi

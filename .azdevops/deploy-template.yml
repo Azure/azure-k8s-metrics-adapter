@@ -34,11 +34,6 @@ jobs:
       downloadType: specific
 
   - script: |
-      echo $(DOCKER_PWD) | docker login -u $(DOCKER_USER) --password-stdin $(ACR_ADDR)
-      docker pull $(ACR_ADDR)/$(ACR_PATH)/adapter:223
-    displayName: 'Pull image'
-
-  - script: |
       mkdir -p '$(GOBIN)'
       mkdir -p '$(GOPATH)/pkg'
       mkdir -p '$(modulePath)'
@@ -100,9 +95,7 @@ jobs:
       SP_TENANT_ID: $(SP_TENANT_ID)
       SP_CLIENT_SECRET: $(SP_CLIENT_SECRET)
       SUBSCRIPTION_ID: $(SUBSCRIPTION_ID)
-      VERSION: '223'
-      REGISTRY: $(ACR_ADDR)
-      REGISTRY_PATH: $(ACR_PATH)
+      VERSION: $(Build.TriggeredBy.BuildNumber)
 
   - script: |
       chmod +x *.sh
