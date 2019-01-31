@@ -58,6 +58,9 @@ endif
 dev:
 	skaffold dev
 
+e2e:
+	hack/run-e2e.sh
+
 # CI specific commands used during CI build
 save:
 	docker save -o app.tar $(FULL_IMAGE):$(VERSION)
