@@ -10,7 +10,7 @@ variables:
 - group: 'Metrics Adapter'
 # These values are set for convenience of re-tagging the image later, but are otherwise irrelevant
 - name: 'REGISTRY'
-  value: 'local'
+  value: 'lee0c'
 - name: 'REGISTRY_PATH'
   value: ''
 jobs:
@@ -42,7 +42,7 @@ jobs:
 
   - script: |
       # Should handle logging into docker hub as well as private repository
-      if [[ ! $(DOCKER_USER) = $(REGISTRY) ]]; then
+      if [[ $(DOCKER_USER) == $(REGISTRY) ]]; then
         echo $(DOCKER_PWD) | docker login -u $(DOCKER_USER) --password-stdin
       else 
         echo $(DOCKER_PWD) | docker login -u $(DOCKER_USER) --password-stdin $(REGISTRY)
