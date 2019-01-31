@@ -47,6 +47,7 @@ jobs:
       else 
         echo $(DOCKER_PWD) | docker login -u $(DOCKER_USER) --password-stdin $(REGISTRY)
       fi
+      # Instead of getting `make build` to build the name correctly, just retag
       docker tag $(REGISTRY)/adapter:$(Build.BuildId) $(IMAGE_REPOSITORY):$(Build.BuildId)
       docker push $(IMAGE_REPOSITORY):$(Build.BuildId)
     displayName: 'Push image'
