@@ -1,7 +1,8 @@
 #!/bin/bash
 
 set -o nounset
-# no exit on error because it will fail on something unreasonable...
+# no exit on error because of Docker install errors
+# Docker will still work regardless of those errors
 
 echo; echo "Removing any previously installed Docker versions..."
 sudo apt-get remove --purge docker*

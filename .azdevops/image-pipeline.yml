@@ -16,6 +16,8 @@ jobs:
   pool:
     vmImage: 'ubuntu-16.04'
   steps:
+
+# Go workspace setup from https://docs.microsoft.com/en-us/azure/devops/pipelines/languages/go?view=azure-devops
   - script: |
       mkdir -p '$(GOBIN)'
       mkdir -p '$(GOPATH)/pkg'
@@ -39,7 +41,7 @@ jobs:
       VERSION: $(Build.BuildId)
 
   - script: |
-      # Should handle logging into docker hub as well as private repository
+      # Should handle logging into docker hub as well as other repository
       if [[ $(DOCKER_USER) = $(REGISTRY) ]]; then
         echo "Logging in to docker hub"
         echo $(DOCKER_PWD) | docker login -u $(DOCKER_USER) --password-stdin

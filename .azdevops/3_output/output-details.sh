@@ -1,5 +1,7 @@
 #!/bin/bash
 
+# To provide debug information in build pipeline
+
 echo; echo "> kubectl get deploy"
 kubectl get deploy
 

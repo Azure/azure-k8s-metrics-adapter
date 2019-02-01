@@ -24,6 +24,7 @@ jobs:
       echo "Docker: ${{ parameters.dockerVersion }}"
     displayName: 'Print version details'
 
+# Go workspace setup from https://docs.microsoft.com/en-us/azure/devops/pipelines/languages/go?view=azure-devops
   - script: |
       mkdir -p '$(GOBIN)'
       mkdir -p '$(GOPATH)/pkg'
@@ -90,8 +91,8 @@ jobs:
 
   - script: |
       chmod +x *.sh
-      ./output-details.sh
       ./gen-and-check-messages.sh
+      ./output-details.sh
       ./run-consumer.sh
     workingDirectory: '$(modulePath)/.azdevops/3_output'
     displayName: 'Run producer and check outputs'
