@@ -58,7 +58,7 @@ endif
 dev:
 	skaffold dev
 
-e2e:
+teste2e:
 	hack/run-e2e.sh
 
 # CI specific commands used during CI build
