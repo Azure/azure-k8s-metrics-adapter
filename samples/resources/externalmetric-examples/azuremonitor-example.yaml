@@ -6,7 +6,7 @@ spec:
   type: monitor
   azure:
     resourceGroup: sb-external-example
-    resourceName: sb-external-ns-js
+    resourceName: sb-external-ns
     resourceProviderNamespace: Microsoft.ServiceBus
     resourceType: namespaces
   metric:

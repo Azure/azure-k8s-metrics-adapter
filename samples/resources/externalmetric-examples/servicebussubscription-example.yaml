@@ -6,7 +6,7 @@ spec:
   type: servicebussubscription
   azure:
     resourceGroup: sb-external-example
-    serviceBusNamespace: sb-external-ns-js
+    serviceBusNamespace: sb-external-ns
     serviceBusTopic: example-topic
     serviceBusSubscription: example-sub
   metric:
