@@ -8,7 +8,7 @@ FNAME="$GOPATH/src/github.com/Azure/azure-k8s-metrics-adapter/local-dev-values.y
 
 if [[ -f $FNAME ]]; then
     echo "local-dev-values.yaml already exists and will not be altered"
-    exit 1
+    exit
 fi
 
 echo; echo "Creating local values file..."
@@ -17,9 +17,6 @@ echo; echo "Creating local values file..."
 echo "azureAuthentication:" > $FNAME
 echo "  method: clientSecret" >> $FNAME
 echo "  createSecret: true" >> $FNAME
-echo "  tenantID: \"$SP_TENANT_ID\"" >> $FNAME
-echo "  clientID: \"$SP_CLIENT_ID\"" >> $FNAME
-echo "  clientSecret: \"$SP_CLIENT_SECRET\"" >> $FNAME
 echo >> $FNAME
 
 # Set subscription ID if set by user
