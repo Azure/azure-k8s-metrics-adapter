@@ -8,9 +8,7 @@ pr:
 - master
 variables:
 - group: 'Metrics Adapter'
-# These values are set for convenience of re-tagging the image later, but are otherwise irrelevant
-- name: 'REGISTRY'
-  value: 'lee0c'
+# This value is set for convenience of re-tagging the image later, but is otherwise irrelevant
 - name: 'REGISTRY_PATH'
   value: ''
 jobs:
