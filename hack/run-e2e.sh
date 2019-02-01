@@ -44,3 +44,5 @@ fi
 
 echo; echo "Removing adapter deployment"
 helm delete --purge adapter
+
+# TODO add final reporting message for clarity
