@@ -51,6 +51,3 @@ jobs:
       docker tag $(REGISTRY)/adapter:$(Build.BuildId) $(IMAGE_REPOSITORY):$(Build.BuildId)
       docker push $(IMAGE_REPOSITORY):$(Build.BuildId)
     displayName: 'Push image'
-
-  - task: PublishBuildArtifacts@1
-    displayName: 'Publish Artifact: drop'
