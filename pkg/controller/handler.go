@@ -5,7 +5,7 @@ import (
 
 	"github.com/Azure/azure-k8s-metrics-adapter/pkg/azure/appinsights"
 	"github.com/Azure/azure-k8s-metrics-adapter/pkg/azure/external_metrics"
-	listers "github.com/Azure/azure-k8s-metrics-adapter/pkg/client/listers/metrics/v1alpha1"
+	listers "github.com/Azure/azure-k8s-metrics-adapter/pkg/client/listers/metrics/v1alpha2"
 	"github.com/Azure/azure-k8s-metrics-adapter/pkg/metriccache"
 	"github.com/golang/glog"
 	"k8s.io/apimachinery/pkg/api/errors"
@@ -102,6 +102,10 @@ func (h *Handler) handleExternalMetric(ns, name string, queueItem namespacedQueu
 		MetricName:                externalMetricInfo.Spec.MetricConfig.MetricName,
 		Filter:                    externalMetricInfo.Spec.MetricConfig.Filter,
 		Aggregation:               externalMetricInfo.Spec.MetricConfig.Aggregation,
+		Topic:                     externalMetricInfo.Spec.AzureConfig.ServiceBusTopic,
+		Type:                      externalMetricInfo.Spec.Type,
+		Namespace:                 externalMetricInfo.Spec.AzureConfig.ServiceBusNamespace,
+		Subscription:              externalMetricInfo.Spec.AzureConfig.ServiceBusSubscription,
 	}
 
 	glog.V(2).Infof("adding to cache item '%s' in namespace '%s'", name, ns)

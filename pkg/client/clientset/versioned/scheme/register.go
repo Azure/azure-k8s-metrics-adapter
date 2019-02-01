@@ -19,7 +19,6 @@ limitations under the License.
 package scheme
 
 import (
-	azurev1alpha1 "github.com/Azure/azure-k8s-metrics-adapter/pkg/apis/metrics/v1alpha1"
 	azurev1alpha2 "github.com/Azure/azure-k8s-metrics-adapter/pkg/apis/metrics/v1alpha2"
 	v1 "k8s.io/apimachinery/pkg/apis/meta/v1"
 	runtime "k8s.io/apimachinery/pkg/runtime"
@@ -32,7 +31,6 @@ var Scheme = runtime.NewScheme()
 var Codecs = serializer.NewCodecFactory(Scheme)
 var ParameterCodec = runtime.NewParameterCodec(Scheme)
 var localSchemeBuilder = runtime.SchemeBuilder{
-	azurev1alpha1.AddToScheme,
 	azurev1alpha2.AddToScheme,
 }
 

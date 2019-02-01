@@ -4,7 +4,7 @@ import (
 	"fmt"
 	"testing"
 
-	api "github.com/Azure/azure-k8s-metrics-adapter/pkg/apis/metrics/v1alpha1"
+	api "github.com/Azure/azure-k8s-metrics-adapter/pkg/apis/metrics/v1alpha2"
 	"github.com/Azure/azure-k8s-metrics-adapter/pkg/azure/appinsights"
 	"github.com/Azure/azure-k8s-metrics-adapter/pkg/azure/external_metrics"
 	"github.com/Azure/azure-k8s-metrics-adapter/pkg/client/clientset/versioned/fake"
@@ -239,15 +239,15 @@ func newHandler(storeObjects []runtime.Object, externalMetricsListerCache []*api
 	fakeClient := fake.NewSimpleClientset(storeObjects...)
 	i := informers.NewSharedInformerFactory(fakeClient, 0)
 
-	externalMetricLister := i.Azure().V1alpha1().ExternalMetrics().Lister()
-	customMetricLister := i.Azure().V1alpha1().CustomMetrics().Lister()
+	externalMetricLister := i.Azure().V1alpha2().ExternalMetrics().Lister()
+	customMetricLister := i.Azure().V1alpha2().CustomMetrics().Lister()
 
 	for _, em := range externalMetricsListerCache {
-		i.Azure().V1alpha1().ExternalMetrics().Informer().GetIndexer().Add(em)
+		i.Azure().V1alpha2().ExternalMetrics().Informer().GetIndexer().Add(em)
 	}
 
 	for _, cm := range customMetricsListerCache {
-		i.Azure().V1alpha1().CustomMetrics().Informer().GetIndexer().Add(cm)
+		i.Azure().V1alpha2().CustomMetrics().Informer().GetIndexer().Add(cm)
 	}
 
 	metriccache := metriccache.NewMetricCache()
