@@ -8,12 +8,12 @@ GOPATH="${GOPATH:-$HOME/go}"
 
 DIVIDER="============================================================"
 
-echo "Checking cluster context"
+echo "Checking for a current cluster context"
 kubectl config current-context
 
 echo; echo "Checking that cluster nodes are ready"
-kubectl get nodes -o jsonpath="$JSONPATH"
 JSONPATH='{range .items[*]}{@.metadata.name}{"\t"}Ready={@.status.conditions[?(@.type=="Ready")].status}{"\n"}{end}'
+kubectl get nodes -o jsonpath="$JSONPATH"
 if kubectl get nodes -o jsonpath="$JSONPATH" | grep "Ready=False"; then
     exit 1
 fi
