@@ -8,10 +8,13 @@ GOPATH="${GOPATH:-$HOME/go}"
 
 DIVIDER="============================================================"
 
-echo "Checking cluster"
+echo "Checking cluster context"
 kubectl config current-context
+
+echo; echo "Checking that cluster nodes are ready"
+kubectl get nodes -o jsonpath="$JSONPATH"
 JSONPATH='{range .items[*]}{@.metadata.name}{"\t"}Ready={@.status.conditions[?(@.type=="Ready")].status}{"\n"}{end}'
-if kubectl get nodes -o jsonpath="$JSONPATH" | grep "Ready=False"; then 
+if kubectl get nodes -o jsonpath="$JSONPATH" | grep "Ready=False"; then
     exit 1
 fi
 
@@ -21,9 +24,6 @@ helm version
 echo; echo "Checking for other pre-reqs"
 which jq        # Used to format some command output
 which docker
-
-echo; echo "Checking that the Metrics Server is deployed"
-kubectl get --raw "/apis/metrics.k8s.io/v1beta1/nodes" | jq .
 
 # If the script fails on error here, the deployment won't be cleaned up properly
 set +o errexit 
@@ -49,5 +49,3 @@ fi
 
 echo "Removing adapter deployment"
 helm delete --purge adapter
-
-# TODO add final reporting message for clarity
