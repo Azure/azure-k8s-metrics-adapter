@@ -65,19 +65,12 @@ jobs:
       ./go-get.sh
       ./check-cluster.sh
       ./init-tiller.sh
-    workingDirectory: '$(modulePath)/.azdevops/1_setup'
-    displayName: 'Cluster set up & Go get'
-    env: 
-      KUBERNETES_VERSION: ${{ parameters.kubernetesVersion }}
-
-  - script: |
-      chmod +x *.sh
       ./deploy-metrics-server.sh
       ./gen-values-file.sh
-    workingDirectory: '$(modulePath)/.azdevops/2_deploy'
-    displayName: 'Deploy metrics server & create local values file'
-    failOnStderr: true
-    env:
+    workingDirectory: '$(modulePath)/.azdevops/1_setup'
+    displayName: 'Cluster set up, Go get, prep for adapter deployment'
+    env: 
+      KUBERNETES_VERSION: ${{ parameters.kubernetesVersion }}
       VERSION: $(Build.TriggeredBy.BuildId)
   
   - script: |
