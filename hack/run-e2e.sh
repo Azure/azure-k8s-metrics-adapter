@@ -29,23 +29,22 @@ kubectl get --raw "/apis/metrics.k8s.io/v1beta1/nodes" | jq .
 set +o errexit 
 
 echo; echo "Running deployment scripts"
-cd $GOPATH/src/github.com/Azure/azure-k8s-metrics-adapter/.azdevops
-chmod +x 2_deploy/*.sh
-chmod +x 3_output/*.sh
+cd $GOPATH/src/github.com/Azure/azure-k8s-metrics-adapter/hack/e2e-scripts
+chmod +x *.sh
 
-./2_deploy/deploy-adapter-with-sp.sh
+./deploy-adapter-with-sp.sh
 if [[ $? = 0 ]]; then
-    ./2_deploy/configure-metrics.sh
+    ./configure-metrics.sh
 
     echo "Testing deployment"
 
-    ./3_output/gen-and-check-messages.sh
+    ./gen-and-check-messages.sh
     if [[ $? = 0 ]];
         then echo $DIVIDER; echo "PASS"; echo $DIVIDER
         else echo $DIVIDER; echo "FAIL"; echo $DIVIDER; 
     fi
 
-    ./3_output/run-consumer.sh
+    ./run-consumer.sh
 fi
 
 echo "Removing adapter deployment"
