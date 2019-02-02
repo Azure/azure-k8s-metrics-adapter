@@ -10,8 +10,6 @@ trigger:
     - .azdevops/*
     - hack/*
     include: 
-    - .azdevops/deploy-pipeline.yml
-    - .azdevops/deploy-template.yml
     - .azdevops/image-pipeline.yml
 pr:
 - master

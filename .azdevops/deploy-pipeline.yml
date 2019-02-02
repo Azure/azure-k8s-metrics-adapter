@@ -10,8 +10,6 @@ trigger:
     - .azdevops/*
     - hack/*
     exclude:
-    - .azdevops/deploy-pipeline.yml
-    - .azdevops/deploy-template.yml
     - .azdevops/image-pipeline.yml
 jobs:
 - template: deploy-template.yml
