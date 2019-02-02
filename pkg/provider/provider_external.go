@@ -3,7 +3,7 @@
 package provider
 
 import (
-	"github.com/Azure/azure-k8s-metrics-adapter/pkg/azure/external_metrics"
+	"github.com/Azure/azure-k8s-metrics-adapter/pkg/azure/externalmetrics"
 	"github.com/golang/glog"
 	"github.com/kubernetes-incubator/custom-metrics-apiserver/pkg/provider"
 	"k8s.io/apimachinery/pkg/api/errors"
@@ -72,20 +72,20 @@ func (p *AzureProvider) ListAllExternalMetrics() []provider.ExternalMetricInfo {
 	return externalMetricsInfo
 }
 
-func (p *AzureProvider) getMetricRequest(namespace string, metricName string, metricSelector labels.Selector) (azureexternalmetrics.AzureExternalMetricRequest, error) {
+func (p *AzureProvider) getMetricRequest(namespace string, metricName string, metricSelector labels.Selector) (externalmetrics.AzureExternalMetricRequest, error) {
 
 	azMetricRequest, found := p.metricCache.GetAzureExternalMetricRequest(namespace, metricName)
 	if found {
-		azMetricRequest.Timespan = azureexternalmetrics.TimeSpan()
+		azMetricRequest.Timespan = externalmetrics.TimeSpan()
 		if azMetricRequest.SubscriptionID == "" {
 			azMetricRequest.SubscriptionID = p.defaultSubscriptionID
 		}
 		return azMetricRequest, nil
 	}
 
-	azMetricRequest, err := azureexternalmetrics.ParseAzureMetric(metricSelector, p.defaultSubscriptionID)
+	azMetricRequest, err := externalmetrics.ParseAzureMetric(metricSelector, p.defaultSubscriptionID)
 	if err != nil {
-		return azureexternalmetrics.AzureExternalMetricRequest{}, err
+		return externalmetrics.AzureExternalMetricRequest{}, err
 	}
 
 	return azMetricRequest, nil

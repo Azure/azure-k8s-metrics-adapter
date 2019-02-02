@@ -1,4 +1,4 @@
-package appinsights
+package custommetrics
 
 import (
 	"context"

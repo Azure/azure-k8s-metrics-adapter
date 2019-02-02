@@ -11,8 +11,8 @@ import (
 	"runtime"
 	"time"
 
-	"github.com/Azure/azure-k8s-metrics-adapter/pkg/azure/appinsights"
-	"github.com/Azure/azure-k8s-metrics-adapter/pkg/azure/external_metrics"
+	"github.com/Azure/azure-k8s-metrics-adapter/pkg/azure/custommetrics"
+	"github.com/Azure/azure-k8s-metrics-adapter/pkg/azure/externalmetrics"
 	"github.com/Azure/azure-k8s-metrics-adapter/pkg/azure/instancemetadata"
 	clientset "github.com/Azure/azure-k8s-metrics-adapter/pkg/client/clientset/versioned"
 	informers "github.com/Azure/azure-k8s-metrics-adapter/pkg/client/informers/externalversions"
@@ -65,13 +65,13 @@ func setupAzureProvider(cmd *basecmd.AdapterBase, metricsCache *metriccache.Metr
 	}
 
 	defaultSubscriptionID := getDefaultSubscriptionID()
-	appinsightsClient := appinsights.NewClient()
+	customMetricsClient := custommetrics.NewClient()
 
-	azureExternalClientFactory := azureexternalmetrics.AzureExternalMetricClientFactory{
+	azureExternalClientFactory := externalmetrics.AzureExternalMetricClientFactory{
 		DefaultSubscriptionID: defaultSubscriptionID,
 	}
 
-	azureProvider := azureprovider.NewAzureProvider(defaultSubscriptionID, mapper, dynamicClient, appinsightsClient, azureExternalClientFactory, metricsCache)
+	azureProvider := azureprovider.NewAzureProvider(defaultSubscriptionID, mapper, dynamicClient, customMetricsClient, azureExternalClientFactory, metricsCache)
 	cmd.WithCustomMetrics(azureProvider)
 	cmd.WithExternalMetrics(azureProvider)
 }

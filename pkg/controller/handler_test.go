@@ -5,8 +5,8 @@ import (
 	"testing"
 
 	api "github.com/Azure/azure-k8s-metrics-adapter/pkg/apis/metrics/v1alpha2"
-	"github.com/Azure/azure-k8s-metrics-adapter/pkg/azure/appinsights"
-	"github.com/Azure/azure-k8s-metrics-adapter/pkg/azure/external_metrics"
+	"github.com/Azure/azure-k8s-metrics-adapter/pkg/azure/custommetrics"
+	"github.com/Azure/azure-k8s-metrics-adapter/pkg/azure/externalmetrics"
 	"github.com/Azure/azure-k8s-metrics-adapter/pkg/client/clientset/versioned/fake"
 	informers "github.com/Azure/azure-k8s-metrics-adapter/pkg/client/informers/externalversions"
 	"github.com/Azure/azure-k8s-metrics-adapter/pkg/metriccache"
@@ -166,7 +166,7 @@ func TestWhenExternalItemHasBeenDeleted(t *testing.T) {
 
 	// add the item to the cache then test if it gets deleted
 	queueItem := getExternalKey(externalMetric)
-	metriccache.Update(queueItem.Key(), azureexternalmetrics.AzureExternalMetricRequest{})
+	metriccache.Update(queueItem.Key(), externalmetrics.AzureExternalMetricRequest{})
 
 	err := handler.Process(queueItem)
 
@@ -193,7 +193,7 @@ func TestWhenCustomItemHasBeenDeleted(t *testing.T) {
 
 	// add the item to the cache then test if it gets deleted
 	queueItem := getCustomKey(customMetric)
-	metriccache.Update(queueItem.Key(), appinsights.MetricRequest{})
+	metriccache.Update(queueItem.Key(), custommetrics.MetricRequest{})
 
 	err := handler.Process(queueItem)
 
@@ -256,7 +256,7 @@ func newHandler(storeObjects []runtime.Object, externalMetricsListerCache []*api
 	return handler, metriccache
 }
 
-func validateExternalMetricResult(metricRequest azureexternalmetrics.AzureExternalMetricRequest, externalMetricInfo *api.ExternalMetric, t *testing.T) {
+func validateExternalMetricResult(metricRequest externalmetrics.AzureExternalMetricRequest, externalMetricInfo *api.ExternalMetric, t *testing.T) {
 
 	// Metric Config
 	if metricRequest.MetricName != externalMetricInfo.Spec.MetricConfig.MetricName {
@@ -294,7 +294,7 @@ func validateExternalMetricResult(metricRequest azureexternalmetrics.AzureExtern
 
 }
 
-func validateCustomMetricResult(metricRequest appinsights.MetricRequest, customMetricInfo *api.CustomMetric, t *testing.T) {
+func validateCustomMetricResult(metricRequest custommetrics.MetricRequest, customMetricInfo *api.CustomMetric, t *testing.T) {
 	// Metric Config
 	if metricRequest.MetricName != customMetricInfo.Spec.MetricConfig.MetricName {
 		t.Errorf("metricRequest MetricName = %v, want %v", metricRequest.MetricName, customMetricInfo.Spec.MetricConfig.MetricName)

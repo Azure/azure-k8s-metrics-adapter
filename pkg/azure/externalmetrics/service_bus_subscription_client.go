@@ -1,4 +1,4 @@
-package azureexternalmetrics
+package externalmetrics
 
 import (
 	"context"

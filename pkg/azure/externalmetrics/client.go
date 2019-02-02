@@ -1,4 +1,4 @@
-package azureexternalmetrics
+package externalmetrics
 
 type AzureExternalMetricResponse struct {
 	Total float64

@@ -4,7 +4,7 @@ import (
 	"fmt"
 	"testing"
 
-	"github.com/Azure/azure-k8s-metrics-adapter/pkg/azure/external_metrics"
+	"github.com/Azure/azure-k8s-metrics-adapter/pkg/azure/externalmetrics"
 	"github.com/Azure/azure-k8s-metrics-adapter/pkg/metriccache"
 	k8sprovider "github.com/kubernetes-incubator/custom-metrics-apiserver/pkg/provider"
 	"k8s.io/apimachinery/pkg/labels"
@@ -32,7 +32,7 @@ func createLabelSelector(metricName, subscriptionID string) labels.Selector {
 func TestFindMetricInCache(t *testing.T) {
 	metricCache := metriccache.NewMetricCache()
 
-	request := azureexternalmetrics.AzureExternalMetricRequest{
+	request := externalmetrics.AzureExternalMetricRequest{
 		MetricName: "MessageCount",
 	}
 	metricCache.Update("ExternalMetric/default/metricname", request)
@@ -65,7 +65,7 @@ func TestFindMetricInCache(t *testing.T) {
 func TestFindMetricInCacheUsesOverrideSubscriptionId(t *testing.T) {
 	metricCache := metriccache.NewMetricCache()
 
-	request := azureexternalmetrics.AzureExternalMetricRequest{
+	request := externalmetrics.AzureExternalMetricRequest{
 		MetricName:     "MessageCount",
 		SubscriptionID: "9876",
 	}
@@ -211,20 +211,20 @@ func newProvider(fakeFactory fakeAzureExternalClientFactory) AzureProvider {
 type fakeAzureExternalClientFactory struct {
 }
 
-func (f fakeAzureExternalClientFactory) GetAzureExternalMetricClient(clientType string) (client azureexternalmetrics.AzureExternalMetricClient, err error) {
+func (f fakeAzureExternalClientFactory) GetAzureExternalMetricClient(clientType string) (client externalmetrics.AzureExternalMetricClient, err error) {
 	fakeClient := fakeAzureMonitorClient{
 		err:    nil,
-		result: azureexternalmetrics.AzureExternalMetricResponse{Total: 15},
+		result: externalmetrics.AzureExternalMetricResponse{Total: 15},
 	}
 
 	return fakeClient, nil
 }
 
 type fakeAzureMonitorClient struct {
-	result azureexternalmetrics.AzureExternalMetricResponse
+	result externalmetrics.AzureExternalMetricResponse
 	err    error
 }
 
-func (f fakeAzureMonitorClient) GetAzureMetric(azMetricRequest azureexternalmetrics.AzureExternalMetricRequest) (azureexternalmetrics.AzureExternalMetricResponse, error) {
+func (f fakeAzureMonitorClient) GetAzureMetric(azMetricRequest externalmetrics.AzureExternalMetricRequest) (externalmetrics.AzureExternalMetricResponse, error) {
 	return f.result, f.err
 }

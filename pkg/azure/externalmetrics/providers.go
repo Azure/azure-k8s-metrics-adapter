@@ -1,4 +1,4 @@
-package azureexternalmetrics
+package externalmetrics
 
 type AzureExternalMetricClientProvider interface {
 	NewClient(defaultSubscriptionID string)

@@ -7,7 +7,7 @@ import (
 	"strings"
 	"time"
 
-	"github.com/Azure/azure-k8s-metrics-adapter/pkg/azure/appinsights"
+	"github.com/Azure/azure-k8s-metrics-adapter/pkg/azure/custommetrics"
 	"github.com/golang/glog"
 	"k8s.io/apimachinery/pkg/api/errors"
 	"k8s.io/apimachinery/pkg/api/resource"
@@ -99,7 +99,7 @@ func (p *AzureProvider) ListAllMetrics() []provider.CustomMetricInfo {
 	return []provider.CustomMetricInfo{}
 }
 
-func (p *AzureProvider) getCustomMetricRequest(namespace string, selector labels.Selector, info provider.CustomMetricInfo) appinsights.MetricRequest {
+func (p *AzureProvider) getCustomMetricRequest(namespace string, selector labels.Selector, info provider.CustomMetricInfo) custommetrics.MetricRequest {
 
 	cachedRequest, found := p.metricCache.GetAppInsightsRequest(namespace, info.Metric)
 	if found {
@@ -110,7 +110,7 @@ func (p *AzureProvider) getCustomMetricRequest(namespace string, selector labels
 	// through k8s api we convert - to / to get around that
 	convertedMetricName := strings.Replace(info.Metric, "-", "/", -1)
 	glog.V(2).Infof("New call to GetCustomMetric: %s", convertedMetricName)
-	metricRequestInfo := appinsights.NewMetricRequest(convertedMetricName)
+	metricRequestInfo := custommetrics.NewMetricRequest(convertedMetricName)
 
 	return metricRequestInfo
 }

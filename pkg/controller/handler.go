@@ -3,8 +3,8 @@ package controller
 import (
 	"fmt"
 
-	"github.com/Azure/azure-k8s-metrics-adapter/pkg/azure/appinsights"
-	"github.com/Azure/azure-k8s-metrics-adapter/pkg/azure/external_metrics"
+	"github.com/Azure/azure-k8s-metrics-adapter/pkg/azure/custommetrics"
+	"github.com/Azure/azure-k8s-metrics-adapter/pkg/azure/externalmetrics"
 	listers "github.com/Azure/azure-k8s-metrics-adapter/pkg/client/listers/metrics/v1alpha2"
 	"github.com/Azure/azure-k8s-metrics-adapter/pkg/metriccache"
 	"github.com/golang/glog"
@@ -67,7 +67,7 @@ func (h *Handler) handleCustomMetric(ns, name string, queueItem namespacedQueueI
 		return err
 	}
 
-	metric := appinsights.MetricRequest{
+	metric := custommetrics.MetricRequest{
 		MetricName: customMetricInfo.Spec.MetricConfig.MetricName,
 	}
 
@@ -93,7 +93,7 @@ func (h *Handler) handleExternalMetric(ns, name string, queueItem namespacedQueu
 	}
 
 	// TODO: Map the new fields here for Service Bus
-	azureMetricRequest := azureexternalmetrics.AzureExternalMetricRequest{
+	azureMetricRequest := externalmetrics.AzureExternalMetricRequest{
 		ResourceGroup:             externalMetricInfo.Spec.AzureConfig.ResourceGroup,
 		ResourceName:              externalMetricInfo.Spec.AzureConfig.ResourceName,
 		ResourceProviderNamespace: externalMetricInfo.Spec.AzureConfig.ResourceProviderNamespace,
