@@ -1,7 +1,18 @@
 # This pipeline validates that a PR's already built Metrics Adapter image will
 # succeed with K8s v 1.10-1.13
 
-trigger: none
+trigger: 
+  branches:
+    include: 
+    - lecattar/pipeline-scripts
+  paths:
+    include: 
+    - .azdevops/*
+    - hack/*
+    exclude:
+    - .azdevops/deploy-pipeline.yml
+    - .azdevops/deploy-template.yml
+    - .azdevops/image-pipeline.yml
 jobs:
 - template: deploy-template.yml
   parameters:
