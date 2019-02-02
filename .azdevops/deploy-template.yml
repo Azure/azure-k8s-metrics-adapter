@@ -52,13 +52,10 @@ jobs:
   - script: |
       ./install-misc.sh
       ./install-crictl.sh
-      ./install-kubectl.sh
       ./install-minikube.sh
       ./install-helm.sh
     workingDirectory: '$(modulePath)/.azdevops/0_install'
     displayName: 'Install everything else'
-    env: 
-      KUBERNETES_VERSION: ${{ parameters.kubernetesVersion }}
 
   - script: |
       chmod +x *.sh
