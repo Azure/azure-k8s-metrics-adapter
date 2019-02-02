@@ -2,15 +2,7 @@
 # container registry for later use
 
 trigger: 
-  branches:
-    include: 
-    - lecattar/pipeline-scripts
-  paths:
-    exclude: 
-    - .azdevops/*
-    - hack/*
-    include: 
-    - .azdevops/image-pipeline.yml
+- lecattar/pipeline-scripts
 pr:
 - master
 variables:
