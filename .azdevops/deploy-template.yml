@@ -16,16 +16,17 @@ jobs:
   - group: 'Metrics Adapter'
 
   steps:
-  - script: |
+  - displayName: 'Print version details'
+    script: |
       echo "This build uses the following versions:"
       echo "Kubernetes: ${{ parameters.kubernetesVersion }}"
       echo "Minikube: $(MINIKUBE_VERSION)"
       echo "Helm: $(HELM_VERSION)"
       echo "Docker: ${{ parameters.dockerVersion }}"
-    displayName: 'Print version details'
 
 # Go workspace setup from https://docs.microsoft.com/en-us/azure/devops/pipelines/languages/go?view=azure-devops
-  - script: |
+  - displayName: 'Set up the Go workspace'
+    script: |
       mkdir -p '$(GOBIN)'
       mkdir -p '$(GOPATH)/pkg'
       mkdir -p '$(modulePath)'
@@ -39,53 +40,52 @@ jobs:
       if [ -f Gopkg.toml ]; then
         curl https://raw.githubusercontent.com/golang/dep/master/install.sh | sh
       fi
-    displayName: 'Set up the Go workspace'
-
-  - script: |
+    
+  - displayName: 'Install docker (must continue on error)'
+    script: |
       chmod +x *.sh 
       ./install-docker.sh
     workingDirectory: '$(modulePath)/.azdevops/0_install'
-    displayName: 'Install docker (must continue on error)'
     env: 
       DOCKER_VERSION: ${{ parameters.dockerVersion }}
 
-  - script: |
+  - displayName: 'Install everything else'
+    script: |
       ./install-misc.sh
       ./install-crictl.sh
       ./install-kubectl.sh
       ./install-minikube.sh
       ./install-helm.sh
     workingDirectory: '$(modulePath)/.azdevops/0_install'
-    displayName: 'Install everything else'
     env: 
       KUBERNETES_VERSION: ${{ parameters.kubernetesVersion }}
 
-  - script: |
+  - displayName: 'Cluster set up & Go get'
+    script: |
       chmod +x *.sh
       ./start-cluster.sh
       ./go-get.sh
       ./check-cluster.sh
       ./init-tiller.sh
     workingDirectory: '$(modulePath)/.azdevops/1_setup'
-    displayName: 'Cluster set up & Go get'
     env: 
       KUBERNETES_VERSION: ${{ parameters.kubernetesVersion }}
 
-  - script: |
+  - displayName: 'Deploy metrics server & create local values file'
+    script: |
       chmod +x *.sh
       ./deploy-metrics-server.sh
       ./gen-values-file.sh
     workingDirectory: '$(modulePath)/.azdevops/2_deploy'
-    displayName: Deployments
     failOnStderr: true
     env:
       VERSION: $(Build.TriggeredBy.BuildId)
   
-  - script: |
+  - displayName: 'Run e2e test script (deploy adapter & test functionality)'
+    script: |
       chmod +x *.sh
       ./run-e2e.sh
     workingDirectory: '$(modulePath)/hack'
-    displayName: 'e2e test script'
     failOnStderr: true
     env:
       SERVICEBUS_CONNECTION_STRING: $(SERVICEBUS_CONNECTION_STRING)
@@ -94,9 +94,9 @@ jobs:
       SP_TENANT_ID: $(SP_TENANT_ID)
       SP_CLIENT_SECRET: $(SP_CLIENT_SECRET)
 
-  - script: |
+  - displayName: 'Debug information'
+    script: |
       chmod +x *.sh
       ./output-details.sh
     workingDirectory: '$(modulePath)/.azdevops/4_output'
-    displayName: 'Debug information'
     failOnStderr: true
