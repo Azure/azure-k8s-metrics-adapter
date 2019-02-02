@@ -57,7 +57,6 @@ jobs:
       ./install-helm.sh
     workingDirectory: '$(modulePath)/.azdevops/0_install'
     displayName: 'Install everything else'
-    failOnStderr: true
     env: 
       KUBERNETES_VERSION: ${{ parameters.kubernetesVersion }}
 
