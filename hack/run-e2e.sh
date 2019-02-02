@@ -6,6 +6,8 @@ set -o pipefail
 
 GOPATH="${GOPATH:-$HOME/go}"
 
+DIVIDER="============================================================"
+
 echo "Checking cluster"
 kubectl config current-context
 JSONPATH='{range .items[*]}{@.metadata.name}{"\t"}Ready={@.status.conditions[?(@.type=="Ready")].status}{"\n"}{end}'
@@ -27,22 +29,26 @@ kubectl get --raw "/apis/metrics.k8s.io/v1beta1/nodes" | jq .
 set +o errexit 
 
 echo; echo "Running deployment scripts"
-cd $GOPATH/src/github.com/Azure/azure-k8s-metrics-adapter/.azdevops/2_deploy
-chmod +x *.sh
+cd $GOPATH/src/github.com/Azure/azure-k8s-metrics-adapter/.azdevops
+chmod +x 2_deploy/*.sh
+chmod +x 3_output/*.sh
 
-./deploy-adapter-with-sp.sh
+./2_deploy/deploy-adapter-with-sp.sh
 if [[ $? = 0 ]]; then
-    ./configure-metrics.sh
+    ./2_deploy/configure-metrics.sh
 
     echo "Testing deployment"
-    cd $GOPATH/src/github.com/Azure/azure-k8s-metrics-adapter/.azdevops/3_output
-    chmod +x *.sh
 
-    ./gen-and-check-messages.sh
-    ./run-consumer.sh
+    ./3_output/gen-and-check-messages.sh
+    if [[ $? = 0 ]];
+        then echo $DIVIDER; echo "PASS"; echo $DIVIDER
+        else echo $DIVIDER; echo "FAIL"; echo $DIVIDER; 
+    fi
+
+    ./3_output/run-consumer.sh
 fi
 
-echo; echo "Removing adapter deployment"
+echo "Removing adapter deployment"
 helm delete --purge adapter
 
 # TODO add final reporting message for clarity

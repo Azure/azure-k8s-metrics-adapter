@@ -25,13 +25,13 @@ echo; echo "Waiting for deployment to be available..."
 START=`date +%s`
 
 kubectl get deploy/adapter-azure-k8s-metrics-adapter
-while [[ ! `kubectl get deploy/adapter-azure-k8s-metrics-adapter -o jsonpath="{@.status.availableReplicas}"` == 1 ]] && \
+while [[ ! `kubectl get deploy/adapter-azure-k8s-metrics-adapter -o jsonpath="{@.status.availableReplicas}"` = 1 ]] && \
         [[ $(( $(date +%s) - 55 )) -lt $START ]]; do 
     sleep 5
     kubectl get deploy/adapter-azure-k8s-metrics-adapter --no-headers
 done
 
-if [[ ! `kubectl get deploy/adapter-azure-k8s-metrics-adapter -o jsonpath="{@.status.availableReplicas}"` == 1 ]]; then
+if [[ ! `kubectl get deploy/adapter-azure-k8s-metrics-adapter -o jsonpath="{@.status.availableReplicas}"` = 1 ]]; then
     echo; echo "Deployment failed, output debug information"
     kubectl describe deploy/adapter-azure-k8s-metrics-adapter
     echo
