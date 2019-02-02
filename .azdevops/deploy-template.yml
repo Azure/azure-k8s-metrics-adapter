@@ -16,6 +16,7 @@ jobs:
   - group: 'Metrics Adapter'
 
   steps:
+    # Print version details
   - script: |
       echo "This build uses the following versions:"
       echo "Kubernetes: ${{ parameters.kubernetesVersion }}"
@@ -24,7 +25,8 @@ jobs:
       echo "Docker: ${{ parameters.dockerVersion }}"
     displayName: 'Print version details'
 
-# Go workspace setup from https://docs.microsoft.com/en-us/azure/devops/pipelines/languages/go?view=azure-devops
+    # Set up the Go workspace
+    # Go workspace setup from https://docs.microsoft.com/en-us/azure/devops/pipelines/languages/go?view=azure-devops
   - script: |
       mkdir -p '$(GOBIN)'
       mkdir -p '$(GOPATH)/pkg'
@@ -41,6 +43,7 @@ jobs:
       fi
     displayName: 'Set up the Go workspace'
 
+    # Install docker
   - script: |
       chmod +x *.sh 
       ./install-docker.sh
@@ -49,6 +52,7 @@ jobs:
     env: 
       DOCKER_VERSION: ${{ parameters.dockerVersion }}
 
+    # Install everything else needed
   - script: |
       ./install-misc.sh
       ./install-crictl.sh
@@ -59,6 +63,7 @@ jobs:
     env: 
       KUBERNETES_VERSION: ${{ parameters.kubernetesVersion }}
 
+    # Start the cluster, get go packages, install tiller, set up metrics server, gen the local values file
   - script: |
       chmod +x *.sh
       ./start-cluster.sh
@@ -73,6 +78,7 @@ jobs:
       KUBERNETES_VERSION: ${{ parameters.kubernetesVersion }}
       VERSION: $(Build.TriggeredBy.BuildId)
   
+    # Run hack/test-e2e.sh
   - script: |
       chmod +x *.sh
       ./run-e2e.sh
