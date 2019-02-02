@@ -68,7 +68,6 @@ jobs:
       ./init-tiller.sh
     workingDirectory: '$(modulePath)/.azdevops/1_setup'
     displayName: 'Cluster set up & Go get'
-    failOnStderr: true
     env: 
       KUBERNETES_VERSION: ${{ parameters.kubernetesVersion }}
 
