@@ -70,7 +70,6 @@ jobs:
       ./go-get.sh
       ./check-cluster.sh
       ./init-tiller.sh
-      ./deploy-metrics-server.sh
       ./gen-values-file.sh
     workingDirectory: '$(modulePath)/.azdevops/1_setup'
     displayName: 'Cluster set up, Go get, prep for adapter deployment'
