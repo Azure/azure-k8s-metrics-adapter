@@ -2,7 +2,7 @@
 # container registry for later use
 
 trigger: 
-- lecattar/pipeline-scripts
+- master
 pr:
 - master
 variables:
