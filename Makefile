@@ -46,7 +46,7 @@ else
 endif	
 
 push:
-	@echo $(DOCKER_PASS) | docker login -u $(DOCKER_USER) --password-stdin csemcr.azurecr.io 
+	@echo $(DOCKER_PASS) | docker login -u $(DOCKER_USER) --password-stdin $(REGISTRY) 
 	docker push $(FULL_IMAGE):$(VERSION)
 ifeq ("$(PUSH_LATEST)", "true")
 	@echo "pushing to latest"
@@ -57,6 +57,9 @@ endif
 # dev setup
 dev:
 	skaffold dev
+
+teste2e:
+	hack/run-e2e.sh
 
 # CI specific commands used during CI build
 save:

@@ -11,3 +11,8 @@ defaultSubscriptionId: ""
 appInsights:
   appId: ""
   key: ""
+
+# Add this to use a version of the image other than the latest official release
+image:
+  repository: ""
+  tag: ""

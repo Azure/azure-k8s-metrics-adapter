@@ -1,0 +1,1 @@
+Do not modify adapter.yaml. It's generated via `make gen-deploy`

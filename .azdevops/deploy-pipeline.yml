@@ -1,0 +1,32 @@
+# This pipeline validates that a PR's already built Metrics Adapter image will
+# succeed with K8s v 1.10-1.13
+
+trigger: none
+jobs:
+- template: deploy-template.yml
+  parameters:
+    displayName: 'K8s v1.10'
+    queueName: 'externalq-10'
+    dockerVersion: '18.06.1~ce~3-0~ubuntu'
+    kubernetesVersion: '1.10.12'
+
+- template: deploy-template.yml
+  parameters:
+    displayName: 'K8s v1.11'
+    queueName: 'externalq-11'
+    dockerVersion: '17.03.3~ce-0~ubuntu-xenial'
+    kubernetesVersion: '1.11.6'
+
+- template: deploy-template.yml
+  parameters:
+    displayName: 'K8s v1.12'
+    queueName: 'externalq-12'
+    dockerVersion: '18.06.1~ce~3-0~ubuntu'
+    kubernetesVersion: '1.12.4'
+
+- template: deploy-template.yml
+  parameters:
+    displayName: 'K8s v1.13'
+    queueName: 'externalq-13'
+    dockerVersion: '18.06.1~ce~3-0~ubuntu'
+    kubernetesVersion: '1.13.1'

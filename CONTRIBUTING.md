@@ -56,11 +56,29 @@ export IMAGE=azure-k8s-metrics-adapter-testimage
 make build
 ```
 
-You can then login into your registry (`docker login`) and run:
+You can then login into your registry (`docker login`) and push your image (`docker push image_name:tag`).
 
-```bash
-make push
-```
+### End-to-end testing
+You can run `make teste2e` to check that the adapter deploys properly, uses given metrics, and pulls metric information. This script uses the [Service Bus Queue example](samples/servicebus-queue/readme.md).
+
+To run `make teste2e`, you need the following:
+
+* [Helm](https://docs.helm.sh/using_helm/) installed locally and on your cluster (or [Helm for RBAC-enabled AKS clusters](https://docs.microsoft.com/en-us/azure/aks/kubernetes-helm))
+* jq (used in parsing responses from the endpoint)
+* [Kubernetes Metrics Server](https://github.com/kubernetes-incubator/metrics-server#deployment) deployed on your cluster (it is deployed by default with most deployments)
+* An Azure [Service Bus Queue](https://docs.microsoft.com/en-us/azure/service-bus-messaging/service-bus-dotnet-get-started-with-queues)
+
+#### Environment variables for e2e tests
+
+Edit the [local dev values](local-dev-values.yaml.example) file to create `local-dev-values.yaml`. 
+
+| Variable name | Description |  Optional? |
+| ------------- | ----------- |  --------- |
+| `SERVICEBUS_CONNECTION_STRING` | Connection string for the service bus namespace | No |
+| `SERVICEBUS_RESOURCE_GROUP` | Resource group that holds the service bus namespace | No |
+| `SERVICEBUS_NAMESPACE` | Service bus namespace | No |
+| `SERVICEBUS_QUEUE_NAME` | Name of the service bus queue | Yes, defaults to `externalq` if not set |
+| `GOPATH` | Golang project directory | Yes, defaults to `$HOME/go` if not set |
 
 ## Adding dependencies
 
