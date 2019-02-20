@@ -8,6 +8,10 @@ SERVICEBUS_QUEUE_NAME="${SERVICEBUS_QUEUE_NAME:-externalq}"
 
 cd $GOPATH/src/github.com/Azure/azure-k8s-metrics-adapter/samples/servicebus-queue/
 
+# Copy original files
+cp producer/main.go producer/main.go.copy
+cp consumer/main.go consumer/main.go.copy
+
 echo; echo "Creating random number for producer script..."
 NUM=$(( ($RANDOM % 30 )  + 1 ))
 sed -i 's|20000|'$(( NUM + 1 ))'|g' producer/main.go
@@ -19,8 +23,9 @@ sed -i 's|externalq|'${SERVICEBUS_QUEUE_NAME}'|g' producer/main.go
 echo; echo "Building producer and consumer..."
 make
 
-# Re-add the '20000' value to make this repeatable
-sed -i 's|'$(( NUM + 1 ))'|20000|g' producer/main.go
+# Replace edited files with copies of original so git doesn't complain
+rm producer/main.go; mv producer/main.go.copy producer/main.go
+rm consumer/main.go; mv consumer/main.go.copy consumer/main.go
 
 echo; echo "Sending $NUM messages..."
 ./bin/producer 0 > /dev/null
