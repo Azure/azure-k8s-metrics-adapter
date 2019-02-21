@@ -7,9 +7,6 @@ pr:
 - master
 variables:
 - group: 'Metrics Adapter'
-# This value is set for convenience of re-tagging the image later, but is otherwise irrelevant
-- name: 'REGISTRY_PATH'
-  value: ''
 jobs:
 - job:
   pool:
@@ -42,16 +39,9 @@ jobs:
       VERSION: $(Build.BuildId)
 
     # docker push
-  - script: |
-      # Should handle logging into docker hub as well as other repository
-      if [[ $(DOCKER_USER) = $(REGISTRY) ]]; then
-        echo "Logging in to docker hub"
-        echo $(DOCKER_PWD) | docker login -u $(DOCKER_USER) --password-stdin
-      else 
-        echo "Logging in to other registry"
-        echo $(DOCKER_PWD) | docker login -u $(DOCKER_USER) --password-stdin $(REGISTRY)
-      fi
-      # Instead of getting `make build` to build the name correctly, just retag
-      docker tag $(REGISTRY)/adapter:$(Build.BuildId) $(IMAGE_REPOSITORY):$(Build.BuildId)
-      docker push $(IMAGE_REPOSITORY):$(Build.BuildId)
-    displayName: 'Push image'
+  - script: 'make push'
+    workingDirectory: '$(modulePath)'
+    displayName: 'make push (docker push)'
+    env:
+      VERSION: $(Build.BuildId)
+      DOCKER_PASS: $(DOCKER_PASS)

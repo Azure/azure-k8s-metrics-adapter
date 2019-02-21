@@ -23,10 +23,10 @@ Do this for each of `image-pipeline.yml` and `deploy-pipeline.yml`. For at least
 | `GOROOT` | Determines the version of Go used by ADO | /usr/local/go1.11 \* |
 | `HELM_VERSION` | Version of Helm to use | 2.12.0 |
 | `MINIKUBE_VERSION` | Version of Minikube to use | 0.32.0 |
-| `DOCKER_PWD` | Docker password (see note below) | \*\*\*\*\* |
 | `DOCKER_USER` | Docker username | user |
-| `IMAGE_REPOSITORY` | Full name of the image, excluding the tag | user/metrics-adapter |
-| `REGISTRY` | If using DockerHub, REGISTRY=DOCKER_USER. Otherwise, should be the container registry | user |
+| `DOCKER_PASS` | Docker password (see note below) | \*\*\*\*\* |
+| `REGISTRY` | Container registry address (use example if using DockerHub) | https://index.docker.io/v1/ |
+| `FULL_IMAGE` | Full name of the image, excluding the tag | user/metrics-adapter-test |
 | `SUBSCRIPTION_ID` | Azure subscription ID that the service bus namespace belongs to | <GUID\> |
 | `SERVICEBUS_CONNECTION_STRING` | Service Bus namespace connection string | \*\*\*\*\* |
 | `SERVICEBUS_NAMESPACE` | Service Bus namespace | my-namespace  |
