@@ -56,6 +56,7 @@ func (c appinsightsClient) GetCustomMetric(request MetricRequest) (float64, erro
 	// this seems to be the best way to get the closest average rate at time of request
 	// any smaller time intervals and the values come back null
 	// TODO make this configurable?
+	// Please make this configurable.
 	request.Timespan = "PT5M"
 	request.Interval = "PT30S"
 
