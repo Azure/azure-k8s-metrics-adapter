@@ -27,6 +27,8 @@ spec:
         {{- end }}
     spec:
       serviceAccountName: {{ template "azure-k8s-metrics-adapter.serviceAccountName" . }}
+      imagePullSecrets:
+        - name: {{ .Values.imageCredentials.name }}
       containers:
         - name: {{ .Chart.Name }}
           image: "{{ .Values.image.repository }}:{{ .Values.image.tag }}"
