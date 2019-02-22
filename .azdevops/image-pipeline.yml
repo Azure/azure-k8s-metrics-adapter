@@ -8,7 +8,7 @@ pr:
 variables:
 - group: 'Metrics Adapter'
 jobs:
-- job: Image
+- job: buildAndTest
   pool:
     vmImage: 'ubuntu-16.04'
   steps:
@@ -46,8 +46,8 @@ jobs:
       VERSION: $(Build.BuildId)
       DOCKER_PASS: $(DOCKER_PASS)
 
-- job: Deploy
-  dependsOn: Image
+- job: e2eTests
+  dependsOn: buildAndTest
 
   # This will run this job 4 times with these 4 sets of variables
   strategy:
