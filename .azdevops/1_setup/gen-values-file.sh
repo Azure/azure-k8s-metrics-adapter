@@ -26,11 +26,11 @@ if [[ -v SUBSCRIPTION_ID ]]; then
 fi
 
 # Set image address and/or version if either are set
-if [[ -v IMAGE_REPOSITORY ]] || [[ -v VERSION ]]; then 
+if [[ -v IMAGE ]] || [[ -v VERSION ]]; then 
     echo "image:" >> $FNAME
     
-    if [[ -v IMAGE_REPOSITORY ]]; then
-        echo "  repository: $IMAGE_REPOSITORY" >> $FNAME
+    if [[ -v IMAGE ]]; then
+        echo "  repository: $IMAGE" >> $FNAME
     fi 
     
     if [[ -v VERSION ]]; then

@@ -51,12 +51,18 @@ make build-local
 To build the docker image use:
 
 ```bash
-export REGISTRY=<your registry name>
+export REGISTRY=<your registry name> ("" if using DockerHub)
 export IMAGE=azure-k8s-metrics-adapter-testimage
 make build
 ```
 
-You can then login into your registry (`docker login`) and push your image (`docker push image_name:tag`).
+You can then use `make push`:
+
+```bash
+export DOCKER_USER=<your docker username>
+(optional, will prompt otherwise) export DOCKER_PASS=<your docker password>
+make push
+```
 
 ### End-to-end testing
 You can run `make teste2e` to check that the adapter deploys properly, uses given metrics, and pulls metric information. This script uses the [Service Bus Queue example](samples/servicebus-queue/readme.md).

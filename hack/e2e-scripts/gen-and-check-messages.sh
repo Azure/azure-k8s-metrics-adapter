@@ -23,7 +23,7 @@ sed -i 's|externalq|'${SERVICEBUS_QUEUE_NAME}'|g' producer/main.go
 echo; echo "Building producer and consumer..."
 make
 
-# Replace edited files with copies of original so git doesn't complain
+echo; echo "Returning producer and consumer files to original state..."
 rm producer/main.go; mv producer/main.go.copy producer/main.go
 rm consumer/main.go; mv consumer/main.go.copy consumer/main.go
 

@@ -1,18 +1,17 @@
 # Following gets combined into: REGISTRY/REGISTRY_PATH/IMAGE:VERSION
 REGISTRY?=csemcr.azurecr.io
-REGISTRY_PATH?=test/k8s/metrics
-IMAGE?=adapter
+IMAGE?=test/k8s/metrics/adapter
 VERSION?=latest
+
+ifneq ("$(REGISTRY)", "")
+	FULL_IMAGE=$(REGISTRY)/$(IMAGE)
+else
+	FULL_IMAGE=$(IMAGE)
+endif
 
 OUT_DIR?=./_output
 SEMVER=""
 PUSH_LATEST=true
-
-ifeq ("$(REGISTRY_PATH)", "")
-	FULL_IMAGE=$(REGISTRY)/$(IMAGE)
-else
-	FULL_IMAGE=$(REGISTRY)/$(REGISTRY_PATH)/$(IMAGE)
-endif	
 
 BRANCH=$(shell git rev-parse --abbrev-ref HEAD)
 
@@ -46,7 +45,13 @@ else
 endif	
 
 push:
+ifdef DOCKER_PASS
+	# non interactive login
 	@echo $(DOCKER_PASS) | docker login -u $(DOCKER_USER) --password-stdin $(REGISTRY) 
+else
+	# interactive login (needed for WSL)
+	docker login -u $(DOCKER_USER) $(REGISTRY)
+endif
 	docker push $(FULL_IMAGE):$(VERSION)
 ifeq ("$(PUSH_LATEST)", "true")
 	@echo "pushing to latest"

@@ -7,11 +7,8 @@ pr:
 - master
 variables:
 - group: 'Metrics Adapter'
-# This value is set for convenience of re-tagging the image later, but is otherwise irrelevant
-- name: 'REGISTRY_PATH'
-  value: ''
 jobs:
-- job:
+- job: buildAndTest
   pool:
     vmImage: 'ubuntu-16.04'
   steps:
@@ -42,16 +39,105 @@ jobs:
       VERSION: $(Build.BuildId)
 
     # docker push
+  - script: 'make push'
+    workingDirectory: '$(modulePath)'
+    displayName: 'make push (docker push)'
+    env:
+      VERSION: $(Build.BuildId)
+      DOCKER_PASS: $(DOCKER_PASS)
+
+- job: e2eTests
+  dependsOn: buildAndTest
+
+  # This will run this job 4 times with these 4 sets of variables
+  strategy:
+    matrix:
+      K8s10:
+        SERVICEBUS_QUEUE_NAME: 'externalq-10'
+        DOCKER_VERSION: '18.06.1~ce~3-0~ubuntu'
+        KUBERNETES_VERSION: '1.10.12'
+      K8s11:
+        SERVICEBUS_QUEUE_NAME: 'externalq-11'
+        DOCKER_VERSION: '17.03.3~ce-0~ubuntu-xenial'
+        KUBERNETES_VERSION: '1.11.6'
+      K8s12:
+        SERVICEBUS_QUEUE_NAME: 'externalq-12'
+        DOCKER_VERSION: '18.06.1~ce~3-0~ubuntu'
+        KUBERNETES_VERSION: '1.12.4'
+      K8s13:
+        SERVICEBUS_QUEUE_NAME: 'externalq-13'
+        DOCKER_VERSION: '18.06.1~ce~3-0~ubuntu'
+        KUBERNETES_VERSION: '1.13.1'
+  
+  pool:
+    vmImage: 'ubuntu-16.04'
+  steps:
+  
+    # Print version details
   - script: |
-      # Should handle logging into docker hub as well as other repository
-      if [[ $(DOCKER_USER) = $(REGISTRY) ]]; then
-        echo "Logging in to docker hub"
-        echo $(DOCKER_PWD) | docker login -u $(DOCKER_USER) --password-stdin
-      else 
-        echo "Logging in to other registry"
-        echo $(DOCKER_PWD) | docker login -u $(DOCKER_USER) --password-stdin $(REGISTRY)
+      echo "This build uses the following versions:"
+      echo "Kubernetes: $(KUBERNETES_VERSION)"
+      echo "Minikube: $(MINIKUBE_VERSION)"
+      echo "Helm: $(HELM_VERSION)"
+      echo "Docker: $(DOCKER_VERSION)"
+    displayName: 'Print version details'
+
+    # Set up the Go workspace
+    # Go workspace setup from https://docs.microsoft.com/en-us/azure/devops/pipelines/languages/go?view=azure-devops
+  - script: |
+      mkdir -p '$(GOBIN)'
+      mkdir -p '$(GOPATH)/pkg'
+      mkdir -p '$(modulePath)'
+      shopt -s extglob
+      shopt -s dotglob
+      mv !(go) '$(modulePath)'
+      echo '##vso[task.prependpath]$(GOBIN)'
+      echo '##vso[task.prependpath]$(GOROOT)/bin'  
+      cd $(modulePath) 
+      go get -v -t -d ./... 
+      if [ -f Gopkg.toml ]; then
+        curl https://raw.githubusercontent.com/golang/dep/master/install.sh | sh
       fi
-      # Instead of getting `make build` to build the name correctly, just retag
-      docker tag $(REGISTRY)/adapter:$(Build.BuildId) $(IMAGE_REPOSITORY):$(Build.BuildId)
-      docker push $(IMAGE_REPOSITORY):$(Build.BuildId)
-    displayName: 'Push image'
+    displayName: 'Set up the Go workspace'
+
+    # Install docker
+  - script: |
+      chmod +x *.sh 
+      ./install-docker.sh
+    workingDirectory: '$(modulePath)/.azdevops/0_install'
+    displayName: 'Install docker (must continue on error)'
+
+    # Install everything else needed
+  - script: |
+      ./install-misc.sh
+      ./install-crictl.sh
+      ./install-minikube.sh
+      ./install-helm.sh
+    workingDirectory: '$(modulePath)/.azdevops/0_install'
+    displayName: 'Install everything else'
+
+    # Start the cluster, get go packages, install tiller, set up metrics server, gen the local values file
+  - script: |
+      chmod +x *.sh
+      ./start-cluster.sh
+      ./go-get.sh
+      ./check-cluster.sh
+      ./init-tiller.sh
+      ./gen-values-file.sh
+    workingDirectory: '$(modulePath)/.azdevops/1_setup'
+    displayName: 'Cluster set up, Go get, prep for adapter deployment'
+    env: 
+      VERSION: $(Build.BuildId)
+  
+    # Run hack/test-e2e.sh
+  - script: |
+      chmod +x *.sh
+      ./run-e2e.sh
+    workingDirectory: '$(modulePath)/hack'
+    displayName: 'Run e2e test script (deploy adapter & test functionality)'
+    failOnStderr: true
+    env:
+      SERVICEBUS_CONNECTION_STRING: $(SERVICEBUS_CONNECTION_STRING)
+      SP_CLIENT_ID: $(SP_CLIENT_ID)
+      SP_TENANT_ID: $(SP_TENANT_ID)
+      SP_CLIENT_SECRET: $(SP_CLIENT_SECRET)
