@@ -76,7 +76,25 @@ To run `make teste2e`, you need the following:
 
 #### Environment variables for e2e tests
 
-Edit the [local dev values](local-dev-values.yaml.example) file to create `local-dev-values.yaml`. 
+Build the project with a custom repository:
+
+```
+make build
+```
+
+Edit the [local dev values](local-dev-values.yaml.example) file to create `local-dev-values.yaml`. If using custom image be sure to set the values (`export REGISTRY=<your registry name>` ("" if using DockerHub)
+`export IMAGE=azure-k8s-metrics-adapter-testimage`) before building.  The `pullPolicy: IfNotPresent` lets you use the local image on your minikube cluster.  If you are not using a local cluster you can use `pullPolicy: Always` to use an image that is in a remote repository. 
+
+Example of the `image` setting in the `local-dev-values.yaml` using a custom image:
+
+```
+image:
+  repository: metrics-adapter
+  tag: latest
+  pullPolicy: IfNotPresent
+```
+
+Set the following Environment Variables:
 
 | Variable name | Description |  Optional? |
 | ------------- | ----------- |  --------- |

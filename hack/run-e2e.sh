@@ -34,17 +34,25 @@ chmod +x *.sh
 
 ./deploy-adapter-with-sp.sh
 if [[ $? = 0 ]]; then
-    ./configure-metrics.sh
-
-    echo "Testing deployment"
-
-    ./gen-and-check-messages.sh
+    echo "Testing Queue (Azure Monitor) metrics"
+    ./configure-queue-metrics.sh
+    ./gen-and-check-queue-messages.sh
     if [[ $? = 0 ]];
         then echo $DIVIDER; echo "PASS"; echo $DIVIDER
         else echo $DIVIDER; echo "FAIL"; echo $DIVIDER; 
     fi
 
-    ./run-consumer.sh
+    ./run-queue-consumer.sh
+
+    echo "Testing Topic Subscriptions metrics"
+    ./configure-topic-subscriptions-metrics.sh
+    ./gen-and-check-topic-subscriptions-messages.sh
+    if [[ $? = 0 ]];
+        then echo $DIVIDER; echo "PASS"; echo $DIVIDER
+        else echo $DIVIDER; echo "FAIL"; echo $DIVIDER; 
+    fi
+
+    ./run-topic-consumer.sh
 fi
 
 echo "Removing adapter deployment"

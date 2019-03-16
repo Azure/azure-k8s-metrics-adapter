@@ -3,18 +3,19 @@
 This is an example of how to scale using Service Bus Queue as an external metric.  
 
 - [Service Bus Queue External Metric Scaling](#service-bus-queue-external-metric-scaling)
-    - [Walkthrough](#walkthrough)
-    - [Setup Service Bus](#setup-service-bus)
-    - [Setup AKS Cluster](#setup-aks-cluster)
-        - [Enable Access to Azure Resources](#enable-access-to-azure-resources)
-        - [Start the producer](#start-the-producer)
-        - [Configure Secret for consumer pod](#configure-secret-for-consumer-pod)
-        - [Deploy Consumer](#deploy-consumer)
-    - [Set up Azure Metrics Adapter](#set-up-azure-metrics-adapter)
-        - [Deploy the adapter](#deploy-the-adapter)
-        - [Deploy the HPA](#deploy-the-hpa)
-    - [Scale!](#scale)
-    - [Clean up](#clean-up)
+  - [Walkthrough](#walkthrough)
+  - [Setup Service Bus](#setup-service-bus)
+  - [Setup AKS Cluster](#setup-aks-cluster)
+    - [Enable Access to Azure Resources](#enable-access-to-azure-resources)
+    - [Start the producer](#start-the-producer)
+    - [Configure Secret for consumer pod](#configure-secret-for-consumer-pod)
+    - [Deploy Consumer](#deploy-consumer)
+  - [Set up Azure Metrics Adapter](#set-up-azure-metrics-adapter)
+    - [Deploy the adapter](#deploy-the-adapter)
+    - [Configure Metric Adapter with metrics](#configure-metric-adapter-with-metrics)
+    - [Deploy the HPA](#deploy-the-hpa)
+  - [Scale!](#scale)
+  - [Clean up](#clean-up)
 
 ## Walkthrough
 
@@ -74,7 +75,8 @@ make
 Run the producer to create a few queue items, then hit `ctl-c` after a few message have been sent to stop it:
 
 ```
-./bin/producer 500
+# 0 delay in sending messages, send 5 messages to queue 'externalq'
+./bin/producer 0 5 externalq
 ```
 
 Check the queue has values:
@@ -195,10 +197,11 @@ kubectl  get --raw "/apis/external.metrics.k8s.io/v1beta1/namespaces/default/que
 
 ## Scale!
 
-Put some load on the queue. Note this will add 20,000 message then exit.
+Put some load on the queue. Note this will add 5,000 message then exit.
 
 ```
-./bin/producer 0
+# 0 delay in sending messages, send 5000 messages to queue 'externalq'
+./bin/producer 0 5000 externalq
 ```
 
 Now check your queue is loaded:

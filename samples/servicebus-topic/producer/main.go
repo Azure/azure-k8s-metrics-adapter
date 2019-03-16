@@ -26,7 +26,7 @@ func main() {
 		return
 	}
 
-	queueName := os.Args[3]
+	topicName := os.Args[3]
 
 	connStr := os.Getenv("SERVICEBUS_CONNECTION_STRING")
 	ns, err := servicebus.NewNamespace(servicebus.NamespaceWithConnectionString(connStr))
@@ -34,11 +34,10 @@ func main() {
 		fmt.Println("namespace: ", err)
 	}
 
-	fmt.Println("connecting to queue: ", queueName)
-	q, err := ns.NewQueue(queueName)
+	topic, err := ns.NewTopic(topicName)
 	if err != nil {
-		// handle queue creation error
-		fmt.Println("create queue: ", err)
+		fmt.Println(err)
+		return
 	}
 
 	//https: //stackoverflow.com/a/18158859/697126
@@ -49,9 +48,10 @@ func main() {
 		os.Exit(1)
 	}()
 
+	fmt.Printf("sending %d messages ", messagesCount)
 	for i := 1; i <= messagesCount; i++ {
 		fmt.Println("sending message ", i)
-		err = q.Send(context.Background(), servicebus.NewMessageFromString("the answer is 42"))
+		err = topic.Send(context.Background(), servicebus.NewMessageFromString("the answer is 42"))
 		if err != nil {
 			// handle message send error
 			fmt.Println("error sending message: ", err)

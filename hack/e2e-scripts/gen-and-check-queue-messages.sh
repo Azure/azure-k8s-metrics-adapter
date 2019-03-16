@@ -8,27 +8,14 @@ SERVICEBUS_QUEUE_NAME="${SERVICEBUS_QUEUE_NAME:-externalq}"
 
 cd $GOPATH/src/github.com/Azure/azure-k8s-metrics-adapter/samples/servicebus-queue/
 
-# Copy original files
-cp producer/main.go producer/main.go.copy
-cp consumer/main.go consumer/main.go.copy
-
-echo; echo "Creating random number for producer script..."
-NUM=$(( ($RANDOM % 30 )  + 1 ))
-sed -i 's|20000|'$(( NUM + 1 ))'|g' producer/main.go
-
-echo; echo "Replacing queue name in consumer and producer..."
-sed -i 's|externalq|'${SERVICEBUS_QUEUE_NAME}'|g' consumer/main.go
-sed -i 's|externalq|'${SERVICEBUS_QUEUE_NAME}'|g' producer/main.go
-
 echo; echo "Building producer and consumer..."
 make
 
-echo; echo "Returning producer and consumer files to original state..."
-rm producer/main.go; mv producer/main.go.copy producer/main.go
-rm consumer/main.go; mv consumer/main.go.copy consumer/main.go
+echo; echo "Creating random number for producer..."
+NUM=$(( ($RANDOM % 30 )  + 1 ))
 
 echo; echo "Sending $NUM messages..."
-./bin/producer 0 > /dev/null
+./bin/producer 0 $NUM $SERVICEBUS_QUEUE_NAME> /dev/null
 
 echo; echo "Checking metrics endpoint for 4 minutes..."
 
