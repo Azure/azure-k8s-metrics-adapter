@@ -16,7 +16,7 @@ echo; echo "Creating random number for producer script..."
 NUM=$(( ($RANDOM % 30 )  + 1 ))
 
 echo; echo "Sending $NUM messages..."
-./bin/producer 0 $NUM $SERVICEBUS_TOPIC_NAME > /dev/null
+./bin/producer 0 $NUM $SERVICEBUS_TOPIC_NAME $SERVICEBUS_SUBSCRIPTION_NAME > /dev/null
 
 echo; echo "Checking metrics endpoint for 4 minutes..."
 
