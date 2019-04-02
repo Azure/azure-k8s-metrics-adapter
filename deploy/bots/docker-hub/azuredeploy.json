@@ -201,13 +201,13 @@
             }
         },
         {
-            "name": "Scraper CI Bot - Docker Hub Integration Run Failed",
+            "name": "Azure Kubernetes Metrics Adapter - Docker Hub Integration Run Failed",
             "type": "Microsoft.Insights/metricAlerts",
             "location": "global",
             "apiVersion": "2018-03-01",
             "tags": {},
             "properties": {
-                "description": "Scraper CI Bot - Docker Hub integration failed to run and post a comment on the pull request in GitHub",
+                "description": "Azure Kubernetes Metrics Adapter - Docker Hub integration failed to run and post a comment on the pull request in GitHub",
                 "severity": 3,
                 "enabled": true,
                 "scopes": [
@@ -240,13 +240,13 @@
             ]
         },
         {
-            "name": "Scraper CI Bot - Docker Hub Integration Trigger Failed",
+            "name": "Azure Kubernetes Metrics Adapter - Docker Hub Integration Trigger Failed",
             "type": "Microsoft.Insights/metricAlerts",
             "location": "global",
             "apiVersion": "2018-03-01",
             "tags": {},
             "properties": {
-                "description": "Scraper CI Bot - Docker Hub integration failed to be triggered due to an issue",
+                "description": "Azure Kubernetes Metrics Adapter - Docker Hub integration failed to be triggered due to an issue",
                 "severity": 3,
                 "enabled": true,
                 "scopes": [
