@@ -7,7 +7,7 @@ GOPATH="${GOPATH:-$HOME/go}"
 SERVICEBUS_TOPIC_NAME="${SERVICEBUS_TOPIC_NAME:-example-topic}"
 SERVICEBUS_SUBSCRIPTION_NAME="${SERVICEBUS_SUBSCRIPTION_NAME:-externalsub}"
 
-echo; echo "Running queue consumer to clear queue"
+echo; echo "Running consumer to clear topic"
 cd $GOPATH/src/github.com/Azure/azure-k8s-metrics-adapter/samples/servicebus-topic/
 
 timeout 30 ./bin/consumer $SERVICEBUS_TOPIC_NAME $SERVICEBUS_SUBSCRIPTION_NAME> /dev/null
