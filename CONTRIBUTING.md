@@ -104,6 +104,8 @@ Set the following Environment Variables:
 | `SERVICEBUS_NAMESPACE` | Service bus namespace | No |
 | `SERVICEBUS_QUEUE_NAME` | Name of the service bus queue | Yes, defaults to `externalq` if not set |
 | `GOPATH` | Golang project directory | Yes, defaults to `$HOME/go` if not set |
+| `SERVICEBUS_TOPIC_NAME` | Name of the service bus topic | Yes, defaults to `example-topic` if not set |
+| `SERVICEBUS_SUBSCRIPTION_NAME` | Name of the service bus subscription |  Yes, defaults to `externalsub` if not set |
 
 ## Adding dependencies
 
