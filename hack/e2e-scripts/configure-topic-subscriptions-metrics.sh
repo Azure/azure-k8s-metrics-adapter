@@ -7,7 +7,7 @@ GOPATH="${GOPATH:-$HOME/go}"
 SERVICEBUS_TOPIC_NAME="${SERVICEBUS_TOPIC_NAME:-example-topic}"
 SERVICEBUS_SUBSCRIPTION_NAME="${SERVICEBUS_SUBSCRIPTION_NAME:-externalsub}"
 
-echo; echo "Configuring external metric (queuemessages)..."
+echo; echo "Configuring external metric (subscriptionmessages)..."
 cd $GOPATH/src/github.com/Azure/azure-k8s-metrics-adapter/samples/resources/externalmetric-examples/
 cp servicebussubscription-example.yaml servicebussubscription-example.yaml.copy
 
