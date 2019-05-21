@@ -73,6 +73,7 @@ To run `make teste2e`, you need the following:
 * jq (used in parsing responses from the endpoint)
 * [Kubernetes Metrics Server](https://github.com/kubernetes-incubator/metrics-server#deployment) deployed on your cluster (it is deployed by default with most deployments)
 * An Azure [Service Bus Queue](https://docs.microsoft.com/en-us/azure/service-bus-messaging/service-bus-dotnet-get-started-with-queues)
+* An Azure Topic with Subscription
 
 #### Environment variables for e2e tests
 
