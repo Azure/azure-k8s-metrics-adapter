@@ -62,7 +62,7 @@ helm delete my-release
 
 ## Authentication to Azure Montior
 
-This project offers 3 methods for authenticating to the Azure Monitor API: [MSI](https://github.com/Azure/azure-k8s-metrics-adapter#using-azure-managed-service-identity-msi), Azure AD Application with Client Secret, and Azure AD Application with Client Certificate. By default this chart will use MSI authentication.
+This project offers 3 methods for authenticating to the Azure Monitor API: [MSI](https://github.com/Azure/azure-k8s-metrics-adapter#using-azure-ad-pod-identity), Azure AD Application with Client Secret, and Azure AD Application with Client Certificate. By default this chart will use MSI authentication.
 
 Optionally the `azureAuthentication.method` value can be specified and either Azure AD Application with Client Secret or Azure AD Application with Client Certificate can be set using the following values for `azureAuthentication.method`
 - `clientSecret` for Azure AD Application with Client Secre. These additional values must be set to use the client certificate
