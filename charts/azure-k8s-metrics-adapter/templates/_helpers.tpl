@@ -41,3 +41,11 @@ Create the name of the service account to use
     {{ default "default" .Values.serviceAccount.name }}
 {{- end -}}
 {{- end -}}
+
+{{/*
+Create the image registry credentials.
+https://github.com/helm/helm/blob/master/docs/charts_tips_and_tricks.md#creating-image-pull-secrets
+*/}}
+{{- define "image-pull-secret" }}
+{{- printf "{\"auths\": {\"%s\": {\"auth\": \"%s\"}}}" .Values.imageCredentials.registry (printf "%s:%s" .Values.imageCredentials.username .Values.imageCredentials.password | b64enc) | b64enc }}
+{{- end }}

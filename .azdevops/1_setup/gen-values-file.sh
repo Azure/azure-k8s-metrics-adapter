@@ -37,3 +37,15 @@ if [[ -v IMAGE ]] || [[ -v VERSION ]]; then
         echo "  tag: $VERSION" >> $FNAME
     fi
 fi
+
+if [[ -v DOCKER_USER ]] && [[ -v DOCKER_PASS ]]; then
+    echo "imageCredentials:" >> $FNAME
+    echo "  createSecret: true" >> $FNAME
+
+    if [[ ! "$REGISTRY" = "" ]]; then
+        echo "  registry: $REGISTRY" >> $FNAME
+    fi
+
+    echo "  username: $DOCKER_USER" >> $FNAME
+    echo "  password: $DOCKER_PASS" >> $FNAME
+fi

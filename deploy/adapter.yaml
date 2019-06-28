@@ -301,6 +301,8 @@ spec:
         release: azure-k8s-metrics-adapter
     spec:
       serviceAccountName: azure-k8s-metrics-adapter
+      imagePullSecrets:
+        - name: registryCredentials
       containers:
         - name: azure-k8s-metrics-adapter
           image: "mcr.microsoft.com/k8s/metrics/adapter:latest"
@@ -379,3 +381,4 @@ spec:
 ---
 # Source: azure-k8s-metrics-adapter/templates/secret.yaml
 
+---

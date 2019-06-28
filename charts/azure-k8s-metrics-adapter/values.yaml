@@ -9,6 +9,15 @@ image:
   tag: latest
   pullPolicy: Always
 
+# Credentials used if the specified image is in a private registry
+imageCredentials:
+  name: registryCredentials
+  createSecret: false
+  # Default registry is DockerHub
+  registry: "https://index.docker.io/v1/"
+  username: ""
+  password: ""
+
 logLevel: 2
 
 rbac:

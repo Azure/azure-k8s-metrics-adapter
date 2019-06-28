@@ -12,7 +12,15 @@ appInsights:
   appId: ""
   key: ""
 
-# Add this to use a version of the image other than the latest official release
+# Use this to pull a version of the image other than the latest official release
 image:
   repository: ""
   tag: ""
+
+# Use this to pull from a private container registry
+imageCredentials:
+  createSecret: true
+  # Specify registry if not DockerHub
+  registry: "" 
+  username: ""
+  password: ""
