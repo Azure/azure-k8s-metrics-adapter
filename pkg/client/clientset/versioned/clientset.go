@@ -19,7 +19,7 @@ limitations under the License.
 package versioned
 
 import (
-	azurev1alpha1 "github.com/Azure/azure-k8s-metrics-adapter/pkg/client/clientset/versioned/typed/metrics/v1alpha1"
+	azurev1alpha2 "github.com/Azure/azure-k8s-metrics-adapter/pkg/client/clientset/versioned/typed/metrics/v1alpha2"
 	discovery "k8s.io/client-go/discovery"
 	rest "k8s.io/client-go/rest"
 	flowcontrol "k8s.io/client-go/util/flowcontrol"
@@ -27,27 +27,19 @@ import (
 
 type Interface interface {
 	Discovery() discovery.DiscoveryInterface
-	AzureV1alpha1() azurev1alpha1.AzureV1alpha1Interface
-	// Deprecated: please explicitly pick a version if possible.
-	Azure() azurev1alpha1.AzureV1alpha1Interface
+	AzureV1alpha2() azurev1alpha2.AzureV1alpha2Interface
 }
 
 // Clientset contains the clients for groups. Each group has exactly one
 // version included in a Clientset.
 type Clientset struct {
 	*discovery.DiscoveryClient
-	azureV1alpha1 *azurev1alpha1.AzureV1alpha1Client
+	azureV1alpha2 *azurev1alpha2.AzureV1alpha2Client
 }
 
-// AzureV1alpha1 retrieves the AzureV1alpha1Client
-func (c *Clientset) AzureV1alpha1() azurev1alpha1.AzureV1alpha1Interface {
-	return c.azureV1alpha1
-}
-
-// Deprecated: Azure retrieves the default version of AzureClient.
-// Please explicitly pick a version.
-func (c *Clientset) Azure() azurev1alpha1.AzureV1alpha1Interface {
-	return c.azureV1alpha1
+// AzureV1alpha2 retrieves the AzureV1alpha2Client
+func (c *Clientset) AzureV1alpha2() azurev1alpha2.AzureV1alpha2Interface {
+	return c.azureV1alpha2
 }
 
 // Discovery retrieves the DiscoveryClient
@@ -66,7 +58,7 @@ func NewForConfig(c *rest.Config) (*Clientset, error) {
 	}
 	var cs Clientset
 	var err error
-	cs.azureV1alpha1, err = azurev1alpha1.NewForConfig(&configShallowCopy)
+	cs.azureV1alpha2, err = azurev1alpha2.NewForConfig(&configShallowCopy)
 	if err != nil {
 		return nil, err
 	}
@@ -82,7 +74,7 @@ func NewForConfig(c *rest.Config) (*Clientset, error) {
 // panics if there is an error in the config.
 func NewForConfigOrDie(c *rest.Config) *Clientset {
 	var cs Clientset
-	cs.azureV1alpha1 = azurev1alpha1.NewForConfigOrDie(c)
+	cs.azureV1alpha2 = azurev1alpha2.NewForConfigOrDie(c)
 
 	cs.DiscoveryClient = discovery.NewDiscoveryClientForConfigOrDie(c)
 	return &cs
@@ -91,7 +83,7 @@ func NewForConfigOrDie(c *rest.Config) *Clientset {
 // New creates a new Clientset for the given RESTClient.
 func New(c rest.Interface) *Clientset {
 	var cs Clientset
-	cs.azureV1alpha1 = azurev1alpha1.New(c)
+	cs.azureV1alpha2 = azurev1alpha2.New(c)
 
 	cs.DiscoveryClient = discovery.NewDiscoveryClient(c)
 	return &cs

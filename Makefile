@@ -82,6 +82,7 @@ verify-apis: codegen-get
 
 codegen-get:
 	go get -u k8s.io/code-generator/...
+	hack/codegen-repo-fix.sh
 
 # Helm deploy generator helpers
 verify-deploy:

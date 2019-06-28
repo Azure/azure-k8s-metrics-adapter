@@ -11,15 +11,13 @@ import (
 	"runtime"
 	"time"
 
-	"github.com/Azure/azure-k8s-metrics-adapter/pkg/azure/appinsights"
-
+	"github.com/Azure/azure-k8s-metrics-adapter/pkg/azure/custommetrics"
+	"github.com/Azure/azure-k8s-metrics-adapter/pkg/azure/externalmetrics"
 	"github.com/Azure/azure-k8s-metrics-adapter/pkg/azure/instancemetadata"
-	"github.com/Azure/azure-k8s-metrics-adapter/pkg/azure/monitor"
-	"github.com/Azure/azure-k8s-metrics-adapter/pkg/metriccache"
-
 	clientset "github.com/Azure/azure-k8s-metrics-adapter/pkg/client/clientset/versioned"
 	informers "github.com/Azure/azure-k8s-metrics-adapter/pkg/client/informers/externalversions"
 	"github.com/Azure/azure-k8s-metrics-adapter/pkg/controller"
+	"github.com/Azure/azure-k8s-metrics-adapter/pkg/metriccache"
 	azureprovider "github.com/Azure/azure-k8s-metrics-adapter/pkg/provider"
 	"github.com/golang/glog"
 	basecmd "github.com/kubernetes-incubator/custom-metrics-apiserver/pkg/cmd"
@@ -67,10 +65,13 @@ func setupAzureProvider(cmd *basecmd.AdapterBase, metricsCache *metriccache.Metr
 	}
 
 	defaultSubscriptionID := getDefaultSubscriptionID()
-	monitorClient := monitor.NewClient(defaultSubscriptionID)
-	appinsightsClient := appinsights.NewClient()
+	customMetricsClient := custommetrics.NewClient()
 
-	azureProvider := azureprovider.NewAzureProvider(defaultSubscriptionID, mapper, dynamicClient, appinsightsClient, monitorClient, metricsCache)
+	azureExternalClientFactory := externalmetrics.AzureExternalMetricClientFactory{
+		DefaultSubscriptionID: defaultSubscriptionID,
+	}
+
+	azureProvider := azureprovider.NewAzureProvider(defaultSubscriptionID, mapper, dynamicClient, customMetricsClient, azureExternalClientFactory, metricsCache)
 	cmd.WithCustomMetrics(azureProvider)
 	cmd.WithExternalMetrics(azureProvider)
 }
@@ -86,12 +87,12 @@ func newController(cmd *basecmd.AdapterBase, metricsCache *metriccache.MetricCac
 	}
 
 	adapterInformerFactory := informers.NewSharedInformerFactory(adapterClientSet, time.Second*30)
-	handler := controller.NewHandler(adapterInformerFactory.Azure().V1alpha1().ExternalMetrics().Lister(),
-		adapterInformerFactory.Azure().V1alpha1().CustomMetrics().Lister(),
+	handler := controller.NewHandler(adapterInformerFactory.Azure().V1alpha2().ExternalMetrics().Lister(),
+		adapterInformerFactory.Azure().V1alpha2().CustomMetrics().Lister(),
 		metricsCache)
 
-	controller := controller.NewController(adapterInformerFactory.Azure().V1alpha1().ExternalMetrics(),
-		adapterInformerFactory.Azure().V1alpha1().CustomMetrics(), &handler)
+	controller := controller.NewController(adapterInformerFactory.Azure().V1alpha2().ExternalMetrics(),
+		adapterInformerFactory.Azure().V1alpha2().CustomMetrics(), &handler)
 
 	return controller, adapterInformerFactory
 }

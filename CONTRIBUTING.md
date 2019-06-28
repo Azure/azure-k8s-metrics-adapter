@@ -73,10 +73,29 @@ To run `make teste2e`, you need the following:
 * jq (used in parsing responses from the endpoint)
 * [Kubernetes Metrics Server](https://github.com/kubernetes-incubator/metrics-server#deployment) deployed on your cluster (it is deployed by default with most deployments)
 * An Azure [Service Bus Queue](https://docs.microsoft.com/en-us/azure/service-bus-messaging/service-bus-dotnet-get-started-with-queues)
+* An Azure Topic with Subscription
 
 #### Environment variables for e2e tests
 
-Edit the [local dev values](local-dev-values.yaml.example) file to create `local-dev-values.yaml`. 
+Build the project with a custom repository:
+
+```
+make build
+```
+
+Edit the [local dev values](local-dev-values.yaml.example) file to create `local-dev-values.yaml`. If using custom image be sure to set the values (`export REGISTRY=<your registry name>` ("" if using DockerHub)
+`export IMAGE=azure-k8s-metrics-adapter-testimage`) before building.  The `pullPolicy: IfNotPresent` lets you use the local image on your minikube cluster.  If you are not using a local cluster you can use `pullPolicy: Always` to use an image that is in a remote repository. 
+
+Example of the `image` setting in the `local-dev-values.yaml` using a custom image:
+
+```
+image:
+  repository: metrics-adapter
+  tag: latest
+  pullPolicy: IfNotPresent
+```
+
+Set the following Environment Variables:
 
 | Variable name | Description |  Optional? |
 | ------------- | ----------- |  --------- |
@@ -85,6 +104,8 @@ Edit the [local dev values](local-dev-values.yaml.example) file to create `local
 | `SERVICEBUS_NAMESPACE` | Service bus namespace | No |
 | `SERVICEBUS_QUEUE_NAME` | Name of the service bus queue | Yes, defaults to `externalq` if not set |
 | `GOPATH` | Golang project directory | Yes, defaults to `$HOME/go` if not set |
+| `SERVICEBUS_TOPIC_NAME` | Name of the service bus topic | Yes, defaults to `example-topic` if not set |
+| `SERVICEBUS_SUBSCRIPTION_NAME` | Name of the service bus subscription |  Yes, defaults to `externalsub` if not set |
 
 ## Adding dependencies
 

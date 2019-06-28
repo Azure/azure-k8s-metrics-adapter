@@ -4,10 +4,9 @@ import (
 	"fmt"
 	"testing"
 
+	"github.com/Azure/azure-k8s-metrics-adapter/pkg/azure/externalmetrics"
 	"github.com/Azure/azure-k8s-metrics-adapter/pkg/metriccache"
 	k8sprovider "github.com/kubernetes-incubator/custom-metrics-apiserver/pkg/provider"
-
-	"github.com/Azure/azure-k8s-metrics-adapter/pkg/azure/monitor"
 	"k8s.io/apimachinery/pkg/labels"
 )
 
@@ -33,7 +32,7 @@ func createLabelSelector(metricName, subscriptionID string) labels.Selector {
 func TestFindMetricInCache(t *testing.T) {
 	metricCache := metriccache.NewMetricCache()
 
-	request := monitor.AzureMetricRequest{
+	request := externalmetrics.AzureExternalMetricRequest{
 		MetricName: "MessageCount",
 	}
 	metricCache.Update("ExternalMetric/default/metricname", request)
@@ -66,7 +65,7 @@ func TestFindMetricInCache(t *testing.T) {
 func TestFindMetricInCacheUsesOverrideSubscriptionId(t *testing.T) {
 	metricCache := metriccache.NewMetricCache()
 
-	request := monitor.AzureMetricRequest{
+	request := externalmetrics.AzureExternalMetricRequest{
 		MetricName:     "MessageCount",
 		SubscriptionID: "9876",
 	}
@@ -167,17 +166,14 @@ func TestInvalidLabelSelector(t *testing.T) {
 }
 
 func TestReturnsExeternalMetric(t *testing.T) {
-	fakeClient := fakeAzureMonitorClient{
-		err:    nil,
-		result: monitor.AzureMetricResponse{Total: 15},
-	}
+	fakeFactory := fakeAzureExternalClientFactory{}
 
 	selector, _ := labels.Parse("")
 	info := k8sprovider.ExternalMetricInfo{
 		Metric: "MetricName",
 	}
 
-	provider := newProvider(fakeClient)
+	provider := newProvider(fakeFactory)
 	returnList, err := provider.GetExternalMetric("default", selector, info)
 
 	if err != nil {
@@ -198,22 +194,37 @@ func TestReturnsExeternalMetric(t *testing.T) {
 	}
 }
 
-func newProvider(fakeclient fakeAzureMonitorClient) AzureProvider {
+func newProvider(fakeFactory fakeAzureExternalClientFactory) AzureProvider {
+	// func newProvider(fakeclient fakeAzureMonitorClient) AzureProvider {
 	metricCache := metriccache.NewMetricCache()
 
 	provider := AzureProvider{
-		metricCache:   metricCache,
-		monitorClient: fakeclient,
+		metricCache:        metricCache,
+		azureClientFactory: fakeFactory,
 	}
 
 	return provider
 }
 
+// externalMetricClient, err := p.azureExternalClientFactory.GetAzureExternalMetricClient(azMetricRequest.Type)
+
+type fakeAzureExternalClientFactory struct {
+}
+
+func (f fakeAzureExternalClientFactory) GetAzureExternalMetricClient(clientType string) (client externalmetrics.AzureExternalMetricClient, err error) {
+	fakeClient := fakeAzureMonitorClient{
+		err:    nil,
+		result: externalmetrics.AzureExternalMetricResponse{Total: 15},
+	}
+
+	return fakeClient, nil
+}
+
 type fakeAzureMonitorClient struct {
-	result monitor.AzureMetricResponse
+	result externalmetrics.AzureExternalMetricResponse
 	err    error
 }
 
-func (f fakeAzureMonitorClient) GetAzureMetric(azMetricRequest monitor.AzureMetricRequest) (monitor.AzureMetricResponse, error) {
+func (f fakeAzureMonitorClient) GetAzureMetric(azMetricRequest externalmetrics.AzureExternalMetricRequest) (externalmetrics.AzureExternalMetricResponse, error) {
 	return f.result, f.err
 }

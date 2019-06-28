@@ -1,4 +1,4 @@
-apiVersion: azure.com/v1alpha1
+apiVersion: azure.com/v1alpha2
 kind: CustomMetric
 metadata:
   name: rps

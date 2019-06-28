@@ -4,7 +4,7 @@ import (
 	"errors"
 	"testing"
 
-	api "github.com/Azure/azure-k8s-metrics-adapter/pkg/apis/metrics/v1alpha1"
+	api "github.com/Azure/azure-k8s-metrics-adapter/pkg/apis/metrics/v1alpha2"
 	"github.com/Azure/azure-k8s-metrics-adapter/pkg/client/clientset/versioned/fake"
 	informers "github.com/Azure/azure-k8s-metrics-adapter/pkg/client/informers/externalversions"
 	metav1 "k8s.io/apimachinery/pkg/apis/meta/v1"
@@ -292,7 +292,7 @@ func newController(config controllerConfig) (*Controller, informers.SharedInform
 	fakeClient := fake.NewSimpleClientset(config.store...)
 	i := informers.NewSharedInformerFactory(fakeClient, 0)
 
-	c := NewController(i.Azure().V1alpha1().ExternalMetrics(), i.Azure().V1alpha1().CustomMetrics(), config.handler)
+	c := NewController(i.Azure().V1alpha2().ExternalMetrics(), i.Azure().V1alpha2().CustomMetrics(), config.handler)
 
 	// override for testing
 	c.externalMetricSynced = config.syncedFunction
@@ -308,12 +308,12 @@ func newController(config controllerConfig) (*Controller, informers.SharedInform
 
 	for _, em := range config.externalMetricsListerCache {
 		// this will force the enqueuer to reload
-		i.Azure().V1alpha1().ExternalMetrics().Informer().GetIndexer().Add(em)
+		i.Azure().V1alpha2().ExternalMetrics().Informer().GetIndexer().Add(em)
 	}
 
 	for _, cm := range config.customMetricsListerCache {
 		// this will force the enqueuer to reload
-		i.Azure().V1alpha1().CustomMetrics().Informer().GetIndexer().Add(cm)
+		i.Azure().V1alpha2().CustomMetrics().Informer().GetIndexer().Add(cm)
 	}
 
 	return c, i

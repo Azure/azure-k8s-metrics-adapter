@@ -6,7 +6,7 @@ metadata:
 spec:
   # group name to use for REST API: /apis/<group>/<version>
   group: azure.com
-  version: v1alpha1
+  version: v1alpha2
   scope: Namespaced
   names:
     # plural name to be used in the URL: /apis/<group>/<version>/<plural>
@@ -25,7 +25,7 @@ metadata:
 spec:
   # group name to use for REST API: /apis/<group>/<version>
   group: azure.com
-  version: v1alpha1
+  version: v1alpha2
   scope: Namespaced
   names:
     # plural name to be used in the URL: /apis/<group>/<version>/<plural>

@@ -53,18 +53,22 @@ jobs:
   strategy:
     matrix:
       K8s10:
+        SERVICEBUS_SUBSCRIPTION_NAME: 'externalsub-10'
         SERVICEBUS_QUEUE_NAME: 'externalq-10'
         DOCKER_VERSION: '18.06.1~ce~3-0~ubuntu'
         KUBERNETES_VERSION: '1.10.12'
       K8s11:
+        SERVICEBUS_SUBSCRIPTION_NAME: 'externalsub-11'
         SERVICEBUS_QUEUE_NAME: 'externalq-11'
         DOCKER_VERSION: '17.03.3~ce-0~ubuntu-xenial'
         KUBERNETES_VERSION: '1.11.6'
       K8s12:
+        SERVICEBUS_SUBSCRIPTION_NAME: 'externalsub-12'
         SERVICEBUS_QUEUE_NAME: 'externalq-12'
         DOCKER_VERSION: '18.06.1~ce~3-0~ubuntu'
         KUBERNETES_VERSION: '1.12.4'
       K8s13:
+        SERVICEBUS_SUBSCRIPTION_NAME: 'externalsub-13'
         SERVICEBUS_QUEUE_NAME: 'externalq-13'
         DOCKER_VERSION: '18.06.1~ce~3-0~ubuntu'
         KUBERNETES_VERSION: '1.13.1'
