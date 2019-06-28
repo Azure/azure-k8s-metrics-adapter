@@ -3,7 +3,7 @@
 package provider
 
 import (
-	"github.com/Azure/azure-k8s-metrics-adapter/pkg/azure/monitor"
+	"github.com/Azure/azure-k8s-metrics-adapter/pkg/azure/externalmetrics"
 	"github.com/golang/glog"
 	"github.com/kubernetes-incubator/custom-metrics-apiserver/pkg/provider"
 	"k8s.io/apimachinery/pkg/api/errors"
@@ -33,7 +33,12 @@ func (p *AzureProvider) GetExternalMetric(namespace string, metricSelector label
 		return nil, errors.NewBadRequest(err.Error())
 	}
 
-	metricValue, err := p.monitorClient.GetAzureMetric(azMetricRequest)
+	externalMetricClient, err := p.azureClientFactory.GetAzureExternalMetricClient(azMetricRequest.Type)
+	if err != nil {
+		return nil, errors.NewBadRequest(err.Error())
+	}
+
+	metricValue, err := externalMetricClient.GetAzureMetric(azMetricRequest)
 	if err != nil {
 		glog.Errorf("bad request: %v", err)
 		return nil, errors.NewBadRequest(err.Error())
@@ -67,20 +72,20 @@ func (p *AzureProvider) ListAllExternalMetrics() []provider.ExternalMetricInfo {
 	return externalMetricsInfo
 }
 
-func (p *AzureProvider) getMetricRequest(namespace string, metricName string, metricSelector labels.Selector) (monitor.AzureMetricRequest, error) {
+func (p *AzureProvider) getMetricRequest(namespace string, metricName string, metricSelector labels.Selector) (externalmetrics.AzureExternalMetricRequest, error) {
 
-	azMetricRequest, found := p.metricCache.GetAzureMonitorRequest(namespace, metricName)
+	azMetricRequest, found := p.metricCache.GetAzureExternalMetricRequest(namespace, metricName)
 	if found {
-		azMetricRequest.Timespan = monitor.TimeSpan()
+		azMetricRequest.Timespan = externalmetrics.TimeSpan()
 		if azMetricRequest.SubscriptionID == "" {
 			azMetricRequest.SubscriptionID = p.defaultSubscriptionID
 		}
 		return azMetricRequest, nil
 	}
 
-	azMetricRequest, err := monitor.ParseAzureMetric(metricSelector, p.defaultSubscriptionID)
+	azMetricRequest, err := externalmetrics.ParseAzureMetric(metricSelector, p.defaultSubscriptionID)
 	if err != nil {
-		return monitor.AzureMetricRequest{}, err
+		return externalmetrics.AzureExternalMetricRequest{}, err
 	}
 
 	return azMetricRequest, nil

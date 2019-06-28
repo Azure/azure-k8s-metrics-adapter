@@ -1,8 +1,9 @@
-apiVersion: azure.com/v1alpha1
+apiVersion: azure.com/v1alpha2
 kind: ExternalMetric
 metadata:
   name: queuemessages
 spec:
+  type: azuremonitor
   azure:
     resourceGroup: sb-external-example
     resourceName: sb-external-ns

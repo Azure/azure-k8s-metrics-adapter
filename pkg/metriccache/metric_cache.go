@@ -4,9 +4,8 @@ import (
 	"fmt"
 	"sync"
 
-	"github.com/Azure/azure-k8s-metrics-adapter/pkg/azure/appinsights"
-
-	"github.com/Azure/azure-k8s-metrics-adapter/pkg/azure/monitor"
+	"github.com/Azure/azure-k8s-metrics-adapter/pkg/azure/custommetrics"
+	"github.com/Azure/azure-k8s-metrics-adapter/pkg/azure/externalmetrics"
 	"github.com/golang/glog"
 )
 
@@ -31,8 +30,8 @@ func (mc *MetricCache) Update(key string, metricRequest interface{}) {
 	mc.metricRequests[key] = metricRequest
 }
 
-// GetAzureMonitorRequest retrieves a metric request from the cache
-func (mc *MetricCache) GetAzureMonitorRequest(namepace, name string) (monitor.AzureMetricRequest, bool) {
+// GetAzureExternalMetricRequest retrieves a metric request from the cache
+func (mc *MetricCache) GetAzureExternalMetricRequest(namepace, name string) (externalmetrics.AzureExternalMetricRequest, bool) {
 	mc.metricMutext.RLock()
 	defer mc.metricMutext.RUnlock()
 
@@ -40,14 +39,14 @@ func (mc *MetricCache) GetAzureMonitorRequest(namepace, name string) (monitor.Az
 	metricRequest, exists := mc.metricRequests[key]
 	if !exists {
 		glog.V(2).Infof("metric not found %s", key)
-		return monitor.AzureMetricRequest{}, false
+		return externalmetrics.AzureExternalMetricRequest{}, false
 	}
 
-	return metricRequest.(monitor.AzureMetricRequest), true
+	return metricRequest.(externalmetrics.AzureExternalMetricRequest), true
 }
 
 // GetAppInsightsRequest retrieves a metric request from the cache
-func (mc *MetricCache) GetAppInsightsRequest(namespace, name string) (appinsights.MetricRequest, bool) {
+func (mc *MetricCache) GetAppInsightsRequest(namespace, name string) (custommetrics.MetricRequest, bool) {
 	mc.metricMutext.RLock()
 	defer mc.metricMutext.RUnlock()
 
@@ -55,10 +54,10 @@ func (mc *MetricCache) GetAppInsightsRequest(namespace, name string) (appinsight
 	metricRequest, exists := mc.metricRequests[key]
 	if !exists {
 		glog.V(2).Infof("metric not found %s", key)
-		return appinsights.MetricRequest{}, false
+		return custommetrics.MetricRequest{}, false
 	}
 
-	return metricRequest.(appinsights.MetricRequest), true
+	return metricRequest.(custommetrics.MetricRequest), true
 }
 
 // Remove retrieves a metric request from the cache

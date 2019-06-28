@@ -19,14 +19,21 @@ func main() {
 		return
 	}
 
+	messagesToSendArg := os.Args[2]
+	messagesCount, err := strconv.Atoi(messagesToSendArg)
+	if err != nil {
+		fmt.Println("Please provide number of messages")
+		return
+	}
+
+	queueName := os.Args[3]
+
 	connStr := os.Getenv("SERVICEBUS_CONNECTION_STRING")
 	ns, err := servicebus.NewNamespace(servicebus.NamespaceWithConnectionString(connStr))
 	if err != nil {
 		fmt.Println("namespace: ", err)
 	}
 
-	// Initialize and create a Service Bus Queue named helloworld if it doesn't exist
-	queueName := "externalq"
 	fmt.Println("connecting to queue: ", queueName)
 	q, err := ns.NewQueue(queueName)
 	if err != nil {
@@ -42,7 +49,7 @@ func main() {
 		os.Exit(1)
 	}()
 
-	for i := 1; i < 20000; i++ {
+	for i := 1; i <= messagesCount; i++ {
 		fmt.Println("sending message ", i)
 		err = q.Send(context.Background(), servicebus.NewMessageFromString("the answer is 42"))
 		if err != nil {

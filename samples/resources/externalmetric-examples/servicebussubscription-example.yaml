@@ -1,0 +1,14 @@
+apiVersion: azure.com/v1alpha2
+kind: ExternalMetric
+metadata:
+  name: example-external-metric-service-bus-subscription
+spec:
+  type: servicebussubscription
+  azure:
+    resourceGroup: sb-external-example
+    serviceBusNamespace: sb-external-ns
+    serviceBusTopic: example-topic
+    serviceBusSubscription: example-sub
+  metric:
+    # This would default to activeMessageCount, but could be updated to one of the counts from https://github.com/Azure/azure-sdk-for-go/blob/master/services/servicebus/mgmt/2017-04-01/servicebus/models.go#L1116
+    metricName: activeMessageCount

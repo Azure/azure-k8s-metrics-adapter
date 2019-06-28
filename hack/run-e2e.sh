@@ -32,20 +32,35 @@ echo; echo "Running deployment scripts"
 cd $GOPATH/src/github.com/Azure/azure-k8s-metrics-adapter/hack/e2e-scripts
 chmod +x *.sh
 
+TEST_FAILED=0
+
 ./deploy-adapter-with-sp.sh
 if [[ $? = 0 ]]; then
-    ./configure-metrics.sh
-
-    echo "Testing deployment"
-
-    ./gen-and-check-messages.sh
+    echo "Testing Queue (Azure Monitor) metrics"
+    ./configure-queue-metrics.sh
+    ./gen-and-check-queue-messages.sh
     if [[ $? = 0 ]];
         then echo $DIVIDER; echo "PASS"; echo $DIVIDER
-        else echo $DIVIDER; echo "FAIL"; echo $DIVIDER; 
+        else echo $DIVIDER; echo "FAIL"; echo $DIVIDER; TEST_FAILED=1;
     fi
 
-    ./run-consumer.sh
+    ./run-queue-consumer.sh
+
+    echo "Testing Topic Subscriptions metrics"
+    ./configure-topic-subscriptions-metrics.sh
+    ./gen-and-check-topic-subscriptions-messages.sh
+    if [[ $? = 0 ]];
+        then echo $DIVIDER; echo "PASS"; echo $DIVIDER
+        else echo $DIVIDER; echo "FAIL"; echo $DIVIDER; TEST_FAILED=1;
+    fi
+
+    ./run-topic-consumer.sh
 fi
 
 echo "Removing adapter deployment"
 helm delete --purge adapter
+
+if [[ $TEST_FAILED == 1 ]]; then
+    echo $DIVIDER; echo "FAIL"; echo $DIVIDER;
+    exit 1
+fi

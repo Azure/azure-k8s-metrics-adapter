@@ -21,7 +21,7 @@ package externalversions
 import (
 	"fmt"
 
-	v1alpha1 "github.com/Azure/azure-k8s-metrics-adapter/pkg/apis/metrics/v1alpha1"
+	v1alpha2 "github.com/Azure/azure-k8s-metrics-adapter/pkg/apis/metrics/v1alpha2"
 	schema "k8s.io/apimachinery/pkg/runtime/schema"
 	cache "k8s.io/client-go/tools/cache"
 )
@@ -52,11 +52,11 @@ func (f *genericInformer) Lister() cache.GenericLister {
 // TODO extend this to unknown resources with a client pool
 func (f *sharedInformerFactory) ForResource(resource schema.GroupVersionResource) (GenericInformer, error) {
 	switch resource {
-	// Group=azure.com, Version=v1alpha1
-	case v1alpha1.SchemeGroupVersion.WithResource("custommetrics"):
-		return &genericInformer{resource: resource.GroupResource(), informer: f.Azure().V1alpha1().CustomMetrics().Informer()}, nil
-	case v1alpha1.SchemeGroupVersion.WithResource("externalmetrics"):
-		return &genericInformer{resource: resource.GroupResource(), informer: f.Azure().V1alpha1().ExternalMetrics().Informer()}, nil
+	// Group=azure.com, Version=v1alpha2
+	case v1alpha2.SchemeGroupVersion.WithResource("custommetrics"):
+		return &genericInformer{resource: resource.GroupResource(), informer: f.Azure().V1alpha2().CustomMetrics().Informer()}, nil
+	case v1alpha2.SchemeGroupVersion.WithResource("externalmetrics"):
+		return &genericInformer{resource: resource.GroupResource(), informer: f.Azure().V1alpha2().ExternalMetrics().Informer()}, nil
 
 	}
 

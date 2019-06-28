@@ -3,10 +3,9 @@ package controller
 import (
 	"fmt"
 
-	"github.com/Azure/azure-k8s-metrics-adapter/pkg/azure/appinsights"
-
-	"github.com/Azure/azure-k8s-metrics-adapter/pkg/azure/monitor"
-	listers "github.com/Azure/azure-k8s-metrics-adapter/pkg/client/listers/metrics/v1alpha1"
+	"github.com/Azure/azure-k8s-metrics-adapter/pkg/azure/custommetrics"
+	"github.com/Azure/azure-k8s-metrics-adapter/pkg/azure/externalmetrics"
+	listers "github.com/Azure/azure-k8s-metrics-adapter/pkg/client/listers/metrics/v1alpha2"
 	"github.com/Azure/azure-k8s-metrics-adapter/pkg/metriccache"
 	"github.com/golang/glog"
 	"k8s.io/apimachinery/pkg/api/errors"
@@ -68,7 +67,7 @@ func (h *Handler) handleCustomMetric(ns, name string, queueItem namespacedQueueI
 		return err
 	}
 
-	metric := appinsights.MetricRequest{
+	metric := custommetrics.MetricRequest{
 		MetricName: customMetricInfo.Spec.MetricConfig.MetricName,
 	}
 
@@ -93,7 +92,8 @@ func (h *Handler) handleExternalMetric(ns, name string, queueItem namespacedQueu
 		return err
 	}
 
-	azureMetricRequest := monitor.AzureMetricRequest{
+	// TODO: Map the new fields here for Service Bus
+	azureMetricRequest := externalmetrics.AzureExternalMetricRequest{
 		ResourceGroup:             externalMetricInfo.Spec.AzureConfig.ResourceGroup,
 		ResourceName:              externalMetricInfo.Spec.AzureConfig.ResourceName,
 		ResourceProviderNamespace: externalMetricInfo.Spec.AzureConfig.ResourceProviderNamespace,
@@ -102,6 +102,10 @@ func (h *Handler) handleExternalMetric(ns, name string, queueItem namespacedQueu
 		MetricName:                externalMetricInfo.Spec.MetricConfig.MetricName,
 		Filter:                    externalMetricInfo.Spec.MetricConfig.Filter,
 		Aggregation:               externalMetricInfo.Spec.MetricConfig.Aggregation,
+		Topic:                     externalMetricInfo.Spec.AzureConfig.ServiceBusTopic,
+		Type:                      externalMetricInfo.Spec.Type,
+		Namespace:                 externalMetricInfo.Spec.AzureConfig.ServiceBusNamespace,
+		Subscription:              externalMetricInfo.Spec.AzureConfig.ServiceBusSubscription,
 	}
 
 	glog.V(2).Infof("adding to cache item '%s' in namespace '%s'", name, ns)

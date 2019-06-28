@@ -14,6 +14,7 @@ spec:
       containers:
       - name: consumer
         image: jsturtevant/queue-consumer-external-metric
+        args: ["externalq"]
         env:
           - name: SERVICEBUS_CONNECTION_STRING
             valueFrom:
