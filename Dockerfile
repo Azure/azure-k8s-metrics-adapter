@@ -1,4 +1,4 @@
-FROM golang:1.10.3-alpine3.8 as builder
+FROM golang:1.11.11-alpine3.10  as builder
 
 WORKDIR /go/src/github.com/Azure/azure-k8s-metrics-adapter
 COPY . .
@@ -6,7 +6,7 @@ COPY . .
 RUN CGO_ENABLED=0 go test $(go list ./... | grep -v -e '/client/' -e '/samples/' -e '/apis/')
 RUN CGO_ENABLED=0 go build -a -tags netgo -o /adapter github.com/Azure/azure-k8s-metrics-adapter
 
-FROM alpine:3.8
+FROM alpine:3.10
 RUN apk update \
     && apk add ca-certificates \
     && rm -rf /var/cache/apk/* \
