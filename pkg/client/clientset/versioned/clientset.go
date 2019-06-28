@@ -28,8 +28,6 @@ import (
 type Interface interface {
 	Discovery() discovery.DiscoveryInterface
 	AzureV1alpha2() azurev1alpha2.AzureV1alpha2Interface
-	// Deprecated: please explicitly pick a version if possible.
-	Azure() azurev1alpha2.AzureV1alpha2Interface
 }
 
 // Clientset contains the clients for groups. Each group has exactly one
@@ -41,12 +39,6 @@ type Clientset struct {
 
 // AzureV1alpha2 retrieves the AzureV1alpha2Client
 func (c *Clientset) AzureV1alpha2() azurev1alpha2.AzureV1alpha2Interface {
-	return c.azureV1alpha2
-}
-
-// Deprecated: Azure retrieves the default version of AzureClient.
-// Please explicitly pick a version.
-func (c *Clientset) Azure() azurev1alpha2.AzureV1alpha2Interface {
 	return c.azureV1alpha2
 }
 

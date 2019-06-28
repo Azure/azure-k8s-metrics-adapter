@@ -75,8 +75,3 @@ var _ clientset.Interface = &Clientset{}
 func (c *Clientset) AzureV1alpha2() azurev1alpha2.AzureV1alpha2Interface {
 	return &fakeazurev1alpha2.FakeAzureV1alpha2{Fake: &c.Fake}
 }
-
-// Azure retrieves the AzureV1alpha2Client
-func (c *Clientset) Azure() azurev1alpha2.AzureV1alpha2Interface {
-	return &fakeazurev1alpha2.FakeAzureV1alpha2{Fake: &c.Fake}
-}
