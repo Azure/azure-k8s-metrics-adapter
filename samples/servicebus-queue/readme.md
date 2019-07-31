@@ -246,7 +246,7 @@ consumer   10         10         10            10           23m
 And check out the logs for the consumers:
 
 ```
-k logs -l app=consumer --tail 100
+kubectl logs -l app=consumer --tail 100
 ```
 
 ## Clean up
