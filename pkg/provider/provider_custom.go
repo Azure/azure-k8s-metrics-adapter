@@ -22,14 +22,14 @@ import (
 
 // GetMetricByName fetches a particular metric for a particular object.
 // The namespace will be empty if the metric is root-scoped.
-func (p *AzureProvider) GetMetricByName(name types.NamespacedName, info provider.CustomMetricInfo) (*custom_metrics.MetricValue, error) {
+func (p *AzureProvider) GetMetricByName(name types.NamespacedName, info provider.CustomMetricInfo, metricSelector labels.Selector) (*custom_metrics.MetricValue, error) {
 	// not implemented yet
 	return nil, errors.NewServiceUnavailable("not implemented yet")
 }
 
 // GetMetricBySelector fetches a particular metric for a set of objects matching
 // the given label selector.  The namespace will be empty if the metric is root-scoped.
-func (p *AzureProvider) GetMetricBySelector(namespace string, selector labels.Selector, info provider.CustomMetricInfo) (*custom_metrics.MetricValueList, error) {
+func (p *AzureProvider) GetMetricBySelector(namespace string, selector labels.Selector, info provider.CustomMetricInfo, metricSelector labels.Selector) (*custom_metrics.MetricValueList, error) {
 	glog.V(0).Infof("Received request for custom metric: groupresource: %s, namespace: %s, metric name: %s, selectors: %s", info.GroupResource.String(), namespace, info.Metric, selector.String())
 
 	_, selectable := selector.Requirements()
