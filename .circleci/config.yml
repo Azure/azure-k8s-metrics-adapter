@@ -45,7 +45,7 @@ jobs:
       - setup_remote_docker
       - run: |  
           echo 'export VERSION="$(if [ -z ${CIRCLE_TAG} ]; then echo "beta"; else echo "$CIRCLE_TAG"; fi)-$CIRCLE_BUILD_NUM"' >> $BASH_ENV
-          echo 'export REGISTRY_PATH="public/k8s/metrics"' >> $BASH_ENV
+          echo 'export IMAGE="public/k8s/metrics/adapter"' >> $BASH_ENV
       - restore_cache:
           keys:
             - v1-{{ .Branch }}
