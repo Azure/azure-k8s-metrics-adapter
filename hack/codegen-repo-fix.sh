@@ -14,6 +14,8 @@ if [[ $currentbranch != "release-1.14" ]]
 then
   git fetch --all
   git checkout -t origin/release-1.14
+else 
+  echo "on correct branch"
 fi
 
 

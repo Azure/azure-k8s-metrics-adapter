@@ -30,9 +30,9 @@ You can get back to this screen (the visual designer) at any time from your save
 | `SERVICEBUS_CONNECTION_STRING` | Service Bus namespace connection string | \*\*\*\*\* |
 | `SERVICEBUS_NAMESPACE` | Service Bus namespace | my-namespace  |
 | `SERVICEBUS_RESOURCE_GROUP` | Resource group containing the Service Bus namespace | my-resource-group |
-| `SP_CLIENT_ID` | Service principal app ID | \*\*\*\*\* |
-| `SP_CLIENT_SECRET` | Service principal password | \*\*\*\*\* |
-| `SP_TENANT_ID` | Service principal tenant ID | \*\*\*\*\* |
+| `SP_CLIENT_ID` | Service principal app ID with [permissions](../README.md#using-azure-ad-application-id-and-secret) to the ServiceBus above  | \*\*\*\*\* |
+| `SP_CLIENT_SECRET` | Service principal password with [permissions](../README.md#using-azure-ad-application-id-and-secret) to the ServiceBus above | \*\*\*\*\* |
+| `SP_TENANT_ID` | Service principal tenant ID with [permissions](../README.md#using-azure-ad-application-id-and-secret) to the ServiceBus above | \*\*\*\*\* |
 
 \* Suggested variable value in AzDO
 
