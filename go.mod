@@ -10,7 +10,6 @@ require (
 	github.com/emicklei/go-restful v2.2.1+incompatible // indirect
 	github.com/emicklei/go-restful-swagger12 v0.0.0-20170208215640-dcef7f557305 // indirect
 	github.com/evanphx/json-patch v4.2.0+incompatible // indirect
-	github.com/golang/glog v0.0.0-20160126235308-23def4e6c14b
 	github.com/kubernetes-incubator/custom-metrics-apiserver v0.0.0-20190918110929-3d9be26a50eb
 	github.com/mitchellh/go-homedir v1.1.0 // indirect
 	k8s.io/api v0.0.0-20190817021128-e14a4b1f5f84
@@ -19,6 +18,7 @@ require (
 	k8s.io/client-go v0.0.0-20190817021527-637fc595d17a
 	k8s.io/code-generator v0.0.0-20190612205613-18da4a14b22b
 	k8s.io/component-base v0.0.0-20190817022002-dd0e01d5790f
+	k8s.io/klog v0.3.1
 	k8s.io/metrics v0.0.0-20190817023635-63ee757b2e8b
 
 )
