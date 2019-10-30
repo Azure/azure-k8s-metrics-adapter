@@ -2,7 +2,6 @@
 REGISTRY?=csemcr.azurecr.io
 IMAGE?=test/k8s/metrics/adapter
 VERSION?=latest
-GO111MODULE=on
 
 ifneq ("$(REGISTRY)", "")
 	FULL_IMAGE=$(REGISTRY)/$(IMAGE)

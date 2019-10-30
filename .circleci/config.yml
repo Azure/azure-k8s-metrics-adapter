@@ -6,7 +6,7 @@ jobs:
   build:
     docker:
       - image: circleci/golang:1.12.12
-    working_directory: /go/src/github.com/Azure/azure-k8s-metrics-adapter
+    working_directory: /app
     steps:
       - checkout
       - setup_remote_docker
@@ -28,7 +28,7 @@ jobs:
   build_pr:
     docker:
       - image: circleci/golang:1.12.12
-    working_directory: /go/src/github.com/Azure/azure-k8s-metrics-adapter
+    working_directory: /app
     steps:
       - checkout
       - setup_remote_docker
@@ -39,7 +39,7 @@ jobs:
   deploy:
     docker:
       - image: circleci/golang:1.12.12
-    working_directory: /go/src/github.com/Azure/azure-k8s-metrics-adapter
+    working_directory: /app
     steps:
       - checkout
       - setup_remote_docker
