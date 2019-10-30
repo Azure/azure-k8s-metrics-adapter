@@ -25,8 +25,8 @@ build-local: test
 build: vendor verify-deploy verify-apis
 	docker build -t $(FULL_IMAGE):$(VERSION) .
 
-vendor: 
-	dep ensure -v
+vendor:
+	go mod vendor
 
 test: vendor
 	hack/run-tests.sh
@@ -74,15 +74,11 @@ tag-ci:
 	docker tag $(FULL_IMAGE):$(CIRCLE_WORKFLOW_ID) $(FULL_IMAGE):$(VERSION)
 
 # Code gen helpers
-gen-apis: codegen-get
+gen-apis: 
 	hack/update-codegen.sh
 
-verify-apis: codegen-get
+verify-apis: 
 	hack/verify-codegen.sh
-
-codegen-get:
-	go get -d -u k8s.io/code-generator/...
-	hack/codegen-repo-fix.sh
 
 # Helm deploy generator helpers
 verify-deploy:
