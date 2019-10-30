@@ -55,6 +55,8 @@ if [[ $? = 0 ]]; then
     fi
 
     ./run-topic-consumer.sh
+else
+    echo $DIVIDER; echo "FAIL"; echo $DIVIDER; TEST_FAILED=1;
 fi
 
 echo "Removing adapter deployment"
