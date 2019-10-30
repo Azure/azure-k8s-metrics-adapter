@@ -74,10 +74,10 @@ tag-ci:
 	docker tag $(FULL_IMAGE):$(CIRCLE_WORKFLOW_ID) $(FULL_IMAGE):$(VERSION)
 
 # Code gen helpers
-gen-apis: 
+gen-apis: vendor
 	hack/update-codegen.sh
 
-verify-apis: 
+verify-apis: vendor
 	hack/verify-codegen.sh
 
 # Helm deploy generator helpers

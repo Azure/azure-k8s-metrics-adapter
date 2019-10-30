@@ -21,7 +21,7 @@ import (
 	azureprovider "github.com/Azure/azure-k8s-metrics-adapter/pkg/provider"
 	"github.com/golang/glog"
 	basecmd "github.com/kubernetes-incubator/custom-metrics-apiserver/pkg/cmd"
-	"k8s.io/apiserver/pkg/util/logs"
+	"k8s.io/component-base/logs"
 )
 
 func main() {
