@@ -6,7 +6,7 @@ import (
 
 	"github.com/Azure/azure-k8s-metrics-adapter/pkg/apis/metrics/v1alpha2"
 
-	"github.com/golang/glog"
+	"k8s.io/klog"
 	"k8s.io/apimachinery/pkg/util/runtime"
 	utilruntime "k8s.io/apimachinery/pkg/util/runtime"
 	"k8s.io/apimachinery/pkg/util/wait"
@@ -37,7 +37,7 @@ func NewController(externalMetricInformer informers.ExternalMetricInformer, cust
 	// wire up enque step.  This provides a hook for testing enqueue step
 	controller.enqueuer = controller.enqueueExternalMetric
 
-	glog.Info("Setting up external metric event handlers")
+	klog.Info("Setting up external metric event handlers")
 	externalMetricInformer.Informer().AddEventHandler(cache.ResourceEventHandlerFuncs{
 		AddFunc: controller.enqueuer,
 		UpdateFunc: func(old, new interface{}) {
@@ -49,7 +49,7 @@ func NewController(externalMetricInformer informers.ExternalMetricInformer, cust
 		DeleteFunc: controller.enqueuer,
 	})
 
-	glog.Info("Setting up custom metric event handlers")
+	klog.Info("Setting up custom metric event handlers")
 	customMetricInformer.Informer().AddEventHandler(cache.ResourceEventHandlerFuncs{
 		AddFunc: controller.enqueuer,
 		UpdateFunc: func(old, new interface{}) {
@@ -66,7 +66,7 @@ func (c *Controller) Run(numberOfWorkers int, interval time.Duration, stopCh <-c
 	defer utilruntime.HandleCrash()
 	defer c.metricQueue.ShutDown()
 
-	glog.V(2).Info("initializing controller")
+	klog.V(2).Info("initializing controller")
 
 	// do the initial synchronization (one time) to populate resources
 	if !cache.WaitForCacheSync(stopCh, c.externalMetricSynced, c.customMetricSynced) {
@@ -74,32 +74,32 @@ func (c *Controller) Run(numberOfWorkers int, interval time.Duration, stopCh <-c
 		return
 	}
 
-	glog.V(2).Infof("starting %d workers with %d interval", numberOfWorkers, interval)
+	klog.V(2).Infof("starting %d workers with %d interval", numberOfWorkers, interval)
 	for i := 0; i < numberOfWorkers; i++ {
 		go wait.Until(c.runWorker, interval, stopCh)
 	}
 
 	<-stopCh
-	glog.Info("Shutting down workers")
+	klog.Info("Shutting down workers")
 	return
 }
 
 func (c *Controller) runWorker() {
-	glog.V(2).Info("Worker starting")
+	klog.V(2).Info("Worker starting")
 
 	for c.processNextItem() {
-		glog.V(2).Info("processing next item")
+		klog.V(2).Info("processing next item")
 	}
 
-	glog.V(2).Info("worker completed")
+	klog.V(2).Info("worker completed")
 }
 
 func (c *Controller) processNextItem() bool {
-	glog.V(2).Info("processing item")
+	klog.V(2).Info("processing item")
 
 	rawItem, quit := c.metricQueue.Get()
 	if quit {
-		glog.V(2).Info("recieved quit signal")
+		klog.V(2).Info("recieved quit signal")
 		return false
 	}
 
@@ -118,20 +118,20 @@ func (c *Controller) processNextItem() bool {
 	if err != nil {
 		retrys := c.metricQueue.NumRequeues(rawItem)
 		if retrys < 5 {
-			glog.Errorf("Transient error with %d retrys for key %s: %s", retrys, rawItem, err)
+			klog.Errorf("Transient error with %d retrys for key %s: %s", retrys, rawItem, err)
 			c.metricQueue.AddRateLimited(rawItem)
 			return true
 		}
 
 		// something was wrong with the item on queue
-		glog.Errorf("Max retries hit for key %s: %s", rawItem, err)
+		klog.Errorf("Max retries hit for key %s: %s", rawItem, err)
 		c.metricQueue.Forget(rawItem)
 		utilruntime.HandleError(err)
 		return true
 	}
 
 	//if here success for get item
-	glog.V(2).Infof("succesfully proccessed item '%s'", queueItem)
+	klog.V(2).Infof("succesfully proccessed item '%s'", queueItem)
 	c.metricQueue.Forget(rawItem)
 	return true
 }
@@ -146,7 +146,7 @@ func (c *Controller) enqueueExternalMetric(obj interface{}) {
 
 	kind := getKind(obj)
 
-	glog.V(2).Infof("adding item to queue for '%s' with kind '%s'", key, kind)
+	klog.V(2).Infof("adding item to queue for '%s' with kind '%s'", key, kind)
 	c.metricQueue.AddRateLimited(namespacedQueueItem{
 		namespaceKey: key,
 		kind:         kind,
@@ -182,7 +182,7 @@ func getKind(obj interface{}) string {
 	case *v1alpha2.CustomMetric:
 		return "CustomMetric"
 	default:
-		glog.Error("No known type of object")
+		klog.Error("No known type of object")
 		return ""
 	}
 }

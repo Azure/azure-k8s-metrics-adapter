@@ -7,7 +7,7 @@ import (
 	"github.com/Azure/azure-k8s-metrics-adapter/pkg/azure/externalmetrics"
 	listers "github.com/Azure/azure-k8s-metrics-adapter/pkg/client/listers/metrics/v1alpha2"
 	"github.com/Azure/azure-k8s-metrics-adapter/pkg/metriccache"
-	"github.com/golang/glog"
+	"k8s.io/klog"
 	"k8s.io/apimachinery/pkg/api/errors"
 	"k8s.io/apimachinery/pkg/util/runtime"
 	"k8s.io/client-go/tools/cache"
@@ -54,12 +54,12 @@ func (h *Handler) Process(queueItem namespacedQueueItem) error {
 
 func (h *Handler) handleCustomMetric(ns, name string, queueItem namespacedQueueItem) error {
 	// check if item exists
-	glog.V(2).Infof("processing item '%s' in namespace '%s'", name, ns)
+	klog.V(2).Infof("processing item '%s' in namespace '%s'", name, ns)
 	customMetricInfo, err := h.customMetricLister.CustomMetrics(ns).Get(name)
 	if err != nil {
 		if errors.IsNotFound(err) {
 			// Then this we should remove
-			glog.V(2).Infof("removing item from cache '%s' in namespace '%s'", name, ns)
+			klog.V(2).Infof("removing item from cache '%s' in namespace '%s'", name, ns)
 			h.metriccache.Remove(queueItem.Key())
 			return nil
 		}
@@ -71,7 +71,7 @@ func (h *Handler) handleCustomMetric(ns, name string, queueItem namespacedQueueI
 		MetricName: customMetricInfo.Spec.MetricConfig.MetricName,
 	}
 
-	glog.V(2).Infof("adding to cache item '%s' in namespace '%s'", name, ns)
+	klog.V(2).Infof("adding to cache item '%s' in namespace '%s'", name, ns)
 	h.metriccache.Update(queueItem.Key(), metric)
 
 	return nil
@@ -79,12 +79,12 @@ func (h *Handler) handleCustomMetric(ns, name string, queueItem namespacedQueueI
 
 func (h *Handler) handleExternalMetric(ns, name string, queueItem namespacedQueueItem) error {
 	// check if item exists
-	glog.V(2).Infof("processing item '%s' in namespace '%s'", name, ns)
+	klog.V(2).Infof("processing item '%s' in namespace '%s'", name, ns)
 	externalMetricInfo, err := h.externalmetricLister.ExternalMetrics(ns).Get(name)
 	if err != nil {
 		if errors.IsNotFound(err) {
 			// Then this we should remove
-			glog.V(2).Infof("removing item from cache '%s' in namespace '%s'", name, ns)
+			klog.V(2).Infof("removing item from cache '%s' in namespace '%s'", name, ns)
 			h.metriccache.Remove(queueItem.Key())
 			return nil
 		}
@@ -108,7 +108,7 @@ func (h *Handler) handleExternalMetric(ns, name string, queueItem namespacedQueu
 		Subscription:              externalMetricInfo.Spec.AzureConfig.ServiceBusSubscription,
 	}
 
-	glog.V(2).Infof("adding to cache item '%s' in namespace '%s'", name, ns)
+	klog.V(2).Infof("adding to cache item '%s' in namespace '%s'", name, ns)
 	h.metriccache.Update(queueItem.Key(), azureMetricRequest)
 
 	return nil

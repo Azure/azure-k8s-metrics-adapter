@@ -5,7 +5,7 @@ import (
 
 	"github.com/Azure/azure-sdk-for-go/services/preview/monitor/mgmt/2018-03-01/insights"
 	"github.com/Azure/go-autorest/autorest/azure/auth"
-	"github.com/golang/glog"
+	"k8s.io/klog"
 )
 
 type insightsmonitorClient interface {
@@ -45,7 +45,7 @@ func (c *monitorClient) GetAzureMetric(azMetricRequest AzureExternalMetricReques
 	}
 
 	metricResourceURI := azMetricRequest.MetricResourceURI()
-	glog.V(2).Infof("resource uri: %s", metricResourceURI)
+	klog.V(2).Infof("resource uri: %s", metricResourceURI)
 
 	metricResult, err := c.client.List(context.Background(), metricResourceURI,
 		azMetricRequest.Timespan, nil,
@@ -57,7 +57,7 @@ func (c *monitorClient) GetAzureMetric(azMetricRequest AzureExternalMetricReques
 
 	total := extractValue(metricResult)
 
-	glog.V(2).Infof("found metric value: %f", total)
+	klog.V(2).Infof("found metric value: %f", total)
 
 	// TODO set Value based on aggregations type
 	return AzureExternalMetricResponse{

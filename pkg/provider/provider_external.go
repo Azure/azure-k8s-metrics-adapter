@@ -4,7 +4,7 @@ package provider
 
 import (
 	"github.com/Azure/azure-k8s-metrics-adapter/pkg/azure/externalmetrics"
-	"github.com/golang/glog"
+	"k8s.io/klog"
 	"github.com/kubernetes-incubator/custom-metrics-apiserver/pkg/provider"
 	"k8s.io/apimachinery/pkg/api/errors"
 	"k8s.io/apimachinery/pkg/api/resource"
@@ -21,7 +21,7 @@ func (p *AzureProvider) GetExternalMetric(namespace string, metricSelector label
 	// Note:
 	//		metric name and namespace is used to lookup for the CRD which contains configuration to call azure
 	// 		if not found then ignored and label selector is parsed for all the metrics
-	glog.V(0).Infof("Received request for namespace: %s, metric name: %s, metric selectors: %s", namespace, info.Metric, metricSelector.String())
+	klog.V(0).Infof("Received request for namespace: %s, metric name: %s, metric selectors: %s", namespace, info.Metric, metricSelector.String())
 
 	_, selectable := metricSelector.Requirements()
 	if !selectable {
@@ -40,7 +40,7 @@ func (p *AzureProvider) GetExternalMetric(namespace string, metricSelector label
 
 	metricValue, err := externalMetricClient.GetAzureMetric(azMetricRequest)
 	if err != nil {
-		glog.Errorf("bad request: %v", err)
+		klog.Errorf("bad request: %v", err)
 		return nil, errors.NewBadRequest(err.Error())
 	}
 
