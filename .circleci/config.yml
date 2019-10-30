@@ -22,7 +22,7 @@ jobs:
           name: Save Docker image layer cache
           command: make save
       - save_cache:
-          key: v1-{{ .Branch }}-{{ epoch }}
+          key: v1-{{ .Environment.CIRCLE_WORKFLOW_ID }} 	
           paths:
             - app.tar
   build_pr:
@@ -48,7 +48,7 @@ jobs:
           echo 'export IMAGE="public/k8s/metrics/adapter"' >> $BASH_ENV
       - restore_cache:
           keys:
-            - v1-{{ .Branch }}
+            - v1-{{ .Environment.CIRCLE_WORKFLOW_ID }} 
       - run: docker load < app.tar
       - run: make tag-ci
       - run: make push
