@@ -5,7 +5,7 @@ version: 2
 jobs:
   build:
     docker:
-      - image: circleci/golang:1.10.3
+      - image: circleci/golang:1.12.12
     working_directory: /go/src/github.com/Azure/azure-k8s-metrics-adapter
     steps:
       - checkout
@@ -27,7 +27,7 @@ jobs:
             - app.tar
   build_pr:
     docker:
-      - image: circleci/golang:1.10.3
+      - image: circleci/golang:1.12.12
     working_directory: /go/src/github.com/Azure/azure-k8s-metrics-adapter
     steps:
       - checkout
@@ -38,7 +38,7 @@ jobs:
       - run: make build
   deploy:
     docker:
-      - image: circleci/golang:1.10.3
+      - image: circleci/golang:1.12.12
     working_directory: /go/src/github.com/Azure/azure-k8s-metrics-adapter
     steps:
       - checkout
