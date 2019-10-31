@@ -8,7 +8,7 @@ import (
 	"time"
 
 	"github.com/Azure/azure-k8s-metrics-adapter/pkg/azure/custommetrics"
-	"github.com/golang/glog"
+	"k8s.io/klog"
 	"k8s.io/apimachinery/pkg/api/errors"
 	"k8s.io/apimachinery/pkg/api/resource"
 	metav1 "k8s.io/apimachinery/pkg/apis/meta/v1"
@@ -22,15 +22,15 @@ import (
 
 // GetMetricByName fetches a particular metric for a particular object.
 // The namespace will be empty if the metric is root-scoped.
-func (p *AzureProvider) GetMetricByName(name types.NamespacedName, info provider.CustomMetricInfo) (*custom_metrics.MetricValue, error) {
+func (p *AzureProvider) GetMetricByName(name types.NamespacedName, info provider.CustomMetricInfo, metricSelector labels.Selector) (*custom_metrics.MetricValue, error) {
 	// not implemented yet
 	return nil, errors.NewServiceUnavailable("not implemented yet")
 }
 
 // GetMetricBySelector fetches a particular metric for a set of objects matching
 // the given label selector.  The namespace will be empty if the metric is root-scoped.
-func (p *AzureProvider) GetMetricBySelector(namespace string, selector labels.Selector, info provider.CustomMetricInfo) (*custom_metrics.MetricValueList, error) {
-	glog.V(0).Infof("Received request for custom metric: groupresource: %s, namespace: %s, metric name: %s, selectors: %s", info.GroupResource.String(), namespace, info.Metric, selector.String())
+func (p *AzureProvider) GetMetricBySelector(namespace string, selector labels.Selector, info provider.CustomMetricInfo, metricSelector labels.Selector) (*custom_metrics.MetricValueList, error) {
+	klog.V(0).Infof("Received request for custom metric: groupresource: %s, namespace: %s, metric name: %s, selectors: %s", info.GroupResource.String(), namespace, info.Metric, selector.String())
 
 	_, selectable := selector.Requirements()
 	if !selectable {
@@ -42,13 +42,13 @@ func (p *AzureProvider) GetMetricBySelector(namespace string, selector labels.Se
 	// TODO use selector info to restrict metric query to specific app.
 	val, err := p.appinsightsClient.GetCustomMetric(metricRequestInfo)
 	if err != nil {
-		glog.Errorf("bad request: %v", err)
+		klog.Errorf("bad request: %v", err)
 		return nil, errors.NewBadRequest(err.Error())
 	}
 
 	resourceNames, err := helpers.ListObjectNames(p.mapper, p.kubeClient, namespace, selector, info)
 	if err != nil {
-		glog.Errorf("not able to list objects from api server: %v", err)
+		klog.Errorf("not able to list objects from api server: %v", err)
 		return nil, errors.NewInternalError(fmt.Errorf("not able to list objects from api server for this resource"))
 	}
 
@@ -109,7 +109,7 @@ func (p *AzureProvider) getCustomMetricRequest(namespace string, selector labels
 	// because metrics names are multipart in AI and we can not pass an extra /
 	// through k8s api we convert - to / to get around that
 	convertedMetricName := strings.Replace(info.Metric, "-", "/", -1)
-	glog.V(2).Infof("New call to GetCustomMetric: %s", convertedMetricName)
+	klog.V(2).Infof("New call to GetCustomMetric: %s", convertedMetricName)
 	metricRequestInfo := custommetrics.NewMetricRequest(convertedMetricName)
 
 	return metricRequestInfo

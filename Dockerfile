@@ -1,4 +1,4 @@
-FROM golang:1.11.11-alpine3.10  as builder
+FROM golang:1.12.12-alpine3.10  as builder
 
 WORKDIR /go/src/github.com/Azure/azure-k8s-metrics-adapter
 COPY . .

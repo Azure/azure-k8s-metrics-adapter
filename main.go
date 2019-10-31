@@ -19,9 +19,9 @@ import (
 	"github.com/Azure/azure-k8s-metrics-adapter/pkg/controller"
 	"github.com/Azure/azure-k8s-metrics-adapter/pkg/metriccache"
 	azureprovider "github.com/Azure/azure-k8s-metrics-adapter/pkg/provider"
-	"github.com/golang/glog"
+	"k8s.io/klog"
 	basecmd "github.com/kubernetes-incubator/custom-metrics-apiserver/pkg/cmd"
-	"k8s.io/apiserver/pkg/util/logs"
+	"k8s.io/component-base/logs"
 )
 
 func main() {
@@ -49,19 +49,19 @@ func main() {
 	//setup and run metric server
 	setupAzureProvider(cmd, metriccache)
 	if err := cmd.Run(stopCh); err != nil {
-		glog.Fatalf("Unable to run Azure metrics adapter: %v", err)
+		klog.Fatalf("Unable to run Azure metrics adapter: %v", err)
 	}
 }
 
 func setupAzureProvider(cmd *basecmd.AdapterBase, metricsCache *metriccache.MetricCache) {
 	mapper, err := cmd.RESTMapper()
 	if err != nil {
-		glog.Fatalf("unable to construct discovery REST mapper: %v", err)
+		klog.Fatalf("unable to construct discovery REST mapper: %v", err)
 	}
 
 	dynamicClient, err := cmd.DynamicClient()
 	if err != nil {
-		glog.Fatalf("unable to construct dynamic k8s client: %v", err)
+		klog.Fatalf("unable to construct dynamic k8s client: %v", err)
 	}
 
 	defaultSubscriptionID := getDefaultSubscriptionID()
@@ -79,11 +79,11 @@ func setupAzureProvider(cmd *basecmd.AdapterBase, metricsCache *metriccache.Metr
 func newController(cmd *basecmd.AdapterBase, metricsCache *metriccache.MetricCache) (*controller.Controller, informers.SharedInformerFactory) {
 	clientConfig, err := cmd.ClientConfig()
 	if err != nil {
-		glog.Fatalf("unable to construct client config: %s", err)
+		klog.Fatalf("unable to construct client config: %s", err)
 	}
 	adapterClientSet, err := clientset.NewForConfig(clientConfig)
 	if err != nil {
-		glog.Fatalf("unable to construct lister client to initialize provider: %v", err)
+		klog.Fatalf("unable to construct lister client to initialize provider: %v", err)
 	}
 
 	adapterInformerFactory := informers.NewSharedInformerFactory(adapterClientSet, time.Second*30)
@@ -101,18 +101,18 @@ func getDefaultSubscriptionID() string {
 	// if the user explicitly sets we should use that
 	subscriptionID := os.Getenv("SUBSCRIPTION_ID")
 	if subscriptionID == "" {
-		glog.V(2).Info("Looking up subscription ID via instance metadata")
+		klog.V(2).Info("Looking up subscription ID via instance metadata")
 		//fallback to trying azure instance meta data
 		azureConfig, err := instancemetadata.GetAzureConfig()
 		if err != nil {
-			glog.Errorf("Unable to get azure config from MSI: %v", err)
+			klog.Errorf("Unable to get azure config from MSI: %v", err)
 		}
 
 		subscriptionID = azureConfig.SubscriptionID
 	}
 
 	if subscriptionID == "" {
-		glog.V(0).Info("Default Azure Subscription is not set.  You must provide subscription id via HPA lables, set an environment variable, or enable MSI.  See docs for more details")
+		klog.V(0).Info("Default Azure Subscription is not set.  You must provide subscription id via HPA lables, set an environment variable, or enable MSI.  See docs for more details")
 	}
 
 	return subscriptionID

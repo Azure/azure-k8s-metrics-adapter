@@ -5,7 +5,7 @@ import (
 
 	"github.com/Azure/azure-sdk-for-go/services/servicebus/mgmt/2017-04-01/servicebus"
 	"github.com/Azure/go-autorest/autorest/azure/auth"
-	"github.com/golang/glog"
+	"k8s.io/klog"
 )
 
 type servicebusSubscriptionsClient interface {
@@ -18,7 +18,7 @@ type servicebusClient struct {
 }
 
 func NewServiceBusSubscriptionClient(defaultSubscriptionID string) AzureExternalMetricClient {
-	glog.V(2).Info("Creating a new Azure Service Bus Subscriptions client")
+	klog.V(2).Info("Creating a new Azure Service Bus Subscriptions client")
 	client := servicebus.NewSubscriptionsClient(defaultSubscriptionID)
 	authorizer, err := auth.NewAuthorizerFromEnvironment()
 	if err == nil {
@@ -39,13 +39,13 @@ func newServiceBusSubscriptionClient(defaultsubscriptionID string, client servic
 }
 
 func (c *servicebusClient) GetAzureMetric(azMetricRequest AzureExternalMetricRequest) (AzureExternalMetricResponse, error) {
-	glog.V(6).Infof("Received metric request:\n%v", azMetricRequest)
+	klog.V(6).Infof("Received metric request:\n%v", azMetricRequest)
 	err := azMetricRequest.Validate()
 	if err != nil {
 		return AzureExternalMetricResponse{}, err
 	}
 
-	glog.V(2).Infof("Requesting Service Bus Subscription %s to topic %s in namespace %s from resource group %s", azMetricRequest.Subscription, azMetricRequest.Topic, azMetricRequest.Namespace, azMetricRequest.ResourceGroup)
+	klog.V(2).Infof("Requesting Service Bus Subscription %s to topic %s in namespace %s from resource group %s", azMetricRequest.Subscription, azMetricRequest.Topic, azMetricRequest.Namespace, azMetricRequest.ResourceGroup)
 	subscriptionResult, err := c.client.Get(
 		context.Background(),
 		azMetricRequest.ResourceGroup,
@@ -57,12 +57,12 @@ func (c *servicebusClient) GetAzureMetric(azMetricRequest AzureExternalMetricReq
 		return AzureExternalMetricResponse{}, err
 	}
 
-	glog.V(2).Infof("Successfully retrieved Service Bus Subscription %s to topic %s in namespace %s from resource group %s", azMetricRequest.Subscription, azMetricRequest.Topic, azMetricRequest.Namespace, azMetricRequest.ResourceGroup)
-	glog.V(6).Infof("%v", subscriptionResult.Response)
+	klog.V(2).Infof("Successfully retrieved Service Bus Subscription %s to topic %s in namespace %s from resource group %s", azMetricRequest.Subscription, azMetricRequest.Topic, azMetricRequest.Namespace, azMetricRequest.ResourceGroup)
+	klog.V(6).Infof("%v", subscriptionResult.Response)
 
 	activeMessageCount := float64(*subscriptionResult.SBSubscriptionProperties.CountDetails.ActiveMessageCount)
 
-	glog.V(4).Infof("Service Bus Subscription active message count: %f", activeMessageCount)
+	klog.V(4).Infof("Service Bus Subscription active message count: %f", activeMessageCount)
 
 	// TODO set Value based on aggregations type
 	return AzureExternalMetricResponse{

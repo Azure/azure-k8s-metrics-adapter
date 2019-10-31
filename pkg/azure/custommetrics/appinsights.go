@@ -14,7 +14,7 @@ import (
 
 	"github.com/Azure/azure-sdk-for-go/services/appinsights/v1/insights"
 	"github.com/Azure/go-autorest/autorest/azure/auth"
-	"github.com/golang/glog"
+	"k8s.io/klog"
 )
 
 const (
@@ -70,7 +70,7 @@ func (c appinsightsClient) GetCustomMetric(request MetricRequest) (float64, erro
 
 	segments := *metricsResult.Value.Segments
 	if len(segments) <= 0 {
-		glog.V(2).Info("segments length = 0")
+		klog.V(2).Info("segments length = 0")
 		return 0, nil
 	}
 
@@ -80,7 +80,7 @@ func (c appinsightsClient) GetCustomMetric(request MetricRequest) (float64, erro
 	value := metricMap["avg"]
 	normalizedValue := normalizeValue(value)
 
-	glog.V(2).Infof("found metric value: %f", normalizedValue)
+	klog.V(2).Infof("found metric value: %f", normalizedValue)
 	return normalizedValue, nil
 }
 
@@ -95,7 +95,7 @@ func normalizeValue(value interface{}) float64 {
 	case int64:
 		return float64(value.(int64))
 	default:
-		glog.V(0).Infof("unexpected type: %T", t)
+		klog.V(0).Infof("unexpected type: %T", t)
 		return 0
 	}
 }
@@ -103,11 +103,11 @@ func normalizeValue(value interface{}) float64 {
 // GetMetric calls to API to retrieve a specific metric
 func (ai appinsightsClient) getMetric(metricInfo MetricRequest) (*insights.MetricsResult, error) {
 	if ai.useADAuthorizer {
-		glog.V(2).Infoln("No application insights key provided - using Azure GO SDK auth.")
+		klog.V(2).Infoln("No application insights key provided - using Azure GO SDK auth.")
 		return getMetricUsingADAuthorizer(ai, metricInfo)
 	}
 
-	glog.V(2).Infoln("Application insights key has been provided - using Application Insights REST API.")
+	klog.V(2).Infoln("Application insights key has been provided - using Application Insights REST API.")
 	return getMetricUsingAPIKey(ai, metricInfo)
 }
 
@@ -115,7 +115,7 @@ func getMetricUsingADAuthorizer(ai appinsightsClient, metricInfo MetricRequest) 
 
 	authorizer, err := auth.NewAuthorizerFromEnvironmentWithResource(azureAdResource)
 	if err != nil {
-		glog.Errorf("unable to retrieve an authorizer from environment: %v", err)
+		klog.Errorf("unable to retrieve an authorizer from environment: %v", err)
 		return nil, err
 	}
 
@@ -138,7 +138,7 @@ func getMetricUsingADAuthorizer(ai appinsightsClient, metricInfo MetricRequest) 
 
 	metricsResultsItem, err := metricsClient.GetMultiple(context.Background(), ai.appID, metricsBody)
 	if err != nil {
-		glog.Errorf("unable to get retrive metric: %v", err)
+		klog.Errorf("unable to get retrive metric: %v", err)
 		return nil, err
 	}
 
@@ -183,10 +183,10 @@ func getMetricUsingAPIKey(ai appinsightsClient, metricInfo MetricRequest) (*insi
 	q.Add("interval", metricInfo.Interval)
 	req.URL.RawQuery = q.Encode()
 
-	glog.V(2).Infoln("request to: ", req.URL)
+	klog.V(2).Infoln("request to: ", req.URL)
 	resp, err := client.Do(req)
 	if err != nil {
-		glog.Errorf("unable to retrive metric: %v", err)
+		klog.Errorf("unable to retrive metric: %v", err)
 		return nil, err
 	}
 
@@ -195,7 +195,7 @@ func getMetricUsingAPIKey(ai appinsightsClient, metricInfo MetricRequest) (*insi
 		defer resp.Body.Close()
 		respBody, err := ioutil.ReadAll(resp.Body)
 		if err != nil {
-			glog.Errorf("unable to retrieve metric: %s", err)
+			klog.Errorf("unable to retrieve metric: %s", err)
 			return nil, err
 		}
 
@@ -213,7 +213,7 @@ func unmarshalResponse(body io.ReadCloser, metricsResult *insights.MetricsResult
 	respBody, err := ioutil.ReadAll(body)
 
 	if err != nil {
-		glog.Errorf("unable to get read metric response body: %v", err)
+		klog.Errorf("unable to get read metric response body: %v", err)
 		return nil, err
 	}
 

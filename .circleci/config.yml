@@ -5,7 +5,7 @@ version: 2
 jobs:
   build:
     docker:
-      - image: circleci/golang:1.10.3
+      - image: circleci/golang:1.12.12
     working_directory: /go/src/github.com/Azure/azure-k8s-metrics-adapter
     steps:
       - checkout
@@ -13,6 +13,7 @@ jobs:
       - run: |  
           echo 'export VERSION="$CIRCLE_WORKFLOW_ID"' >> $BASH_ENV
           echo 'export IMAGE="public/k8s/metrics/adapter"' >> $BASH_ENV
+          echo 'export GO111MODULE=on' >> $BASH_ENV
       - run: 
           name: install helm
           command: .circleci/install-helm.sh
@@ -27,18 +28,20 @@ jobs:
             - app.tar
   build_pr:
     docker:
-      - image: circleci/golang:1.10.3
+      - image: circleci/golang:1.12.12
     working_directory: /go/src/github.com/Azure/azure-k8s-metrics-adapter
     steps:
       - checkout
       - setup_remote_docker
+      - run: |  
+          echo 'export GO111MODULE=on' >> $BASH_ENV
       - run: 
           name: install helm
           command: .circleci/install-helm.sh
       - run: make build
   deploy:
     docker:
-      - image: circleci/golang:1.10.3
+      - image: circleci/golang:1.12.12
     working_directory: /go/src/github.com/Azure/azure-k8s-metrics-adapter
     steps:
       - checkout
@@ -46,6 +49,7 @@ jobs:
       - run: |  
           echo 'export VERSION="$(if [ -z ${CIRCLE_TAG} ]; then echo "beta"; else echo "$CIRCLE_TAG"; fi)-$CIRCLE_BUILD_NUM"' >> $BASH_ENV
           echo 'export IMAGE="public/k8s/metrics/adapter"' >> $BASH_ENV
+          echo 'export GO111MODULE=on' >> $BASH_ENV
       - restore_cache:
           keys:
             - v1-{{ .Environment.CIRCLE_WORKFLOW_ID }} 

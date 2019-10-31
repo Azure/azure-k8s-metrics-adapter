@@ -16,16 +16,26 @@ or contact [opencode@microsoft.com](mailto:opencode@microsoft.com) with any addi
 ## Development
 To do development you will need:
 
-- [Golang](https://golang.org/doc/install) - same as current [Kubernetes version ](https://github.com/kubernetes/community/blob/master/contributors/devel/development.md#go)
+- [Golang](https://golang.org/doc/install) - atleast 1.12 - but same as current [Kubernetes version ](https://github.com/kubernetes/community/blob/master/contributors/devel/development.md#go)
 - Kubernetes cluster - [minikube](https://github.com/kubernetes/minikube), [Docker for Mac with Kubernetes support](https://docs.docker.com/docker-for-mac/kubernetes/),  [Docker for Windows with Kubernetes support](https://docs.docker.com/docker-for-windows/kubernetes/), [AKS](https://docs.microsoft.com/en-us/azure/aks/kubernetes-walkthrough)
 - [git](https://git-scm.com/downloads) 
 - [mercurial](https://www.mercurial-scm.org/downloads)  
 
 ### Get the source
+This project uses [go modules](https://blog.golang.org/using-go-modules). 
+
+If add the project to your `GOPATH` enable go modules before building.
 
 ```bash
 go get github.com/Azure/azure-k8s-metrics-adapter
 cd $GOPATH/src/github.com/Azure/azure-k8s-metrics-adapter
+export GO111MODULE=on 
+```
+
+Otherwise you can clone outside the project go modules will automatically be used if using go 1.12:
+
+```
+git clone https://github.com/Azure/azure-k8s-metrics-adapter.git
 ```
 
 ### Add your fork

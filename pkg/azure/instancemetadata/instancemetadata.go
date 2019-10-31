@@ -9,7 +9,7 @@ import (
 	"io/ioutil"
 	"net/http"
 
-	"github.com/golang/glog"
+	"k8s.io/klog"
 )
 
 type AzureConfig struct {
@@ -29,7 +29,7 @@ func GetAzureConfig() (AzureConfig, error) {
 
 	resp, err := client.Do(req)
 	if err != nil {
-		glog.Errorf("unable to get metadata for azure vm: %v", err)
+		klog.Errorf("unable to get metadata for azure vm: %v", err)
 		return AzureConfig{}, err
 	}
 
@@ -37,7 +37,7 @@ func GetAzureConfig() (AzureConfig, error) {
 	respBody, _ := ioutil.ReadAll(resp.Body)
 	subID := string(respBody[:])
 
-	glog.V(2).Infoln("connected to sub:", subID)
+	klog.V(2).Infoln("connected to sub:", subID)
 
 	config := AzureConfig{
 		SubscriptionID: subID,

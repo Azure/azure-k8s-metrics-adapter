@@ -6,7 +6,7 @@ import (
 
 	"github.com/Azure/azure-k8s-metrics-adapter/pkg/azure/custommetrics"
 	"github.com/Azure/azure-k8s-metrics-adapter/pkg/azure/externalmetrics"
-	"github.com/golang/glog"
+	"k8s.io/klog"
 )
 
 // MetricCache holds the loaded metric request info in the system
@@ -38,7 +38,7 @@ func (mc *MetricCache) GetAzureExternalMetricRequest(namepace, name string) (ext
 	key := externalMetricKey(namepace, name)
 	metricRequest, exists := mc.metricRequests[key]
 	if !exists {
-		glog.V(2).Infof("metric not found %s", key)
+		klog.V(2).Infof("metric not found %s", key)
 		return externalmetrics.AzureExternalMetricRequest{}, false
 	}
 
@@ -53,7 +53,7 @@ func (mc *MetricCache) GetAppInsightsRequest(namespace, name string) (custommetr
 	key := customMetricKey(namespace, name)
 	metricRequest, exists := mc.metricRequests[key]
 	if !exists {
-		glog.V(2).Infof("metric not found %s", key)
+		klog.V(2).Infof("metric not found %s", key)
 		return custommetrics.MetricRequest{}, false
 	}
 

@@ -45,7 +45,7 @@ func TestReturnsCustomMetricConverted(t *testing.T) {
 	storeObjects = append(storeObjects, pod)
 
 	provider, _ := newFakeCustomProvider(fakeClient, storeObjects)
-	returnList, err := provider.GetMetricBySelector("default", selector, info)
+	returnList, err := provider.GetMetricBySelector("default", selector, info, selector)
 
 	if err != nil {
 		t.Errorf("error after processing got: %v, want nil", err)
@@ -87,7 +87,7 @@ func TestReturnsCustomMetricConvertedWithMultiplePods(t *testing.T) {
 	storeObjects = append(storeObjects, pod, pod2, pod3)
 
 	provider, _ := newFakeCustomProvider(fakeClient, storeObjects)
-	returnList, err := provider.GetMetricBySelector("default", selector, info)
+	returnList, err := provider.GetMetricBySelector("default", selector, info, selector)
 
 	if err != nil {
 		t.Errorf("error after processing got: %v, want nil", err)
@@ -139,7 +139,7 @@ func TestReturnsCustomMetricWhenInCache(t *testing.T) {
 
 	cache.Update("CustomMetric/default/MetricName", request)
 
-	returnList, err := provider.GetMetricBySelector("default", selector, info)
+	returnList, err := provider.GetMetricBySelector("default", selector, info, selector)
 
 	if err != nil {
 		t.Errorf("error after processing got: %v, want nil", err)
@@ -178,7 +178,7 @@ func TestReturnsErrorIfAppInsightsFails(t *testing.T) {
 	storeObjects = append(storeObjects, pod)
 
 	provider, _ := newFakeCustomProvider(fakeClient, storeObjects)
-	_, err := provider.GetMetricBySelector("default", selector, info)
+	_, err := provider.GetMetricBySelector("default", selector, info, selector)
 
 	if !k8serrors.IsBadRequest(err) {
 		t.Errorf("error after processing got: %v, want an bad request error", err)
