@@ -214,7 +214,7 @@ type fakeAzureExternalClientFactory struct {
 func (f fakeAzureExternalClientFactory) GetAzureExternalMetricClient(clientType string) (client externalmetrics.AzureExternalMetricClient, err error) {
 	fakeClient := fakeAzureMonitorClient{
 		err:    nil,
-		result: externalmetrics.AzureExternalMetricResponse{Total: 15},
+		result: externalmetrics.AzureExternalMetricResponse{Value: 15},
 	}
 
 	return fakeClient, nil
