@@ -2,6 +2,7 @@ package externalmetrics
 
 import (
 	"context"
+	"fmt"
 
 	"github.com/Azure/azure-sdk-for-go/services/preview/monitor/mgmt/2018-03-01/insights"
 	"github.com/Azure/go-autorest/autorest/azure/auth"
@@ -55,23 +56,48 @@ func (c *monitorClient) GetAzureMetric(azMetricRequest AzureExternalMetricReques
 		return AzureExternalMetricResponse{}, err
 	}
 
-	total := extractValue(metricResult)
-
-	klog.V(2).Infof("found metric value: %f", total)
+	value, err := extractValue(azMetricRequest, metricResult)
 
 	// TODO set Value based on aggregations type
 	return AzureExternalMetricResponse{
-		Total: total,
-	}, nil
+		Value: value,
+	}, err
 }
 
-func extractValue(metricResult insights.Response) float64 {
-	//TODO extract value based on aggregation type
-	//TODO check for nils
+func extractValue(azMetricRequest AzureExternalMetricRequest, metricResult insights.Response) (float64, error) {
 	metricVals := *metricResult.Value
 	Timeseries := *metricVals[0].Timeseries
 	data := *Timeseries[0].Data
-	total := *data[len(data)-1].Total
 
-	return total
+	var valuePtr *float64
+	switch insights.AggregationType(azMetricRequest.Aggregation) {
+	case insights.Average:
+		if data[len(data)-1].Average != nil {
+			valuePtr = data[len(data)-1].Average
+		}
+	case insights.Total:
+		if data[len(data)-1].Total != nil {
+			valuePtr = data[len(data)-1].Total
+		}
+	case insights.Maximum:
+		if data[len(data)-1].Maximum != nil {
+			valuePtr = data[len(data)-1].Maximum
+		}
+	case insights.Minimum:
+		if data[len(data)-1].Minimum != nil {
+			valuePtr = data[len(data)-1].Minimum
+		}
+	default:
+		err := fmt.Errorf("Unsupported aggregation type %s specified in metric %s/%s", azMetricRequest.Aggregation, azMetricRequest.Namespace, azMetricRequest.MetricName)
+		return 0, err
+	}
+
+	if valuePtr == nil {
+		err := fmt.Errorf("Unable to get value for metric %s/%s with aggregation %s. No value returned by the Azure Monitor", azMetricRequest.Namespace, azMetricRequest.MetricName, azMetricRequest.Aggregation)
+		return 0, err
+	}
+
+	klog.V(2).Infof("metric type: %s %f", azMetricRequest.Aggregation, *valuePtr)
+
+	return *valuePtr, nil
 }

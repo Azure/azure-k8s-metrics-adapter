@@ -1,7 +1,7 @@
 package externalmetrics
 
 type AzureExternalMetricResponse struct {
-	Total float64
+	Value float64
 }
 
 type AzureExternalMetricClient interface {
