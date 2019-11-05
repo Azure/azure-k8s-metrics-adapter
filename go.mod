@@ -10,8 +10,10 @@ require (
 	github.com/emicklei/go-restful v2.2.1+incompatible // indirect
 	github.com/emicklei/go-restful-swagger12 v0.0.0-20170208215640-dcef7f557305 // indirect
 	github.com/evanphx/json-patch v4.2.0+incompatible // indirect
+	github.com/jsturtevant/gitsem v1.0.4
 	github.com/kubernetes-incubator/custom-metrics-apiserver v0.0.0-20190918110929-3d9be26a50eb
 	github.com/mitchellh/go-homedir v1.1.0 // indirect
+	gopkg.in/blang/semver.v1 v1.1.0 // indirect
 	k8s.io/api v0.0.0-20190817021128-e14a4b1f5f84
 	k8s.io/apimachinery v0.0.0-20190817020851-f2f3a405f61d
 	k8s.io/apiserver v0.0.0-20190817022445-fd6150da8f40 // indirect
