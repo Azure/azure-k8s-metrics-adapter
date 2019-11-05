@@ -17,12 +17,17 @@ sed -i 's|externalq|'${SERVICEBUS_QUEUE_NAME}'|g' deploy/externalmetric.yaml
 
 AGGREGATE_TYPE=( "Average" "Maximum" "Minimum" "Total" )
 # supported aggregates https://github.com/Azure/azure-sdk-for-go/blob/0acfc1d1083d148a606d380143176e218d437728/services/preview/monitor/mgmt/2018-03-01/insights/models.go#L38
-for aggregate in "${AGGREGATE_TYPE[@]}"
+for AGGREGATE in "${AGGREGATE_TYPE[@]}"
 do
-    filePath="deploy/${aggregate}.externalmetric.yaml"
-    echo "Creating ${aggregate} external metric with file: $filePath"
+    filePath="deploy/${AGGREGATE}.externalmetric.yaml"
+    echo "Creating ${AGGREGATE} external metric with file: $filePath"
     cp deploy/externalmetric.yaml $filePath
-    sed -i 's|Total|'${aggregate}'|g' $filePath
+
+    # give a name to the external metric
+    sed -i 's|queuemessages|queuemessages-'${AGGREGATE}'|g' $filePath
+
+    # specify the aggregate type
+    sed -i 's|Total|'${AGGREGATE}'|g' $filePath
 
     kubectl apply -f $filePath
 done

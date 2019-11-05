@@ -28,9 +28,15 @@ while [[ ! "$MSGCOUNT" = "\"$NUM\"" ]] && [[ $(( $(date +%s) - 225 )) -lt $START
   echo "Endpoint returned $MSGCOUNT messages"
 done
 
-if [[ ! "$MSGCOUNT" = "\"$NUM\"" ]]; then
-    echo "Timed out, message count ($MSGCOUNT) not equal to number of messages sent ($NUM)"
-    exit 1
-else
-    echo "Message count equal to number of messages sent, metrics adapter working correctly"
-fi
+AGGREGATE_TYPE=( "Average" "Maximum" "Minimum" "Total" )
+for AGGREGATE in "${AGGREGATE_TYPE[@]}"
+do
+    METRIC_NAME="queuemessages-${AGGREGATE}"
+    VALUE=$(kubectl get --raw "/apis/external.metrics.k8s.io/v1beta1/namespaces/default/${METRIC_NAME}" | jq .items[0].value)
+    if [[ ! "$VALUE" = "\"$NUM\"" ]]; then
+        echo "Timed out, message aggregate type: ${AGGREGATE} value: ${VALUE} not equal to number of messages sent ($NUM)"
+        exit 1
+    else
+        echo "Message count equal to number of messages sent, metrics adapter working correctly"
+    fi
+done
