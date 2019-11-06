@@ -125,6 +125,8 @@ github.com/hashicorp/golang-lru/simplelru
 github.com/imdario/mergo
 # github.com/json-iterator/go v0.0.0-20180701071628-ab8a2e0c74be
 github.com/json-iterator/go
+# github.com/jsturtevant/gitsem v1.0.4
+github.com/jsturtevant/gitsem
 # github.com/kubernetes-incubator/custom-metrics-apiserver v0.0.0-20190918110929-3d9be26a50eb
 github.com/kubernetes-incubator/custom-metrics-apiserver/pkg/cmd
 github.com/kubernetes-incubator/custom-metrics-apiserver/pkg/provider
@@ -306,6 +308,8 @@ google.golang.org/grpc/health/grpc_health_v1
 google.golang.org/grpc/balancer/base
 google.golang.org/grpc/binarylog/grpc_binarylog_v1
 google.golang.org/grpc/internal/syscall
+# gopkg.in/blang/semver.v1 v1.1.0
+gopkg.in/blang/semver.v1
 # gopkg.in/inf.v0 v0.9.0
 gopkg.in/inf.v0
 # gopkg.in/natefinch/lumberjack.v2 v2.0.0-20150622162204-20b71e5b60d7
