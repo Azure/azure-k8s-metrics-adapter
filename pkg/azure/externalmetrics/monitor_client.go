@@ -3,6 +3,7 @@ package externalmetrics
 import (
 	"context"
 	"fmt"
+	"strings"
 
 	"github.com/Azure/azure-sdk-for-go/services/preview/monitor/mgmt/2018-03-01/insights"
 	"github.com/Azure/go-autorest/autorest/azure/auth"
@@ -70,25 +71,19 @@ func extractValue(azMetricRequest AzureExternalMetricRequest, metricResult insig
 	data := *Timeseries[0].Data
 
 	var valuePtr *float64
-	switch insights.AggregationType(azMetricRequest.Aggregation) {
-	case insights.Average:
-		if data[len(data)-1].Average != nil {
-			valuePtr = data[len(data)-1].Average
-		}
-	case insights.Total:
-		if data[len(data)-1].Total != nil {
-			valuePtr = data[len(data)-1].Total
-		}
-	case insights.Maximum:
-		if data[len(data)-1].Maximum != nil {
-			valuePtr = data[len(data)-1].Maximum
-		}
-	case insights.Minimum:
-		if data[len(data)-1].Minimum != nil {
-			valuePtr = data[len(data)-1].Minimum
-		}
-	default:
-		err := fmt.Errorf("Unsupported aggregation type %s specified in metric %s/%s", azMetricRequest.Aggregation, azMetricRequest.Namespace, azMetricRequest.MetricName)
+	if strings.EqualFold(string(insights.Average), azMetricRequest.Aggregation) && data[len(data)-1].Average != nil {
+		valuePtr = data[len(data)-1].Average
+	} else if strings.EqualFold(string(insights.Total), azMetricRequest.Aggregation) && data[len(data)-1].Total != nil {
+		valuePtr = data[len(data)-1].Total
+	} else if strings.EqualFold(string(insights.Maximum), azMetricRequest.Aggregation) && data[len(data)-1].Maximum != nil {
+		valuePtr = data[len(data)-1].Maximum
+	} else if strings.EqualFold(string(insights.Minimum), azMetricRequest.Aggregation) && data[len(data)-1].Minimum != nil {
+		valuePtr = data[len(data)-1].Minimum
+	} else if strings.EqualFold(string(insights.Count), azMetricRequest.Aggregation) && data[len(data)-1].Count != nil {
+		fValue := float64(*data[len(data)-1].Count)
+		valuePtr = &fValue
+	} else {
+		err := fmt.Errorf("Unsupported aggregation type %s specified in metric %s/%s", insights.AggregationType(strings.ToTitle(azMetricRequest.Aggregation)), azMetricRequest.Namespace, azMetricRequest.MetricName)
 		return 0, err
 	}
 
