@@ -16,17 +16,23 @@ PUSH_LATEST=true
 BRANCH=$(shell git rev-parse --abbrev-ref HEAD)
 
 .PHONY: all build-local build vendor test version push \
-		verify-deploy gen-deploy dev save tag-ci
+		verify-deploy gen-deploy dev save tag-ci lint tools
 
 all: build
 build-local: test
-	CGO_ENABLED=0 go build -a -tags netgo -o $(OUT_DIR)/adapter github.com/Azure/azure-k8s-metrics-adapter
+	GO111MODULE=on CGO_ENABLED=0 go build -a -tags netgo -o $(OUT_DIR)/adapter github.com/Azure/azure-k8s-metrics-adapter
 
 build: vendor verify-deploy verify-apis
 	docker build -t $(FULL_IMAGE):$(VERSION) .
 
 vendor:
-	go mod vendor
+	GO111MODULE=on go mod vendor
+
+lint:
+	GO111MODULE=on golangci-lint run
+
+tools:
+	GO111MODULE=on ./hack/install_tools.sh
 
 test: vendor
 	hack/run-tests.sh
