@@ -19,18 +19,24 @@ echo; echo "Sending $NUM messages..."
 
 echo; echo "Checking metrics endpoint for 4 minutes..."
 
-MSGCOUNT=$(kubectl get --raw "/apis/external.metrics.k8s.io/v1beta1/namespaces/default/queuemessages" | jq .items[0].value)
+MSGCOUNT=$(kubectl get --raw "/apis/external.metrics.k8s.io/v1beta1/namespaces/default/queuemessages-total" | jq .items[0].value)
 START=`date +%s`
 
 while [[ ! "$MSGCOUNT" = "\"$NUM\"" ]] && [[ $(( $(date +%s) - 225 )) -lt $START ]]; do
   sleep 15
-  MSGCOUNT=$(kubectl get --raw "/apis/external.metrics.k8s.io/v1beta1/namespaces/default/queuemessages" | jq .items[0].value)
+  MSGCOUNT=$(kubectl get --raw "/apis/external.metrics.k8s.io/v1beta1/namespaces/default/queuemessages-total" | jq .items[0].value)
   echo "Endpoint returned $MSGCOUNT messages"
 done
 
-if [[ ! "$MSGCOUNT" = "\"$NUM\"" ]]; then
-    echo "Timed out, message count ($MSGCOUNT) not equal to number of messages sent ($NUM)"
-    exit 1
-else
-    echo "Message count equal to number of messages sent, metrics adapter working correctly"
-fi
+AGGREGATE_TYPE=( "average" "maximum" "minimum" "total" )
+for AGGREGATE in "${AGGREGATE_TYPE[@]}"
+do
+    METRIC_NAME="queuemessages-${AGGREGATE}"
+    VALUE=$(kubectl get --raw "/apis/external.metrics.k8s.io/v1beta1/namespaces/default/${METRIC_NAME}" | jq .items[0].value)
+    if [[ ! "$VALUE" = "\"$NUM\"" ]]; then
+        echo "Timed out, message aggregate type: ${AGGREGATE} value: ${VALUE} not equal to number of messages sent ($NUM)"
+        exit 1
+    else
+        echo "message aggregate type: ${AGGREGATE} value: ${VALUE} is equal to number of messages sent ($NUM), metrics adapter working correctly"
+    fi
+done

@@ -56,8 +56,8 @@ func TestIfValidRequestGetResult(t *testing.T) {
 		t.Errorf("error after processing got: %v, want nil", err)
 	}
 
-	if metricResponse.Total != 15 {
-		t.Errorf("metricResponse.Total = %v, want = %v", metricResponse.Total, 15)
+	if metricResponse.Value != 15 {
+		t.Errorf("metricResponse.Total = %v, want = %v", metricResponse.Value, 15)
 	}
 }
 

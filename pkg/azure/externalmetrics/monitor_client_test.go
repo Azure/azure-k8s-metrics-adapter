@@ -31,7 +31,7 @@ func TestAzureMonitorIfFailedResponseGetError(t *testing.T) {
 
 	client := newMonitorClient("", monitorClient)
 
-	request := newAzureMonitorMetricRequest()
+	request := newAzureMonitorMetricRequest(insights.Average)
 	_, err := client.GetAzureMetric(request)
 
 	if err == nil {
@@ -44,28 +44,46 @@ func TestAzureMonitorIfFailedResponseGetError(t *testing.T) {
 }
 
 func TestAzureMonitorIfValidRequestGetResult(t *testing.T) {
-	response := makeAzureMonitorResponse(15)
-	monitorClient := newFakeMonitorClient(response, nil)
-
-	client := newMonitorClient("", monitorClient)
-
-	request := newAzureMonitorMetricRequest()
-	metricResponse, err := client.GetAzureMetric(request)
-
-	if err != nil {
-		t.Errorf("error after processing got: %v, want nil", err)
+	aggregateList := []insights.AggregationType{
+		insights.Average,
+		insights.Minimum,
+		insights.Maximum,
+		insights.Total,
 	}
 
-	if metricResponse.Total != 15 {
-		t.Errorf("metricResponse.Total = %v, want = %v", metricResponse.Total, 15)
+	for _, agg := range aggregateList {
+		response := makeAzureMonitorResponse(agg, 15)
+		monitorClient := newFakeMonitorClient(response, nil)
+
+		client := newMonitorClient("", monitorClient)
+
+		request := newAzureMonitorMetricRequest(agg)
+		metricResponse, err := client.GetAzureMetric(request)
+
+		if err != nil {
+			t.Errorf("error after processing got: %v, want nil", err)
+		}
+
+		if metricResponse.Value != 15 {
+			t.Errorf("metricresponse.Value = %v, want = %v", metricResponse.Value, 15)
+		}
 	}
 }
 
-func makeAzureMonitorResponse(value float64) insights.Response {
+func makeAzureMonitorResponse(aggregateType insights.AggregationType, value float64) insights.Response {
 	// create metric value
-	mv := insights.MetricValue{
-		Total: &value,
+	mv := insights.MetricValue{}
+	switch aggregateType {
+	case insights.Average:
+		mv.Average = &value
+	case insights.Minimum:
+		mv.Minimum = &value
+	case insights.Maximum:
+		mv.Maximum = &value
+	case insights.Total:
+		mv.Total = &value
 	}
+
 	metricValues := []insights.MetricValue{}
 	metricValues = append(metricValues, mv)
 
@@ -77,8 +95,10 @@ func makeAzureMonitorResponse(value float64) insights.Response {
 	timeseries = append(timeseries, te)
 
 	// create metric
+	aType := string(aggregateType)
 	metric := insights.Metric{
 		Timeseries: &timeseries,
+		Type:       &aType,
 	}
 	metrics := []insights.Metric{}
 	metrics = append(metrics, metric)
@@ -90,7 +110,7 @@ func makeAzureMonitorResponse(value float64) insights.Response {
 	return response
 }
 
-func newAzureMonitorMetricRequest() AzureExternalMetricRequest {
+func newAzureMonitorMetricRequest(aggregationType insights.AggregationType) AzureExternalMetricRequest {
 	return AzureExternalMetricRequest{
 		ResourceGroup:             "ResourceGroup",
 		ResourceName:              "ResourceName",
@@ -99,7 +119,7 @@ func newAzureMonitorMetricRequest() AzureExternalMetricRequest {
 		SubscriptionID:            "SubscriptionID",
 		MetricName:                "MetricName",
 		Filter:                    "Filter",
-		Aggregation:               "Aggregation",
+		Aggregation:               string(aggregationType),
 		Timespan:                  "PT10",
 	}
 }

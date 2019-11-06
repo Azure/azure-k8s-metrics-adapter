@@ -66,6 +66,6 @@ func (c *servicebusClient) GetAzureMetric(azMetricRequest AzureExternalMetricReq
 
 	// TODO set Value based on aggregations type
 	return AzureExternalMetricResponse{
-		Total: activeMessageCount,
+		Value: activeMessageCount,
 	}, nil
 }

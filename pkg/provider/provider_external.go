@@ -46,7 +46,7 @@ func (p *AzureProvider) GetExternalMetric(namespace string, metricSelector label
 
 	externalmetric := external_metrics.ExternalMetricValue{
 		MetricName: info.Metric,
-		Value:      *resource.NewQuantity(int64(metricValue.Total), resource.DecimalSI),
+		Value:      *resource.NewQuantity(int64(metricValue.Value), resource.DecimalSI),
 		Timestamp:  metav1.Now(),
 	}
 

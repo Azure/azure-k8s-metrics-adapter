@@ -2,6 +2,8 @@ package externalmetrics
 
 import (
 	"context"
+	"fmt"
+	"strings"
 
 	"github.com/Azure/azure-sdk-for-go/services/preview/monitor/mgmt/2018-03-01/insights"
 	"github.com/Azure/go-autorest/autorest/azure/auth"
@@ -55,23 +57,56 @@ func (c *monitorClient) GetAzureMetric(azMetricRequest AzureExternalMetricReques
 		return AzureExternalMetricResponse{}, err
 	}
 
-	total := extractValue(metricResult)
+	value, err := extractValue(azMetricRequest, metricResult)
 
-	klog.V(2).Infof("found metric value: %f", total)
-
-	// TODO set Value based on aggregations type
 	return AzureExternalMetricResponse{
-		Total: total,
-	}, nil
+		Value: value,
+	}, err
 }
 
-func extractValue(metricResult insights.Response) float64 {
-	//TODO extract value based on aggregation type
-	//TODO check for nils
+func extractValue(azMetricRequest AzureExternalMetricRequest, metricResult insights.Response) (float64, error) {
 	metricVals := *metricResult.Value
-	Timeseries := *metricVals[0].Timeseries
-	data := *Timeseries[0].Data
-	total := *data[len(data)-1].Total
 
-	return total
+	if len(metricVals) == 0 {
+		err := fmt.Errorf("Got an empty response for metric %s/%s and aggregate type %s", azMetricRequest.Namespace, azMetricRequest.MetricName, insights.AggregationType(strings.ToTitle(azMetricRequest.Aggregation)))
+		return 0, err
+	}
+
+	timeseries := *metricVals[0].Timeseries
+	if timeseries == nil {
+		err := fmt.Errorf("Got metric result for %s/%s and aggregate type %s without timeseries", azMetricRequest.Namespace, azMetricRequest.MetricName, insights.AggregationType(strings.ToTitle(azMetricRequest.Aggregation)))
+		return 0, err
+	}
+
+	data := *timeseries[0].Data
+	if data == nil {
+		err := fmt.Errorf("Got metric result for %s/%s and aggregate type %s without any metric values", azMetricRequest.Namespace, azMetricRequest.MetricName, insights.AggregationType(strings.ToTitle(azMetricRequest.Aggregation)))
+		return 0, err
+	}
+
+	var valuePtr *float64
+	if strings.EqualFold(string(insights.Average), azMetricRequest.Aggregation) && data[len(data)-1].Average != nil {
+		valuePtr = data[len(data)-1].Average
+	} else if strings.EqualFold(string(insights.Total), azMetricRequest.Aggregation) && data[len(data)-1].Total != nil {
+		valuePtr = data[len(data)-1].Total
+	} else if strings.EqualFold(string(insights.Maximum), azMetricRequest.Aggregation) && data[len(data)-1].Maximum != nil {
+		valuePtr = data[len(data)-1].Maximum
+	} else if strings.EqualFold(string(insights.Minimum), azMetricRequest.Aggregation) && data[len(data)-1].Minimum != nil {
+		valuePtr = data[len(data)-1].Minimum
+	} else if strings.EqualFold(string(insights.Count), azMetricRequest.Aggregation) && data[len(data)-1].Count != nil {
+		fValue := float64(*data[len(data)-1].Count)
+		valuePtr = &fValue
+	} else {
+		err := fmt.Errorf("Unsupported aggregation type %s specified in metric %s/%s", insights.AggregationType(strings.ToTitle(azMetricRequest.Aggregation)), azMetricRequest.Namespace, azMetricRequest.MetricName)
+		return 0, err
+	}
+
+	if valuePtr == nil {
+		err := fmt.Errorf("Unable to get value for metric %s/%s with aggregation %s. No value returned by the Azure Monitor", azMetricRequest.Namespace, azMetricRequest.MetricName, azMetricRequest.Aggregation)
+		return 0, err
+	}
+
+	klog.V(2).Infof("metric type: %s %f", azMetricRequest.Aggregation, *valuePtr)
+
+	return *valuePtr, nil
 }
