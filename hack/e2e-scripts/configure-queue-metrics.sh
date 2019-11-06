@@ -15,7 +15,7 @@ sed -i 's|sb-external-ns|'${SERVICEBUS_NAMESPACE}'|g' deploy/externalmetric.yaml
 sed -i 's|sb-external-example|'${SERVICEBUS_RESOURCE_GROUP}'|g' deploy/externalmetric.yaml
 sed -i 's|externalq|'${SERVICEBUS_QUEUE_NAME}'|g' deploy/externalmetric.yaml
 
-AGGREGATE_TYPE=( "Average" "Maximum" "Minimum" "Total" )
+AGGREGATE_TYPE=( "average" "maximum" "minimum" "total" )
 # supported aggregates https://github.com/Azure/azure-sdk-for-go/blob/0acfc1d1083d148a606d380143176e218d437728/services/preview/monitor/mgmt/2018-03-01/insights/models.go#L38
 for AGGREGATE in "${AGGREGATE_TYPE[@]}"
 do
