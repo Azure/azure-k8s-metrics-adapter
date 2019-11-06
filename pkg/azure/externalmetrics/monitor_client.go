@@ -59,7 +59,6 @@ func (c *monitorClient) GetAzureMetric(azMetricRequest AzureExternalMetricReques
 
 	value, err := extractValue(azMetricRequest, metricResult)
 
-	// TODO set Value based on aggregations type
 	return AzureExternalMetricResponse{
 		Value: value,
 	}, err
@@ -67,8 +66,23 @@ func (c *monitorClient) GetAzureMetric(azMetricRequest AzureExternalMetricReques
 
 func extractValue(azMetricRequest AzureExternalMetricRequest, metricResult insights.Response) (float64, error) {
 	metricVals := *metricResult.Value
-	Timeseries := *metricVals[0].Timeseries
-	data := *Timeseries[0].Data
+
+	if len(metricVals) == 0 {
+		err := fmt.Errorf("Got an empty response for metric %s/%s and aggregate type %s", azMetricRequest.Namespace, azMetricRequest.MetricName, insights.AggregationType(strings.ToTitle(azMetricRequest.Aggregation)))
+		return 0, err
+	}
+
+	timeseries := *metricVals[0].Timeseries
+	if timeseries == nil {
+		err := fmt.Errorf("Got metric result for %s/%s and aggregate type %s without timeseries", azMetricRequest.Namespace, azMetricRequest.MetricName, insights.AggregationType(strings.ToTitle(azMetricRequest.Aggregation)))
+		return 0, err
+	}
+
+	data := *timeseries[0].Data
+	if data == nil {
+		err := fmt.Errorf("Got metric result for %s/%s and aggregate type %s without any metric values", azMetricRequest.Namespace, azMetricRequest.MetricName, insights.AggregationType(strings.ToTitle(azMetricRequest.Aggregation)))
+		return 0, err
+	}
 
 	var valuePtr *float64
 	if strings.EqualFold(string(insights.Average), azMetricRequest.Aggregation) && data[len(data)-1].Average != nil {

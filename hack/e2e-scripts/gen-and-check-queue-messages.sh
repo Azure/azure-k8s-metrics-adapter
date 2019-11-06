@@ -37,6 +37,6 @@ do
         echo "Timed out, message aggregate type: ${AGGREGATE} value: ${VALUE} not equal to number of messages sent ($NUM)"
         exit 1
     else
-        echo "Message count equal to number of messages sent, metrics adapter working correctly"
+        echo "message aggregate type: ${AGGREGATE} value: ${VALUE} is equal to number of messages sent ($NUM), metrics adapter working correctly"
     fi
 done
