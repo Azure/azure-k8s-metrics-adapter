@@ -38,7 +38,6 @@ ifeq ("$(SEMVER)", "")
 endif
 ifeq ("$(BRANCH)", "master")
 	@echo "versioning on master"
-	go get -u github.com/jsturtevant/gitsem
 	gitsem $(SEMVER)
 else
 	@echo "must be on clean master branch"
