@@ -14,13 +14,10 @@ func (f AzureExternalMetricClientFactory) GetAzureExternalMetricClient(clientTyp
 	switch clientType {
 	case Monitor:
 		client = NewMonitorClient(f.DefaultSubscriptionID)
-		break
 	case ServiceBusSubscription:
 		client = NewServiceBusSubscriptionClient(f.DefaultSubscriptionID)
-		break
 	default:
 		err = fmt.Errorf("Unknown Azure external metric client type provided: %s", clientType)
-		break
 	}
 
 	return client, err
