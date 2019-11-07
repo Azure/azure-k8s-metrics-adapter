@@ -81,7 +81,6 @@ func (c *Controller) Run(numberOfWorkers int, interval time.Duration, stopCh <-c
 
 	<-stopCh
 	klog.Info("Shutting down workers")
-	return
 }
 
 func (c *Controller) runWorker() {
