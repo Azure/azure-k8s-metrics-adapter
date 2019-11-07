@@ -97,12 +97,12 @@ func main() {
 }
 
 func ensureSubscription(ctx context.Context, sm *servicebus.SubscriptionManager, name string, opts ...servicebus.SubscriptionManagementOption) (*servicebus.SubscriptionEntity, error) {
-	subEntity, err := sm.Get(ctx, name)
+	_, err := sm.Get(ctx, name)
 	if err == nil {
 		_ = sm.Delete(ctx, name)
 	}
 
-	subEntity, err = sm.Put(ctx, name, opts...)
+	subEntity, err := sm.Put(ctx, name, opts...)
 	if err != nil {
 		fmt.Println(err)
 		return nil, err
