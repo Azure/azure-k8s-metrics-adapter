@@ -7,6 +7,7 @@ import (
 	"os/signal"
 	"strconv"
 	"time"
+	"syscall"
 
 	servicebus "github.com/Azure/azure-service-bus-go"
 )
@@ -43,7 +44,7 @@ func main() {
 
 	//https: //stackoverflow.com/a/18158859/697126
 	signalChan := make(chan os.Signal, 1)
-	signal.Notify(signalChan, os.Interrupt, os.Kill)
+	signal.Notify(signalChan, os.Interrupt, syscall.SIGTERM)
 	go func() {
 		<-signalChan
 		os.Exit(1)
