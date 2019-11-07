@@ -19,16 +19,16 @@ BRANCH=$(shell git rev-parse --abbrev-ref HEAD)
 		verify-deploy gen-deploy dev save tag-ci lint tools
 
 all: build
-build-local: test
+build-local: lint test
 	GO111MODULE=on CGO_ENABLED=0 go build -a -tags netgo -o $(OUT_DIR)/adapter github.com/Azure/azure-k8s-metrics-adapter
 
-build: vendor verify-deploy verify-apis
+build: vendor verify-deploy verify-apis lint
 	docker build -t $(FULL_IMAGE):$(VERSION) .
 
 vendor:
 	GO111MODULE=on go mod vendor
 
-lint:
+lint: tools
 	GO111MODULE=on golangci-lint run
 
 tools:
