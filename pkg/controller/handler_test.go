@@ -243,11 +243,15 @@ func newHandler(storeObjects []runtime.Object, externalMetricsListerCache []*api
 	customMetricLister := i.Azure().V1alpha2().CustomMetrics().Lister()
 
 	for _, em := range externalMetricsListerCache {
-		i.Azure().V1alpha2().ExternalMetrics().Informer().GetIndexer().Add(em)
+		if err := i.Azure().V1alpha2().ExternalMetrics().Informer().GetIndexer().Add(em); err != nil {
+			fmt.Printf("Error adding via indexer (should not happen): %v", err)
+		}
 	}
 
 	for _, cm := range customMetricsListerCache {
-		i.Azure().V1alpha2().CustomMetrics().Informer().GetIndexer().Add(cm)
+		if err := i.Azure().V1alpha2().CustomMetrics().Informer().GetIndexer().Add(cm); err != nil {
+			fmt.Printf("Error adding via indexer (should not happen): %v", err)
+		}
 	}
 
 	metriccache := metriccache.NewMetricCache()

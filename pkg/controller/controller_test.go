@@ -3,6 +3,7 @@ package controller
 import (
 	"errors"
 	"testing"
+	"fmt"
 
 	api "github.com/Azure/azure-k8s-metrics-adapter/pkg/apis/metrics/v1alpha2"
 	"github.com/Azure/azure-k8s-metrics-adapter/pkg/client/clientset/versioned/fake"
@@ -308,12 +309,17 @@ func newController(config controllerConfig) (*Controller, informers.SharedInform
 
 	for _, em := range config.externalMetricsListerCache {
 		// this will force the enqueuer to reload
-		i.Azure().V1alpha2().ExternalMetrics().Informer().GetIndexer().Add(em)
+		
+		if err := i.Azure().V1alpha2().ExternalMetrics().Informer().GetIndexer().Add(em); err != nil {
+			fmt.Printf("Error adding via indexer (should not happen): %v", err)
+		}
 	}
 
 	for _, cm := range config.customMetricsListerCache {
 		// this will force the enqueuer to reload
-		i.Azure().V1alpha2().CustomMetrics().Informer().GetIndexer().Add(cm)
+		if err := i.Azure().V1alpha2().CustomMetrics().Informer().GetIndexer().Add(cm); err != nil {
+			fmt.Printf("Error adding via indexer (should not happen): %v", err)
+		}
 	}
 
 	return c, i

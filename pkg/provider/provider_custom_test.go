@@ -201,11 +201,16 @@ func newFakeCustomProvider(fakeclient fakeAppInsightsClient, store []runtime.Obj
 		},
 	}
 
-	mapper.RegenerateMappings()
+	
+	if err := mapper.RegenerateMappings(); err != nil {
+		fmt.Printf("Error regenerating mappings (should not happen): %v", err)
+	}
 
 	// set up fake dynamic client
 	s := scheme.Scheme
-	corev1.SchemeBuilder.AddToScheme(s)
+	if err := corev1.SchemeBuilder.AddToScheme(s); err != nil {
+		fmt.Printf("Error adding to scheme (should not happen): %v", err)
+	}
 
 	fakeK8sClient := k8sclient.NewSimpleDynamicClient(s, store...)
 

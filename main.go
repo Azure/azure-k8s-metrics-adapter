@@ -34,7 +34,10 @@ func main() {
 
 	cmd := &basecmd.AdapterBase{}
 	cmd.Flags().AddGoFlagSet(flag.CommandLine)
-	cmd.Flags().Parse(os.Args)
+	if err :=  cmd.Flags().Parse(os.Args); err != nil {
+		klog.Fatalf("Unable to run Azure metrics adapter: %v", err)
+		return
+	}
 
 	stopCh := make(chan struct{})
 	defer close(stopCh)
