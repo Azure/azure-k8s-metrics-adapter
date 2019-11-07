@@ -69,7 +69,7 @@ func (p *AzureProvider) GetMetricBySelector(namespace string, selector labels.Se
 			Metric: custom_metrics.MetricIdentifier{
 				Name: info.Metric,
 			},
-			Timestamp: metav1.Time{time.Now()},
+			Timestamp: metav1.Time{Time: time.Now()},
 			Value:     *resource.NewMilliQuantity(int64(val*1000), resource.DecimalSI),
 		}
 
