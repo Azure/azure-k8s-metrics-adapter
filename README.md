@@ -223,7 +223,7 @@ Required environment variables:
 Deploy the environment variables via secret: 
 
 ```
- kubectl create secret generic adapter-service-principal -n custom-metrics \
+ kubectl create secret generic azure-k8s-metrics-adapter -n custom-metrics \
   --from-literal=azure-tenant-id=<tenantid> \
   --from-literal=azure-client-id=<clientid>  \
   --from-literal=azure-client-secret=<secret>
